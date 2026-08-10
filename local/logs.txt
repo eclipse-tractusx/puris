@@ -1,0 +1,704 @@
+supplier-backend  | Picked up JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,address=*:5006,server=y,suspend=n
+supplier-backend  | Listening for transport dt_socket at address: 5006
+supplier-backend  | 
+supplier-backend  |   ____             _       ____             _                  _
+supplier-backend  |  |  _ \ _   _ _ __(_)___  | __ )  __ _  ___| | _____ _ __   __| |
+supplier-backend  |  | |_) | | | | '__| / __| |  _ \ / _` |/ __| |/ / _ \ '_ \ / _` |
+supplier-backend  |  |  __/| |_| | |  | \__ \ | |_) | (_| | (__|   <  __/ | | | (_| |
+supplier-backend  |  |_|    \__,_|_|  |_|___/ |____/ \__,_|\___|_|\_\___|_| |_|\__,_|
+supplier-backend  | 
+supplier-backend  | 
+supplier-backend  | 
+supplier-backend  | 2026-08-10T07:57:50.933Z  INFO 1 --- [           main] o.e.t.puris.backend.PurisApplication     : Starting PurisApplication v6.2.0 using Java 21.0.11 with PID 1 (/opt/app/puris-backend.jar started by nonroot in /opt/app)
+supplier-backend  | 2026-08-10T07:57:50.950Z  INFO 1 --- [           main] o.e.t.puris.backend.PurisApplication     : No active profile set, falling back to 1 default profile: "default"
+supplier-backend  | 2026-08-10T07:58:01.057Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+supplier-backend  | 2026-08-10T07:58:02.076Z  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 966 ms. Found 45 JPA repository interfaces.
+supplier-backend  | 2026-08-10T07:58:07.003Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+supplier-backend  | 2026-08-10T07:58:07.097Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+supplier-backend  | 2026-08-10T07:58:07.098Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.48]
+supplier-backend  | 2026-08-10T07:58:07.330Z  INFO 1 --- [           main] o.a.c.c.C.[.[localhost].[/catena]        : Initializing Spring embedded WebApplicationContext
+supplier-backend  | 2026-08-10T07:58:07.344Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 15926 ms
+supplier-backend  | 2026-08-10T07:58:08.714Z  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+supplier-backend  | 2026-08-10T07:58:10.263Z  INFO 1 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4c164f81
+supplier-backend  | 2026-08-10T07:58:10.268Z  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+supplier-backend  | 2026-08-10T07:58:10.962Z  INFO 1 --- [           main] liquibase.database                       : Set default schema name to public
+supplier-backend  | 2026-08-10T07:58:11.559Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-3.x/changelog-3.1.0.yaml
+supplier-backend  | 2026-08-10T07:58:12.946Z  INFO 1 --- [           main] liquibase.changelog                      : Creating database history table with name: public.databasechangelog
+supplier-backend  | 2026-08-10T07:58:13.104Z  INFO 1 --- [           main] liquibase.changelog                      : Reading from public.databasechangelog
+supplier-backend  | 2026-08-10T07:58:13.117Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-3.x/changelog-3.2.0.yaml
+supplier-backend  | 2026-08-10T07:58:13.132Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-3.x/changelog-3.3.0.yaml
+supplier-backend  | 2026-08-10T07:58:13.145Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-5.x/changelog-5.1.0.yaml
+supplier-backend  | 2026-08-10T07:58:13.157Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-6.x/changelog-6.0.0.yaml
+supplier-backend  | 2026-08-10T07:58:13.173Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-6.x/changelog-6.1.0.yaml
+supplier-backend  | 2026-08-10T07:58:13.179Z  INFO 1 --- [           main] liquibase.changelog                      : Reading resource: /db/changelog/changelog-6.x/changelog-6.2.0.yaml
+supplier-backend  | 2026-08-10T07:58:13.274Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:14.049Z  INFO 1 --- [           main] liquibase.lockservice                    : Successfully acquired change log lock
+supplier-backend  | 2026-08-10T07:58:14.054Z  INFO 1 --- [           main] liquibase.command                        : Using deploymentId: 6348688634
+supplier-backend  | 2026-08-10T07:58:14.064Z  INFO 1 --- [           main] liquibase.changelog                      : Reading from public.databasechangelog
+supplier-backend  | 2026-08-10T07:58:14.410Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::1::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:14.449Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:14.547Z  INFO 1 --- [           main] liquibase.changelog                      : Table erp_adapter_request created
+supplier-backend  | 2026-08-10T07:58:14.564Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::1::tom-rm-meyer-ISST ran successfully in 149ms
+supplier-backend  | 2026-08-10T07:58:14.579Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::2::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:14.591Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:14.646Z  INFO 1 --- [           main] liquibase.changelog                      : Table erp_adapter_trigger_dataset created
+supplier-backend  | 2026-08-10T07:58:14.652Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::2::tom-rm-meyer-ISST ran successfully in 69ms
+supplier-backend  | 2026-08-10T07:58:14.670Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::3::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:14.676Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:14.707Z  INFO 1 --- [           main] liquibase.changelog                      : Table material_item_stock created
+supplier-backend  | 2026-08-10T07:58:14.713Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::3::tom-rm-meyer-ISST ran successfully in 42ms
+supplier-backend  | 2026-08-10T07:58:14.758Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::4::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:14.765Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:14.795Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_delivery created
+supplier-backend  | 2026-08-10T07:58:14.801Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::4::tom-rm-meyer-ISST ran successfully in 42ms
+supplier-backend  | 2026-08-10T07:58:14.860Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::5::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:14.874Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:14.969Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_demand_and_capacity_notification created
+supplier-backend  | 2026-08-10T07:58:14.975Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::5::tom-rm-meyer-ISST ran successfully in 111ms
+supplier-backend  | 2026-08-10T07:58:14.994Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::6::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:15.044Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:15.149Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_demand created
+supplier-backend  | 2026-08-10T07:58:15.158Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::6::tom-rm-meyer-ISST ran successfully in 161ms
+supplier-backend  | 2026-08-10T07:58:15.170Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::7::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:15.243Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:15.269Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_production created
+supplier-backend  | 2026-08-10T07:58:15.275Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::7::tom-rm-meyer-ISST ran successfully in 104ms
+supplier-backend  | 2026-08-10T07:58:15.350Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::8::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:15.354Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:15.552Z  INFO 1 --- [           main] liquibase.changelog                      : Table product_item_stock created
+supplier-backend  | 2026-08-10T07:58:15.561Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::8::tom-rm-meyer-ISST ran successfully in 209ms
+supplier-backend  | 2026-08-10T07:58:15.652Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::9::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:15.658Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:15.748Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_delivery created
+supplier-backend  | 2026-08-10T07:58:15.754Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::9::tom-rm-meyer-ISST ran successfully in 101ms
+supplier-backend  | 2026-08-10T07:58:15.768Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::10::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:15.773Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:15.846Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_demand_and_capacity_notification created
+supplier-backend  | 2026-08-10T07:58:15.852Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::10::tom-rm-meyer-ISST ran successfully in 82ms
+supplier-backend  | 2026-08-10T07:58:15.868Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::11::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:15.944Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:15.966Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_demand created
+supplier-backend  | 2026-08-10T07:58:15.973Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::11::tom-rm-meyer-ISST ran successfully in 103ms
+supplier-backend  | 2026-08-10T07:58:16.051Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::12::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.057Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.088Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_material_item_stock created
+supplier-backend  | 2026-08-10T07:58:16.094Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::12::tom-rm-meyer-ISST ran successfully in 42ms
+supplier-backend  | 2026-08-10T07:58:16.155Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::13::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.160Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.188Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_product_item_stock created
+supplier-backend  | 2026-08-10T07:58:16.247Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::13::tom-rm-meyer-ISST ran successfully in 91ms
+supplier-backend  | 2026-08-10T07:58:16.255Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::14::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.258Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.355Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_production created
+supplier-backend  | 2026-08-10T07:58:16.365Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::14::tom-rm-meyer-ISST ran successfully in 109ms
+supplier-backend  | 2026-08-10T07:58:16.453Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::15::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.456Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.465Z  INFO 1 --- [           main] liquibase.changelog                      : Table partner_sites created
+supplier-backend  | 2026-08-10T07:58:16.468Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::15::tom-rm-meyer-ISST ran successfully in 14ms
+supplier-backend  | 2026-08-10T07:58:16.475Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::16::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.549Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.557Z  INFO 1 --- [           main] liquibase.changelog                      : Unique constraint added to partner_sites(sites_bpns)
+supplier-backend  | 2026-08-10T07:58:16.562Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::16::tom-rm-meyer-ISST ran successfully in 87ms
+supplier-backend  | 2026-08-10T07:58:16.569Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::17::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.572Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.581Z  INFO 1 --- [           main] liquibase.changelog                      : Table contract_mapping_asset_to_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.585Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::17::tom-rm-meyer-ISST ran successfully in 14ms
+supplier-backend  | 2026-08-10T07:58:16.593Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::18::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.594Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.600Z  INFO 1 --- [           main] liquibase.changelog                      : Table days_of_supply_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.604Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::18::tom-rm-meyer-ISST ran successfully in 11ms
+supplier-backend  | 2026-08-10T07:58:16.610Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::19::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.611Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.650Z  INFO 1 --- [           main] liquibase.changelog                      : Table delivery_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.654Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::19::tom-rm-meyer-ISST ran successfully in 44ms
+supplier-backend  | 2026-08-10T07:58:16.661Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::20::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.663Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.674Z  INFO 1 --- [           main] liquibase.changelog                      : Table demand_and_capacity_notification_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.745Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::20::tom-rm-meyer-ISST ran successfully in 84ms
+supplier-backend  | 2026-08-10T07:58:16.751Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::21::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.753Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.761Z  INFO 1 --- [           main] liquibase.changelog                      : Table demand_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.765Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::21::tom-rm-meyer-ISST ran successfully in 13ms
+supplier-backend  | 2026-08-10T07:58:16.772Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::22::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.775Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.786Z  INFO 1 --- [           main] liquibase.changelog                      : Table digital_twin_mapping created
+supplier-backend  | 2026-08-10T07:58:16.790Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::22::tom-rm-meyer-ISST ran successfully in 18ms
+supplier-backend  | 2026-08-10T07:58:16.797Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::23::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.799Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.852Z  INFO 1 --- [           main] liquibase.changelog                      : Table dtr_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.857Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::23::tom-rm-meyer-ISST ran successfully in 60ms
+supplier-backend  | 2026-08-10T07:58:16.863Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::24::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.865Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.872Z  INFO 1 --- [           main] liquibase.changelog                      : Table item_stock_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:16.875Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::24::tom-rm-meyer-ISST ran successfully in 12ms
+supplier-backend  | 2026-08-10T07:58:16.883Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::25::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.885Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.893Z  INFO 1 --- [           main] liquibase.changelog                      : Table material created
+supplier-backend  | 2026-08-10T07:58:16.896Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::25::tom-rm-meyer-ISST ran successfully in 13ms
+supplier-backend  | 2026-08-10T07:58:16.905Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::26::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.943Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.957Z  INFO 1 --- [           main] liquibase.changelog                      : Table material_partner_relation created
+supplier-backend  | 2026-08-10T07:58:16.962Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::26::tom-rm-meyer-ISST ran successfully in 57ms
+supplier-backend  | 2026-08-10T07:58:16.969Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::27::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:16.971Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:16.984Z  INFO 1 --- [           main] liquibase.changelog                      : Table notification_affected_sites_recipient created
+supplier-backend  | 2026-08-10T07:58:16.988Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::27::tom-rm-meyer-ISST ran successfully in 19ms
+supplier-backend  | 2026-08-10T07:58:17.044Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::28::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.046Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.052Z  INFO 1 --- [           main] liquibase.changelog                      : Table notification_affected_sites_sender created
+supplier-backend  | 2026-08-10T07:58:17.056Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::28::tom-rm-meyer-ISST ran successfully in 12ms
+supplier-backend  | 2026-08-10T07:58:17.063Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::29::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.066Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.074Z  INFO 1 --- [           main] liquibase.changelog                      : Table notification_material created
+supplier-backend  | 2026-08-10T07:58:17.079Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::29::tom-rm-meyer-ISST ran successfully in 15ms
+supplier-backend  | 2026-08-10T07:58:17.088Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::30::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.089Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.143Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_customer_supply created
+supplier-backend  | 2026-08-10T07:58:17.147Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::30::tom-rm-meyer-ISST ran successfully in 59ms
+supplier-backend  | 2026-08-10T07:58:17.154Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::31::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.156Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.169Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_supplier_supply created
+supplier-backend  | 2026-08-10T07:58:17.175Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::31::tom-rm-meyer-ISST ran successfully in 21ms
+supplier-backend  | 2026-08-10T07:58:17.181Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::32::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.182Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.193Z  INFO 1 --- [           main] liquibase.changelog                      : Table part_type_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:17.248Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::32::tom-rm-meyer-ISST ran successfully in 67ms
+supplier-backend  | 2026-08-10T07:58:17.255Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::33::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.257Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.265Z  INFO 1 --- [           main] liquibase.changelog                      : Table partner created
+supplier-backend  | 2026-08-10T07:58:17.268Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::33::tom-rm-meyer-ISST ran successfully in 13ms
+supplier-backend  | 2026-08-10T07:58:17.274Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::34::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.276Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.284Z  INFO 1 --- [           main] liquibase.changelog                      : Table partner_addresses created
+supplier-backend  | 2026-08-10T07:58:17.288Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::34::tom-rm-meyer-ISST ran successfully in 13ms
+supplier-backend  | 2026-08-10T07:58:17.294Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::35::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.296Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.350Z  INFO 1 --- [           main] liquibase.changelog                      : Table production_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:17.354Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::35::tom-rm-meyer-ISST ran successfully in 59ms
+supplier-backend  | 2026-08-10T07:58:17.361Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::36::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.363Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.375Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_customer_supply created
+supplier-backend  | 2026-08-10T07:58:17.379Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::36::tom-rm-meyer-ISST ran successfully in 18ms
+supplier-backend  | 2026-08-10T07:58:17.387Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::37::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.389Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.447Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_supplier_supply created
+supplier-backend  | 2026-08-10T07:58:17.454Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::37::tom-rm-meyer-ISST ran successfully in 67ms
+supplier-backend  | 2026-08-10T07:58:17.463Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::38::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.467Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.558Z  INFO 1 --- [           main] liquibase.changelog                      : Table site created
+supplier-backend  | 2026-08-10T07:58:17.648Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::38::tom-rm-meyer-ISST ran successfully in 184ms
+supplier-backend  | 2026-08-10T07:58:17.659Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::39::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:17.663Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:17.678Z  INFO 1 --- [           main] liquibase.changelog                      : Table site_addresses created
+supplier-backend  | 2026-08-10T07:58:17.748Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::39::tom-rm-meyer-ISST ran successfully in 87ms
+supplier-backend  | 2026-08-10T07:58:17.847Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::40::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:18.249Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_customer_supply, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:18.346Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_customer_supply (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:18.352Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::40::tom-rm-meyer-ISST ran successfully in 504ms
+supplier-backend  | 2026-08-10T07:58:18.448Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::41::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:18.559Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_production, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:18.568Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_production (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:18.574Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::41::tom-rm-meyer-ISST ran successfully in 124ms
+supplier-backend  | 2026-08-10T07:58:18.647Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::42::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:18.748Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_demand, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:18.845Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_demand (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:18.852Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::42::tom-rm-meyer-ISST ran successfully in 204ms
+supplier-backend  | 2026-08-10T07:58:18.863Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::43::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:18.957Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_delivery, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:19.046Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_delivery (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:19.053Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::43::tom-rm-meyer-ISST ran successfully in 190ms
+supplier-backend  | 2026-08-10T07:58:19.072Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::44::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.162Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: notification_affected_sites_recipient, columnName: site_bpns, foreignTableName: site
+supplier-backend  | 2026-08-10T07:58:19.262Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to notification_affected_sites_recipient (site_bpns)
+supplier-backend  | 2026-08-10T07:58:19.267Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::44::tom-rm-meyer-ISST ran successfully in 194ms
+supplier-backend  | 2026-08-10T07:58:19.276Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::45::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.352Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_supplier_supply, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:19.451Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_supplier_supply (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:19.456Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::45::tom-rm-meyer-ISST ran successfully in 180ms
+supplier-backend  | 2026-08-10T07:58:19.548Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::46::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.645Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_production, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:19.652Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_production (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:19.656Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::46::tom-rm-meyer-ISST ran successfully in 108ms
+supplier-backend  | 2026-08-10T07:58:19.669Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::47::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.750Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: material_item_stock, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:19.757Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to material_item_stock (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:19.762Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::47::tom-rm-meyer-ISST ran successfully in 91ms
+supplier-backend  | 2026-08-10T07:58:19.768Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::48::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.776Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: product_item_stock, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:19.781Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to product_item_stock (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:19.846Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::48::tom-rm-meyer-ISST ran successfully in 78ms
+supplier-backend  | 2026-08-10T07:58:19.852Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::49::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.861Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_delivery, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:19.868Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_delivery (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:19.872Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::49::tom-rm-meyer-ISST ran successfully in 19ms
+supplier-backend  | 2026-08-10T07:58:19.879Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::50::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:19.948Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_demand, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:19.953Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_demand (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:19.958Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::50::tom-rm-meyer-ISST ran successfully in 78ms
+supplier-backend  | 2026-08-10T07:58:19.964Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::51::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.053Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: partner_sites, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.146Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to partner_sites (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.152Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::51::tom-rm-meyer-ISST ran successfully in 188ms
+supplier-backend  | 2026-08-10T07:58:20.158Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::52::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.165Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_demand_and_capacity_notification, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.170Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_demand_and_capacity_notification (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.173Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::52::tom-rm-meyer-ISST ran successfully in 14ms
+supplier-backend  | 2026-08-10T07:58:20.178Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::53::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.251Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_delivery, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:20.254Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_delivery (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:20.258Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::53::tom-rm-meyer-ISST ran successfully in 80ms
+supplier-backend  | 2026-08-10T07:58:20.264Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::54::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.275Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: site_addresses, columnName: site_bpns, foreignTableName: site
+supplier-backend  | 2026-08-10T07:58:20.280Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to site_addresses (site_bpns)
+supplier-backend  | 2026-08-10T07:58:20.342Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::54::tom-rm-meyer-ISST ran successfully in 78ms
+supplier-backend  | 2026-08-10T07:58:20.349Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::55::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.357Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: notification_affected_sites_sender, columnName: site_bpns, foreignTableName: site
+supplier-backend  | 2026-08-10T07:58:20.361Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to notification_affected_sites_sender (site_bpns)
+supplier-backend  | 2026-08-10T07:58:20.365Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::55::tom-rm-meyer-ISST ran successfully in 15ms
+supplier-backend  | 2026-08-10T07:58:20.371Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::56::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.379Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_production, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.384Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_production (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.387Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::56::tom-rm-meyer-ISST ran successfully in 16ms
+supplier-backend  | 2026-08-10T07:58:20.443Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::57::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.454Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: product_item_stock, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.459Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to product_item_stock (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.463Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::57::tom-rm-meyer-ISST ran successfully in 20ms
+supplier-backend  | 2026-08-10T07:58:20.469Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::58::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.478Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_customer_supply, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.543Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_customer_supply (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.549Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::58::tom-rm-meyer-ISST ran successfully in 79ms
+supplier-backend  | 2026-08-10T07:58:20.554Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::59::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.564Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: material_item_stock, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.567Z  INFO 1 --- [           main] liquibase.changelog                      : Marking ChangeSet: "db/changelog/changelog-3.x/changelog-3.1.0.yaml::59::tom-rm-meyer-ISST" as ran despite precondition failure due to onFail='MARK_RAN': 
+supplier-backend  |           db/changelog/db.changelog-master.yaml : Custom Precondition Failed: No foreign key exists on table material_item_stock for column partner_uuid referencing table partner
+supplier-backend  | 
+supplier-backend  | 2026-08-10T07:58:20.656Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::60::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.753Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_demand, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.761Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_demand (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.842Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::60::tom-rm-meyer-ISST ran successfully in 185ms
+supplier-backend  | 2026-08-10T07:58:20.850Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::61::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.861Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_customer_supply, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:20.869Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_customer_supply (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:20.874Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::61::tom-rm-meyer-ISST ran successfully in 23ms
+supplier-backend  | 2026-08-10T07:58:20.880Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::62::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.952Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_customer_supply, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:20.960Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_customer_supply (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:20.964Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::62::tom-rm-meyer-ISST ran successfully in 83ms
+supplier-backend  | 2026-08-10T07:58:20.971Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::63::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:20.979Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: partner_addresses, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:20.983Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to partner_addresses (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:20.987Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::63::tom-rm-meyer-ISST ran successfully in 16ms
+supplier-backend  | 2026-08-10T07:58:20.993Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::64::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.048Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: material_partner_relation, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.054Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to material_partner_relation (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.058Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::64::tom-rm-meyer-ISST ran successfully in 65ms
+supplier-backend  | 2026-08-10T07:58:21.063Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::65::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.074Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_supplier_supply, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.078Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_supplier_supply (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.081Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::65::tom-rm-meyer-ISST ran successfully in 18ms
+supplier-backend  | 2026-08-10T07:58:21.088Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::66::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.145Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: material_partner_relation, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.152Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to material_partner_relation (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.156Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::66::tom-rm-meyer-ISST ran successfully in 68ms
+supplier-backend  | 2026-08-10T07:58:21.162Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::67::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.177Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_supplier_supply, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.245Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_supplier_supply (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.253Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::67::tom-rm-meyer-ISST ran successfully in 90ms
+supplier-backend  | 2026-08-10T07:58:21.259Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::68::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.270Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_product_item_stock, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.277Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_product_item_stock (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.281Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::68::tom-rm-meyer-ISST ran successfully in 22ms
+supplier-backend  | 2026-08-10T07:58:21.287Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::69::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.349Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_material_item_stock, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.354Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_material_item_stock (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.360Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::69::tom-rm-meyer-ISST ran successfully in 72ms
+supplier-backend  | 2026-08-10T07:58:21.366Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::70::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.375Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_delivery, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.381Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_delivery (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.385Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::70::tom-rm-meyer-ISST ran successfully in 19ms
+supplier-backend  | 2026-08-10T07:58:21.390Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::71::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.399Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_product_item_stock, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.444Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_product_item_stock (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.448Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::71::tom-rm-meyer-ISST ran successfully in 57ms
+supplier-backend  | 2026-08-10T07:58:21.454Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::72::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.463Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: notification_material, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.469Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to notification_material (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.472Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::72::tom-rm-meyer-ISST ran successfully in 18ms
+supplier-backend  | 2026-08-10T07:58:21.478Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::73::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.491Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_demand, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.547Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_demand (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.554Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::73::tom-rm-meyer-ISST ran successfully in 75ms
+supplier-backend  | 2026-08-10T07:58:21.560Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::74::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.573Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_demand_and_capacity_notification, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.577Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_demand_and_capacity_notification (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.581Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::74::tom-rm-meyer-ISST ran successfully in 20ms
+supplier-backend  | 2026-08-10T07:58:21.587Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::75::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.596Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: material_own_material_number, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.645Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_supplier_supply (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.649Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::75::tom-rm-meyer-ISST ran successfully in 62ms
+supplier-backend  | 2026-08-10T07:58:21.655Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::76::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.670Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: own_production, columnName: material_own_material_number, foreignTableName: material
+supplier-backend  | 2026-08-10T07:58:21.678Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_production (material_own_material_number)
+supplier-backend  | 2026-08-10T07:58:21.682Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::76::tom-rm-meyer-ISST ran successfully in 27ms
+supplier-backend  | 2026-08-10T07:58:21.688Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::77::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.744Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: reported_material_item_stock, columnName: partner_uuid, foreignTableName: partner
+supplier-backend  | 2026-08-10T07:58:21.752Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_material_item_stock (partner_uuid)
+supplier-backend  | 2026-08-10T07:58:21.758Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::77::tom-rm-meyer-ISST ran successfully in 69ms
+supplier-backend  | 2026-08-10T07:58:21.765Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.1.0.yaml::78::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.843Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: partner_sites, columnName: sites_bpns, foreignTableName: site
+supplier-backend  | 2026-08-10T07:58:21.848Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to partner_sites (sites_bpns)
+supplier-backend  | 2026-08-10T07:58:21.854Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.1.0.yaml::78::tom-rm-meyer-ISST ran successfully in 89ms
+supplier-backend  | 2026-08-10T07:58:21.861Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.2.0.yaml::1::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.874Z  INFO 1 --- [           main] liquibase.changelog                      : Columns last_updated_on_date_time(TIMESTAMP WITHOUT TIME ZONE) added to own_delivery
+supplier-backend  | 2026-08-10T07:58:21.878Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.2.0.yaml::1::tom-rm-meyer-ISST ran successfully in 17ms
+supplier-backend  | 2026-08-10T07:58:21.885Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.2.0.yaml::2::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.890Z  INFO 1 --- [           main] liquibase.changelog                      : Columns last_updated_on_date_time(TIMESTAMP WITHOUT TIME ZONE) added to own_demand
+supplier-backend  | 2026-08-10T07:58:21.942Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.2.0.yaml::2::tom-rm-meyer-ISST ran successfully in 57ms
+supplier-backend  | 2026-08-10T07:58:21.949Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.2.0.yaml::3::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.956Z  INFO 1 --- [           main] liquibase.changelog                      : Columns last_updated_on_date_time(TIMESTAMP WITHOUT TIME ZONE) added to own_production
+supplier-backend  | 2026-08-10T07:58:21.961Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.2.0.yaml::3::tom-rm-meyer-ISST ran successfully in 12ms
+supplier-backend  | 2026-08-10T07:58:21.968Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.2.0.yaml::4::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.977Z  INFO 1 --- [           main] liquibase.changelog                      : Columns last_updated_on_date_time(TIMESTAMP WITHOUT TIME ZONE) added to reported_delivery
+supplier-backend  | 2026-08-10T07:58:21.980Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.2.0.yaml::4::tom-rm-meyer-ISST ran successfully in 11ms
+supplier-backend  | 2026-08-10T07:58:21.987Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.2.0.yaml::5::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:21.994Z  INFO 1 --- [           main] liquibase.changelog                      : Columns last_updated_on_date_time(TIMESTAMP WITHOUT TIME ZONE) added to reported_demand
+supplier-backend  | 2026-08-10T07:58:21.998Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.2.0.yaml::5::tom-rm-meyer-ISST ran successfully in 11ms
+supplier-backend  | 2026-08-10T07:58:22.005Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.2.0.yaml::6::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:22.013Z  INFO 1 --- [           main] liquibase.changelog                      : Columns last_updated_on_date_time(TIMESTAMP WITHOUT TIME ZONE) added to reported_production
+supplier-backend  | 2026-08-10T07:58:22.016Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.2.0.yaml::6::tom-rm-meyer-ISST ran successfully in 11ms
+supplier-backend  | 2026-08-10T07:58:22.024Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-3.x/changelog-3.3.0.yaml::1::ReneSchroederLJ
+supplier-backend  | 2026-08-10T07:58:22.029Z  INFO 1 --- [           main] liquibase.changelog                      : Column own_demand_and_capacity_notification.related_notification_id dropped
+supplier-backend  | 2026-08-10T07:58:22.031Z  INFO 1 --- [           main] liquibase.changelog                      : Column reported_demand_and_capacity_notification.related_notification_id dropped
+supplier-backend  | 2026-08-10T07:58:22.035Z  INFO 1 --- [           main] liquibase.changelog                      : Table notification_related_notification_ids created
+supplier-backend  | 2026-08-10T07:58:22.037Z  INFO 1 --- [           main] liquibase.changelog                      : Column own_demand_and_capacity_notification.source_notification_id renamed to source_disruption_id
+supplier-backend  | 2026-08-10T07:58:22.039Z  INFO 1 --- [           main] liquibase.changelog                      : Column reported_demand_and_capacity_notification.source_notification_id renamed to source_disruption_id
+supplier-backend  | 2026-08-10T07:58:22.043Z  INFO 1 --- [           main] liquibase.changelog                      : Columns resolving_measure_description(VARCHAR(255)) added to own_demand_and_capacity_notification
+supplier-backend  | 2026-08-10T07:58:22.046Z  INFO 1 --- [           main] liquibase.changelog                      : Columns resolving_measure_description(VARCHAR(255)) added to reported_demand_and_capacity_notification
+supplier-backend  | 2026-08-10T07:58:22.050Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-3.x/changelog-3.3.0.yaml::1::ReneSchroederLJ ran successfully in 26ms
+supplier-backend  | 2026-08-10T07:58:22.059Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-5.x/changelog-5.1.0.yaml::1::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:22.061Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:22.069Z  INFO 1 --- [           main] liquibase.changelog                      : Table partner_data_update_batch_run created
+supplier-backend  | 2026-08-10T07:58:22.072Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-5.x/changelog-5.1.0.yaml::1::tom-rm-meyer-ISST ran successfully in 13ms
+supplier-backend  | 2026-08-10T07:58:22.078Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-5.x/changelog-5.1.0.yaml::2::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:22.081Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:22.095Z  INFO 1 --- [           main] liquibase.changelog                      : Table partner_data_update_batch_run_entry created
+supplier-backend  | 2026-08-10T07:58:22.098Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-5.x/changelog-5.1.0.yaml::2::tom-rm-meyer-ISST ran successfully in 19ms
+supplier-backend  | 2026-08-10T07:58:22.105Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-5.x/changelog-5.1.0.yaml::3::tom-rm-meyer-ISST
+supplier-backend  | 2026-08-10T07:58:22.114Z  INFO 1 --- [           main] liquibase.precondition                   : ForeignKeyNoName precondition identified NO matching constraint with tableName: partner_data_update_batch_run_entry, columnName: batch_run_id, foreignTableName: partner_data_update_batch_run
+supplier-backend  | 2026-08-10T07:58:22.121Z  WARN 1 --- [           main] liquibase.executor                       : identifier "fk_partner_data_update_batch_run_entry_to_partner_data_update_batch_run" will be truncated to "fk_partner_data_update_batch_run_entry_to_partner_data_update_b"
+supplier-backend  | 2026-08-10T07:58:22.122Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to partner_data_update_batch_run_entry (batch_run_id)
+supplier-backend  | 2026-08-10T07:58:22.125Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-5.x/changelog-5.1.0.yaml::3::tom-rm-meyer-ISST ran successfully in 20ms
+supplier-backend  | 2026-08-10T07:58:22.131Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::1::ReneSchroederLJ
+supplier-backend  | 2026-08-10T07:58:22.137Z  INFO 1 --- [           main] liquibase.changelog                      : Table delivery_anonymized_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:22.140Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::1::ReneSchroederLJ ran successfully in 9ms
+supplier-backend  | 2026-08-10T07:58:22.146Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::2::OlgaIvkovic
+supplier-backend  | 2026-08-10T07:58:22.150Z  INFO 1 --- [           main] liquibase.changelog                      : Table item_stock_anonymized_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:22.156Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::2::OlgaIvkovic ran successfully in 9ms
+supplier-backend  | 2026-08-10T07:58:22.162Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::3::jakoballgaier
+supplier-backend  | 2026-08-10T07:58:22.167Z  INFO 1 --- [           main] liquibase.changelog                      : Table production_anonymized_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:22.170Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::3::jakoballgaier ran successfully in 7ms
+supplier-backend  | 2026-08-10T07:58:22.176Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::4::ReneSchroederLJ
+supplier-backend  | 2026-08-10T07:58:22.186Z  INFO 1 --- [           main] liquibase.changelog                      : Table migration_task created
+supplier-backend  | 2026-08-10T07:58:22.189Z  INFO 1 --- [           main] liquibase.changelog                      : New row inserted into migration_task
+supplier-backend  | 2026-08-10T07:58:22.192Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::4::ReneSchroederLJ ran successfully in 16ms
+supplier-backend  | 2026-08-10T07:58:22.198Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::5::ReneSchroederLJ
+supplier-backend  | 2026-08-10T07:58:22.200Z  INFO 1 --- [           main] liquibase.snapshot                       : Creating snapshot
+supplier-backend  | 2026-08-10T07:58:22.214Z  INFO 1 --- [           main] liquibase.changelog                      : Table material_relation created
+supplier-backend  | 2026-08-10T07:58:22.218Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::5::ReneSchroederLJ ran successfully in 19ms
+supplier-backend  | 2026-08-10T07:58:22.224Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::6::gobica
+supplier-backend  | 2026-08-10T07:58:22.231Z  INFO 1 --- [           main] liquibase.changelog                      : Table single_level_bom_as_planned_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:22.234Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::6::gobica ran successfully in 10ms
+supplier-backend  | 2026-08-10T07:58:22.240Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.0.0.yaml::7::ReneSchroederLJ
+supplier-backend  | 2026-08-10T07:58:22.245Z  INFO 1 --- [           main] liquibase.changelog                      : Columns policy_profile_version(SMALLINT) added to partner
+supplier-backend  | 2026-08-10T07:58:22.249Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.0.0.yaml::7::ReneSchroederLJ ran successfully in 8ms
+supplier-backend  | 2026-08-10T07:58:22.255Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.1.0.yaml::1::gobica
+supplier-backend  | 2026-08-10T07:58:22.259Z  INFO 1 --- [           main] liquibase.changelog                      : New row inserted into migration_task
+supplier-backend  | 2026-08-10T07:58:22.262Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.1.0.yaml::1::gobica ran successfully in 7ms
+supplier-backend  | 2026-08-10T07:58:22.268Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.2.0.yaml::1::jakoballgaier
+supplier-backend  | 2026-08-10T07:58:22.273Z  INFO 1 --- [           main] liquibase.changelog                      : Column erp_adapter_request.direction_characteristic renamed to direction_enum
+supplier-backend  | 2026-08-10T07:58:22.275Z  INFO 1 --- [           main] liquibase.changelog                      : Column erp_adapter_trigger_dataset.direction_characteristic renamed to direction_enum
+supplier-backend  | 2026-08-10T07:58:22.287Z  INFO 1 --- [           main] liquibase.changelog                      : erp_adapter_request.direction_enum datatype was changed to VARCHAR(255)
+supplier-backend  | 2026-08-10T07:58:22.291Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.2.0.yaml::1::jakoballgaier ran successfully in 22ms
+supplier-backend  | 2026-08-10T07:58:22.299Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.2.0.yaml::2::OlgaIvkovic
+supplier-backend  | 2026-08-10T07:58:22.344Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_data_exchange_request created
+supplier-backend  | 2026-08-10T07:58:22.348Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_data_exchange_request_requested_types created
+supplier-backend  | 2026-08-10T07:58:22.355Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_data_exchange_request (notification_uuid)
+supplier-backend  | 2026-08-10T07:58:22.361Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_data_exchange_request_requested_types (own_data_exchange_request_uuid)
+supplier-backend  | 2026-08-10T07:58:22.365Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.2.0.yaml::2::OlgaIvkovic ran successfully in 66ms
+supplier-backend  | 2026-08-10T07:58:22.374Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.2.0.yaml::3::OlgaIvkovic
+supplier-backend  | 2026-08-10T07:58:22.382Z  INFO 1 --- [           main] liquibase.changelog                      : Table data_exchange_request_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:22.385Z  INFO 1 --- [           main] liquibase.changelog                      : Columns related_data_exchange_request_uuid(UUID) added to own_data_exchange_request
+supplier-backend  | 2026-08-10T07:58:22.392Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_data_exchange_request created
+supplier-backend  | 2026-08-10T07:58:22.396Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_data_exchange_request (notification_uuid)
+supplier-backend  | 2026-08-10T07:58:22.400Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.2.0.yaml::3::OlgaIvkovic ran successfully in 26ms
+supplier-backend  | 2026-08-10T07:58:22.409Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.2.0.yaml::4::OlgaIvkovic
+supplier-backend  | 2026-08-10T07:58:22.444Z  INFO 1 --- [           main] liquibase.changelog                      : Table own_data_exchange_approval created
+supplier-backend  | 2026-08-10T07:58:22.449Z  INFO 1 --- [           main] liquibase.changelog                      : Table data_exchange_approval_approved_types created
+supplier-backend  | 2026-08-10T07:58:22.457Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to own_data_exchange_approval (data_exchange_request_uuid)
+supplier-backend  | 2026-08-10T07:58:22.464Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.2.0.yaml::4::OlgaIvkovic ran successfully in 54ms
+supplier-backend  | 2026-08-10T07:58:22.478Z  INFO 1 --- [           main] liquibase.ui                             : Running Changeset: db/changelog/changelog-6.x/changelog-6.2.0.yaml::5::OlgaIvkovic
+supplier-backend  | 2026-08-10T07:58:22.489Z  INFO 1 --- [           main] liquibase.changelog                      : Table data_exchange_approval_contract_mapping created
+supplier-backend  | 2026-08-10T07:58:22.501Z  INFO 1 --- [           main] liquibase.changelog                      : Table reported_data_exchange_approval created
+supplier-backend  | 2026-08-10T07:58:22.508Z  INFO 1 --- [           main] liquibase.changelog                      : Foreign key constraint added to reported_data_exchange_approval (data_exchange_request_uuid)
+supplier-backend  | 2026-08-10T07:58:22.513Z  INFO 1 --- [           main] liquibase.changelog                      : ChangeSet db/changelog/changelog-6.x/changelog-6.2.0.yaml::5::OlgaIvkovic ran successfully in 33ms
+supplier-backend  | 2026-08-10T07:58:22.543Z  INFO 1 --- [           main] liquibase.util                           : UPDATE SUMMARY
+supplier-backend  | 2026-08-10T07:58:22.543Z  INFO 1 --- [           main] liquibase.util                           : Run:                        101
+supplier-backend  | 2026-08-10T07:58:22.543Z  INFO 1 --- [           main] liquibase.util                           : Previously run:               0
+supplier-backend  | 2026-08-10T07:58:22.544Z  INFO 1 --- [           main] liquibase.util                           : Filtered out:                 0
+supplier-backend  | 2026-08-10T07:58:22.545Z  INFO 1 --- [           main] liquibase.util                           : -------------------------------
+supplier-backend  | 2026-08-10T07:58:22.545Z  INFO 1 --- [           main] liquibase.util                           : Total change sets:          101
+supplier-backend  | 2026-08-10T07:58:22.548Z  INFO 1 --- [           main] liquibase.util                           : Update summary generated
+supplier-backend  | 2026-08-10T07:58:22.560Z  INFO 1 --- [           main] liquibase.command                        : Update command completed successfully.
+supplier-backend  | 2026-08-10T07:58:22.560Z  INFO 1 --- [           main] liquibase.ui                             : Liquibase: Update has been successful. Rows affected: 103
+supplier-backend  | 2026-08-10T07:58:22.570Z  INFO 1 --- [           main] liquibase.lockservice                    : Successfully released change log lock
+supplier-backend  | 2026-08-10T07:58:22.576Z  INFO 1 --- [           main] liquibase.command                        : Command execution complete
+supplier-backend  | 2026-08-10T07:58:23.887Z  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+supplier-backend  | 2026-08-10T07:58:24.200Z  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.33.Final
+supplier-backend  | 2026-08-10T07:58:24.356Z  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+supplier-backend  | 2026-08-10T07:58:25.269Z  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+supplier-backend  | 2026-08-10T07:58:25.416Z  WARN 1 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+supplier-backend  | 2026-08-10T07:58:25.454Z  INFO 1 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+supplier-backend  | 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+supplier-backend  | 	Database driver: undefined/unknown
+supplier-backend  | 	Database version: 18.0
+supplier-backend  | 	Autocommit mode: undefined/unknown
+supplier-backend  | 	Isolation level: undefined/unknown
+supplier-backend  | 	Minimum pool size: undefined/unknown
+supplier-backend  | 	Maximum pool size: undefined/unknown
+supplier-backend  | 2026-08-10T07:58:32.529Z  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+supplier-backend  | 2026-08-10T07:58:32.708Z  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+supplier-backend  | 2026-08-10T07:58:36.121Z  INFO 1 --- [           main] f.a.AutowiredAnnotationBeanPostProcessor : Inconsistent constructor declaration on bean with name 'dtrAdapterService': single autowire-marked constructor flagged as optional - this constructor is effectively required since there is no default constructor to fall back to: public org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService(org.eclipse.tractusx.puris.backend.common.security.OAuth2ClientInterceptor)
+supplier-backend  | 2026-08-10T07:58:38.739Z  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+supplier-backend  | 2026-08-10T07:58:40.291Z  INFO 1 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+supplier-backend  | 2026-08-10T07:58:40.417Z  INFO 1 --- [           main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name apiKeyAuthenticationProvider
+supplier-backend  | 2026-08-10T07:58:43.406Z  INFO 1 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+supplier-backend  | 2026-08-10T07:58:43.409Z  INFO 1 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@1e264875]]
+supplier-backend  | 2026-08-10T07:58:43.413Z  INFO 1 --- [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+supplier-backend  | 2026-08-10T07:58:43.467Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8082 (http) with context path '/catena'
+supplier-backend  | 2026-08-10T07:58:43.498Z  INFO 1 --- [           main] o.e.t.puris.backend.PurisApplication     : Started PurisApplication in 55.124 seconds (process running for 60.037)
+supplier-backend  | 2026-08-10T07:58:45.162Z  INFO 1 --- [           main] o.e.t.p.b.DataInjectionCommandLineRunner : Successfully created own Partner Entity: Partner(uuid=b8231807-605d-4bbb-8abd-53355e33f7fc, name=Semiconductor Supplier Inc., edcUrl=http://supplier-control-plane:9184/api/v1/dsp, policyProfileVersion=POLICY_PROFILE_2509, bpnl=BPNL1234567890ZZ, addresses=[], sites=[Site(bpns=BPNS1234567890ZZ, name=Semiconductor Supplier Inc. Production Site, addresses=[Address(bpna=BPNA1234567890AA, streetAndNumber=Wall Street 101, zipCodeAndCity=10001 New York, country=USA)])])
+supplier-backend  | 2026-08-10T07:58:45.441Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of PURIS contract policy for profile 24.05 successful true
+supplier-backend  | 2026-08-10T07:58:45.497Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of PURIS contract policy for profile 25.09 successful true
+supplier-backend  | 2026-08-10T07:58:45.544Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of DTR Asset successful true
+supplier-backend  | 2026-08-10T07:58:45.578Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of DTR contract policy for profile 24.05 successful true
+supplier-backend  | 2026-08-10T07:58:45.621Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of DTR contract policy for profile 25.09 successful true
+supplier-backend  | 2026-08-10T07:58:45.656Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of ItemStock 2.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.699Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Planned Production 2.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.735Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Short Term Material Demand 1.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.754Z  INFO 1 --- [nio-8082-exec-1] o.a.c.c.C.[.[localhost].[/catena]        : Initializing Spring DispatcherServlet 'dispatcherServlet'
+supplier-backend  | 2026-08-10T07:58:45.757Z  INFO 1 --- [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+supplier-backend  | 2026-08-10T07:58:45.763Z  INFO 1 --- [nio-8082-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 6 ms
+supplier-backend  | 2026-08-10T07:58:45.772Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Delivery Information 2.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.810Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Demand and Capacity Notification 3.0.0 asset successful true
+supplier-backend  | 2026-08-10T07:58:45.838Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Days of Supply 2.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.863Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of DataExchangeRequest 1.0.0 asset successful true
+supplier-backend  | 2026-08-10T07:58:45.899Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Anonymized Item Stock Information 1.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.933Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Anonymized Delivery Information 1.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.957Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Anonymized Planned Production 1.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:45.985Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of Single Level Bom As Planned 3.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:46.012Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of PartTypeInformation 1.0.0 submodel successful true
+supplier-backend  | 2026-08-10T07:58:46.055Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Self policy definition registration successful
+supplier-backend  | 2026-08-10T07:58:46.104Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Self-contract for SingleLevelBomAsPlanned successful
+supplier-backend  | 2026-08-10T07:58:46.105Z  INFO 1 --- [           main] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Registration of self-contracts successful true
+supplier-backend  | 2026-08-10T07:58:46.124Z  INFO 1 --- [           main] o.e.t.p.b.MigrationTaskCommandLineRunner : Starting migration task for target version 6.1.0
+supplier-backend  | 2026-08-10T07:58:46.235Z  INFO 1 --- [           main] o.e.t.p.b.MigrationTaskCommandLineRunner : No materials found in database, skipping digital twin update at DTR
+supplier-backend  | 2026-08-10T07:58:46.264Z  INFO 1 --- [           main] o.e.t.p.b.MigrationTaskCommandLineRunner : Migration task for target version 6.1.0 completed successfully
+supplier-backend  | 2026-08-10T07:58:53.846Z  INFO 1 --- [pool-2-thread-1] o.e.t.p.b.m.l.s.PartnerServiceImpl       : Policy / ContractDef Registration successful for partner BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:54.097Z  INFO 1 --- [nio-8082-exec-1] o.e.t.p.b.m.l.s.MaterialServiceImpl      : Auto-generated CX Id for MNR-1234-ID123456.001 number: 4e1b6df3-4dba-4891-9362-ed4de9a016c5
+supplier-backend  | 2026-08-10T07:58:54.179Z  INFO 1 --- [nio-8082-exec-2] o.e.t.p.b.m.l.s.MaterialRelationService  : Created MaterialRelation with UUID: a02e08b5-f349-49a2-a1e6-9916ec71ab44
+supplier-backend  | 2026-08-10T07:58:54.315Z  INFO 1 --- [nio-8082-exec-5] CapacityNotificationRequestApiController : Received POST request for DemandAndCapacityNotification 3.0.0 with BPNL: BPNL8888888888YY
+supplier-backend  | 2026-08-10T07:58:54.378Z  INFO 1 --- [nio-8082-exec-5] dAndCapacityNotifcationRequestApiService : Creating new Notification
+supplier-backend  | 2026-08-10T07:58:54.407Z  INFO 1 --- [pool-2-thread-2] o.e.t.p.b.m.l.s.PartnerServiceImpl       : Policy / ContractDef Registration successful for partner BPNL8888888888YY
+supplier-backend  | 2026-08-10T07:58:54.428Z  INFO 1 --- [nio-8082-exec-6] CapacityNotificationRequestApiController : Received POST request for DemandAndCapacityNotification 3.0.0 with BPNL: BPNL9999999999YY
+supplier-backend  | 2026-08-10T07:58:54.453Z  INFO 1 --- [nio-8082-exec-6] dAndCapacityNotifcationRequestApiService : Creating new Notification
+supplier-backend  | 2026-08-10T07:58:54.455Z  INFO 1 --- [pool-2-thread-3] o.e.t.p.b.m.l.s.PartnerServiceImpl       : Policy / ContractDef Registration successful for partner BPNL9999999999YY
+supplier-backend  | 2026-08-10T07:58:54.581Z  INFO 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Need Contract for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:55.358Z ERROR 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Error in negotiation for NOTIFICATION
+supplier-backend  | 
+supplier-backend  | java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.JsonNode.isObject()" because "catalogArray" is null
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.negotiateContract(EdcAdapterService.java:1355) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.negotiateContractForNotification(EdcAdapterService.java:1326) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.postAssetToPartner(EdcAdapterService.java:779) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.doNotificationPostRequest(EdcAdapterService.java:959) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(DemandAndCapacityNotifcationRequestApiService.java:88) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.demandandcapacitynotification.controller.DemandAndCapacityNotificationController.lambda$createNotification$0(DemandAndCapacityNotificationController.java:114) ~[!/:6.2.0]
+supplier-backend  | 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.FutureTask.run(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
+supplier-backend  | 
+supplier-backend  | 2026-08-10T07:58:55.372Z ERROR 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Failed to contract for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:55.378Z  INFO 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Need Contract for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:55.623Z ERROR 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Error in negotiation for NOTIFICATION
+supplier-backend  | 
+supplier-backend  | java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.JsonNode.isObject()" because "catalogArray" is null
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.negotiateContract(EdcAdapterService.java:1355) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.negotiateContractForNotification(EdcAdapterService.java:1326) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.postAssetToPartner(EdcAdapterService.java:779) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.postAssetToPartner(EdcAdapterService.java:788) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.doNotificationPostRequest(EdcAdapterService.java:959) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(DemandAndCapacityNotifcationRequestApiService.java:88) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.demandandcapacitynotification.controller.DemandAndCapacityNotificationController.lambda$createNotification$0(DemandAndCapacityNotificationController.java:114) ~[!/:6.2.0]
+supplier-backend  | 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.FutureTask.run(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
+supplier-backend  | 
+supplier-backend  | 2026-08-10T07:58:55.624Z ERROR 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Failed to contract for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:55.630Z  INFO 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Need Contract for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:55.984Z ERROR 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Error in negotiation for NOTIFICATION
+supplier-backend  | 
+supplier-backend  | java.lang.NullPointerException: Cannot invoke "com.fasterxml.jackson.databind.JsonNode.isObject()" because "catalogArray" is null
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.negotiateContract(EdcAdapterService.java:1355) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.negotiateContractForNotification(EdcAdapterService.java:1326) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.postAssetToPartner(EdcAdapterService.java:779) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.postAssetToPartner(EdcAdapterService.java:788) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.postAssetToPartner(EdcAdapterService.java:788) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.doNotificationPostRequest(EdcAdapterService.java:959) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotifcationRequestApiService.sendDemandAndCapacityNotification(DemandAndCapacityNotifcationRequestApiService.java:88) ~[!/:6.2.0]
+supplier-backend  | 	at org.eclipse.tractusx.puris.backend.demandandcapacitynotification.controller.DemandAndCapacityNotificationController.lambda$createNotification$0(DemandAndCapacityNotificationController.java:114) ~[!/:6.2.0]
+supplier-backend  | 	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.FutureTask.run(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[na:na]
+supplier-backend  | 	at java.base/java.lang.Thread.run(Unknown Source) ~[na:na]
+supplier-backend  | 
+supplier-backend  | 2026-08-10T07:58:55.986Z ERROR 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Failed to contract for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:55.993Z  WARN 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Invalidating Contract data for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:56.062Z  WARN 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Invalidating Contract data for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:56.093Z  WARN 1 --- [pool-2-thread-3] o.e.t.p.b.c.e.l.s.EdcAdapterService      : Invalidating Contract data for NOTIFICATION with BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:56.183Z  INFO 1 --- [pool-2-thread-3] dAndCapacityNotifcationRequestApiService : Successfully sent Notification to partner BPNL4444444444XX
+supplier-backend  | 2026-08-10T07:58:59.286Z  INFO 1 --- [pool-2-thread-1] m.l.s.MaterialPartnerRelationServiceImpl : Updated product ShellDescriptor at DTR for MNR-8101-ID146955.001 and 1 customer partners. Result: 201
+supplier-backend  | 2026-08-10T07:59:00.829Z  INFO 1 --- [nio-8082-exec-9] o.e.t.p.b.s.c.StockViewController        : Created product-stock: ProductItemStock(super=ItemStock(uuid=16ea319c-0327-425e-9a71-4fb2a41fdc3e, quantity=100.0, measurementUnit=UNIT_PIECE, locationBpna=BPNA1234567890AA, locationBpns=BPNS1234567890ZZ, lastUpdatedOnDateTime=Mon Aug 10 07:59:00 GMT 2026, isBlocked=true, supplierOrderId=SNbr-2, customerOrderId=CNbr-2, customerOrderPositionId=C-Pos-2, material_ownMaterialNumber=MNR-8101-ID146955.001, partner_partnerBpnl=BPNL4444444444XX))
+supplier-backend  | 2026-08-10T07:59:01.000Z  INFO 1 --- [io-8082-exec-10] o.e.t.p.b.s.c.StockViewController        : Created product-stock: ProductItemStock(super=ItemStock(uuid=da8098ce-e449-48b0-840e-3f1429ff3c0a, quantity=400.0, measurementUnit=UNIT_PIECE, locationBpna=BPNA2222222222AA, locationBpns=BPNS2222222222SS, lastUpdatedOnDateTime=Mon Aug 10 07:59:00 GMT 2026, isBlocked=false, supplierOrderId=SNbr-2, customerOrderId=CNbr-2, customerOrderPositionId=C-Pos-2, material_ownMaterialNumber=MNR-8101-ID146955.001, partner_partnerBpnl=BPNL4444444444XX))
+supplier-backend  | 2026-08-10T07:59:09.070Z  INFO 1 --- [io-8082-exec-10] .t.p.b.m.c.PartTypeInformationController : BPNL4444444444XX requests part type information on MNR-8101-ID146955.001
+supplier-backend  | 2026-08-10T07:59:23.686Z  WARN 1 --- [nio-8082-exec-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.util.UUID'; Invalid UUID string: {{reportedRequestUuid}}]
+supplier-backend  | 2026-08-10T07:59:43.315Z  INFO 1 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 3, active threads = 1, queued tasks = 2, completed tasks = 0]
+supplier-backend  | 2026-08-10T08:00:04.938Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:00:05.026Z  INFO 1 --- [nio-8082-exec-9] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:00:18.810Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:00:20.336Z  INFO 1 --- [nio-8082-exec-5] t.p.b.p.c.ProductionRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:00:35.585Z  INFO 1 --- [nio-8082-exec-1] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:01:06.171Z  INFO 1 --- [io-8082-exec-10] SingleLevelBomAsPlannedRequestApiService : Self-request for SingleLevelBomAsPlanned on 860fb504-b884-4009-9313-c6fb6cdc776b
+supplier-backend  | 2026-08-10T08:01:06.182Z  WARN 1 --- [io-8082-exec-10] .m.l.a.SingleLevelBomAsPlannedSammMapper : No supplier MPR found for child material MNR-1234-ID123456.001, skipping
+supplier-backend  | 2026-08-10T08:03:02.354Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:03:07.146Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:06:04.176Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:06:09.992Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:09:04.369Z  INFO 1 --- [nio-8082-exec-9] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:09:09.165Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:12:02.632Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:12:10.464Z  INFO 1 --- [nio-8082-exec-2] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:15:02.729Z  INFO 1 --- [nio-8082-exec-7] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:15:07.459Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:18:02.881Z  INFO 1 --- [nio-8082-exec-6] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:18:10.701Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:21:04.679Z  INFO 1 --- [nio-8082-exec-6] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:21:10.871Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:24:02.130Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:24:08.751Z  INFO 1 --- [nio-8082-exec-8] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:27:02.740Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:27:08.432Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:29:43.317Z  INFO 1 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 12, active threads = 1, queued tasks = 2, completed tasks = 11]
+supplier-backend  | 2026-08-10T08:30:03.768Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:30:08.411Z  INFO 1 --- [nio-8082-exec-6] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:33:02.969Z  INFO 1 --- [nio-8082-exec-1] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:33:07.777Z  INFO 1 --- [nio-8082-exec-5] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:36:02.165Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:36:06.923Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:39:02.281Z  INFO 1 --- [nio-8082-exec-9] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:39:07.095Z  INFO 1 --- [nio-8082-exec-2] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:42:02.910Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:42:08.613Z  INFO 1 --- [nio-8082-exec-2] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:45:01.891Z  INFO 1 --- [nio-8082-exec-7] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:45:06.532Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:48:03.774Z  INFO 1 --- [nio-8082-exec-7] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:48:08.276Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:51:04.241Z  INFO 1 --- [nio-8082-exec-6] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:51:08.900Z  INFO 1 --- [nio-8082-exec-9] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:54:02.192Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:54:06.801Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:57:03.554Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:57:08.191Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T08:59:43.318Z  INFO 1 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 12, active threads = 1, queued tasks = 2, completed tasks = 22]
+supplier-backend  | 2026-08-10T09:00:03.788Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:00:08.363Z  INFO 1 --- [nio-8082-exec-6] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:03:03.022Z  INFO 1 --- [nio-8082-exec-1] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:03:10.826Z  INFO 1 --- [nio-8082-exec-5] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:06:04.526Z  INFO 1 --- [nio-8082-exec-1] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:06:11.067Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:12:58.805Z  INFO 1 --- [nio-8082-exec-9] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:13:06.416Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:15:03.839Z  INFO 1 --- [nio-8082-exec-5] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:15:08.663Z  INFO 1 --- [nio-8082-exec-8] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:18:03.804Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:18:08.548Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:21:03.655Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:21:08.344Z  INFO 1 --- [nio-8082-exec-6] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:24:03.414Z  INFO 1 --- [nio-8082-exec-2] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:24:08.130Z  INFO 1 --- [nio-8082-exec-5] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:27:01.564Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:27:06.792Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:30:04.458Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:30:10.286Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:33:03.324Z  INFO 1 --- [nio-8082-exec-9] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:33:09.046Z  INFO 1 --- [nio-8082-exec-2] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:33:39.753Z  INFO 1 --- [essageBroker-11] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 12, active threads = 1, queued tasks = 2, completed tasks = 34]
+supplier-backend  | 2026-08-10T09:36:02.575Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:36:07.236Z  INFO 1 --- [nio-8082-exec-1] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:39:02.116Z  INFO 1 --- [nio-8082-exec-7] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:39:06.745Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:42:02.381Z  INFO 1 --- [nio-8082-exec-6] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:42:07.454Z  INFO 1 --- [nio-8082-exec-9] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:45:03.564Z  INFO 1 --- [nio-8082-exec-5] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:45:10.220Z  INFO 1 --- [nio-8082-exec-9] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:48:02.722Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:48:07.434Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:51:02.512Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:51:07.161Z  INFO 1 --- [nio-8082-exec-6] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:54:03.617Z  INFO 1 --- [nio-8082-exec-2] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:54:08.201Z  INFO 1 --- [nio-8082-exec-5] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:57:04.912Z  INFO 1 --- [nio-8082-exec-1] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T09:57:09.882Z  INFO 1 --- [nio-8082-exec-5] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:00:03.689Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:00:09.294Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:03:02.703Z  INFO 1 --- [nio-8082-exec-9] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:03:07.259Z  INFO 1 --- [nio-8082-exec-2] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:03:39.758Z  INFO 1 --- [MessageBroker-2] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 12, active threads = 1, queued tasks = 2, completed tasks = 45]
+supplier-backend  | 2026-08-10T10:06:04.140Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:06:08.638Z  INFO 1 --- [nio-8082-exec-1] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:09:01.905Z  INFO 1 --- [nio-8082-exec-7] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:09:06.457Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:12:03.981Z  INFO 1 --- [nio-8082-exec-6] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:12:08.612Z  INFO 1 --- [nio-8082-exec-9] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:15:01.792Z  INFO 1 --- [nio-8082-exec-5] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:15:06.446Z  INFO 1 --- [nio-8082-exec-8] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:18:02.031Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:18:06.754Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:21:04.352Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:21:08.974Z  INFO 1 --- [nio-8082-exec-6] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:24:02.449Z  INFO 1 --- [nio-8082-exec-2] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:24:07.106Z  INFO 1 --- [nio-8082-exec-5] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:27:46.617Z  INFO 1 --- [nio-8082-exec-1] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:27:51.542Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:30:44.815Z  INFO 1 --- [io-8082-exec-10] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:30:49.525Z  INFO 1 --- [nio-8082-exec-3] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:33:02.419Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:33:07.035Z  INFO 1 --- [nio-8082-exec-1] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:34:22.107Z  INFO 1 --- [MessageBroker-7] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 12, active threads = 1, queued tasks = 2, completed tasks = 56]
+supplier-backend  | 2026-08-10T10:36:04.159Z  INFO 1 --- [nio-8082-exec-8] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:36:09.849Z  INFO 1 --- [nio-8082-exec-1] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:39:04.007Z  INFO 1 --- [nio-8082-exec-7] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:39:08.594Z  INFO 1 --- [io-8082-exec-10] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:42:02.730Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:42:07.242Z  INFO 1 --- [nio-8082-exec-8] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:45:04.568Z  INFO 1 --- [nio-8082-exec-4] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:45:09.166Z  INFO 1 --- [nio-8082-exec-8] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:48:03.427Z  INFO 1 --- [nio-8082-exec-3] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:48:10.066Z  INFO 1 --- [nio-8082-exec-7] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:51:02.096Z  INFO 1 --- [nio-8082-exec-2] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:51:06.766Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:54:04.178Z  INFO 1 --- [nio-8082-exec-2] .t.p.b.s.c.ItemStockRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b with OUTBOUND from BPNL4444444444XX
+supplier-backend  | 2026-08-10T10:54:08.945Z  INFO 1 --- [nio-8082-exec-4] e.t.p.b.d.c.DeliveryRequestApiController : Received request for 860fb504-b884-4009-9313-c6fb6cdc776b from BPNL4444444444XX

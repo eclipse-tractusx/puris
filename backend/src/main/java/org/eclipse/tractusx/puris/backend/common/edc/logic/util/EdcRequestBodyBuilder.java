@@ -495,7 +495,7 @@ public class EdcRequestBodyBuilder {
         var dctTypeObject = MAPPER.createObjectNode();
         propertiesObject.set("dct:type", dctTypeObject);
         dctTypeObject.put("@id", "cx-taxo:DemandAndCapacityNotificationApi");
-        propertiesObject.put("cx-common:version", "1.0");
+        propertiesObject.put("cx-common:version", "3.0");
         body.set("dataAddress", createDataAddressObject(endpoint, "true"));
         return body;
     }

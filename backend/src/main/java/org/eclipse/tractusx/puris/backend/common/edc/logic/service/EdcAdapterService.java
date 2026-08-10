@@ -209,7 +209,7 @@ public class EdcAdapterService {
             AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of Demand and Capacity Notification 2.0.0 asset successful {}", (assetRegistration = registerNotificationAsset(
+        log.info("Registration of Demand and Capacity Notification 3.0.0 asset successful {}", (assetRegistration = registerNotificationAsset(
             variablesService.getNotificationApiAssetId(),
             variablesService.getNotificationEndpoint()
         )));
@@ -1318,7 +1318,7 @@ public class EdcAdapterService {
 
     public boolean negotiateContractForNotification(Partner partner, AssetType type) {
         Map<String, String> equalFilters = new HashMap<>();
-        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "1.0");
+        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
         equalFilters.put(
             "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
             JsonLdConstants.CX_TAXO_NAMESPACE + "DemandAndCapacityNotificationApi"

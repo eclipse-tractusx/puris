@@ -20,28 +20,26 @@ body:json {
     {
         "header": {
             "messageId": "72ca2c2a-799d-4a60-84e6-eb31e4a84255",
-            "context": "CX-DemandAndCapacityNotificationAPI-Receive:2.0.0",
+            "context": "CX-DemandAndCapacityNotificationAPI-Receive:3.0.0",
             "receiverBpn": "{{SUPPLIER_BPNL}}",
             "senderBpn": "{{NOTIFICATION_FORWARDING_PARTNER_BPNL}}",
             "sentDateTime": "2023-06-19T21:24:00+07:00",
             "version": "3.0.0"
         },
         "content": {
-            "demandAndCapacityNotification": {
-                "notificationId": "f64074d8-8b81-443c-81d9-773a3de3fb3e",
-                "sourceDisruptionId": "c69cb3e4-16ad-43c3-82b9-0deac75ecf9e",
-                "text": "Capacity reduction due to ongoing strike at a supplier location.",
-                "effect": "capacity-reduction",
-                "leadingRootCause": "strike",
-                "status": "open",
-                "contentChangedAt": "2023-12-13T15:00:00+01:00",
-                "startDateOfEffect": "2023-12-13T15:00:00+01:00",
-                "expectedEndDateOfEffect": "2025-12-17T08:00:00+01:00",
-                "affectedSitesSender": [],
-                "affectedSitesRecipient": [],
-                "materialsAffected": [],
-                "relatedNotificationIds": [ "d9452f24-3bf3-4134-b3eb-68858f1b2362" ]
-            }
+            "notificationId": "f64074d8-8b81-443c-81d9-773a3de3fb3e",
+            "sourceDisruptionId": "c69cb3e4-16ad-43c3-82b9-0deac75ecf9e",
+            "text": "Capacity reduction due to ongoing strike at a supplier location.",
+            "effect": "capacity-reduction",
+            "leadingRootCause": "strike",
+            "status": "open",
+            "contentChangedAt": "2023-12-13T15:00:00+01:00",
+            "startDateOfEffect": "2023-12-13T15:00:00+01:00",
+            "expectedEndDateOfEffect": "2025-12-17T08:00:00+01:00",
+            "affectedSitesSender": [],
+            "affectedSitesRecipient": [],
+            "materialsAffected": [],
+            "relatedNotificationIds": [ "d9452f24-3bf3-4134-b3eb-68858f1b2362" ]
         }
     }
 }

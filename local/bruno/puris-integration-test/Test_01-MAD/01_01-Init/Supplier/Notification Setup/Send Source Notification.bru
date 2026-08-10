@@ -20,28 +20,27 @@ body:json {
     {
         "header": {
             "messageId": "3b4edc05-e214-47a1-b0c2-1d831cdd9ba9",
-            "context": "CX-DemandAndCapacityNotificationAPI-Receive:2.0.0",
+            "context": "CX-DemandAndCapacityNotificationAPI-Receive:3.0.0",
             "receiverBpn": "{{SUPPLIER_BPNL}}",
             "senderBpn": "{{NOTIFICATION_SOURCE_PARTNER_BPNL}}",
             "sentDateTime": "2023-06-19T21:24:00+07:00",
             "version": "3.0.0"
         },
         "content": {
-            "demandAndCapacityNotification": {
-                "notificationId": "d9452f24-3bf3-4134-b3eb-68858f1b2362",
-                "sourceDisruptionId": "c69cb3e4-16ad-43c3-82b9-0deac75ecf9e",
-                "text": "Capacity reduction due to ongoing strike.",
-                "effect": "capacity-reduction",
-                "leadingRootCause": "strike",
-                "status": "open",
-                "contentChangedAt": "2023-12-13T15:00:00+01:00",
-                "startDateOfEffect": "2023-12-13T15:00:00+01:00",
-                "expectedEndDateOfEffect": "2025-12-17T08:00:00+01:00",
-                "affectedSitesSender": [],
-                "affectedSitesRecipient": [],
-                "materialsAffected": [],
-                "relatedNotificationIds": []
-            }
+            "notificationId": "d9452f24-3bf3-4134-b3eb-68858f1b2362",
+            "sourceDisruptionId": "c69cb3e4-16ad-43c3-82b9-0deac75ecf9e",
+            "text": "Capacity reduction due to ongoing strike.",
+            "effect": "capacity-reduction",
+            "leadingRootCause": "strike",
+            "status": "open",
+            "contentChangedAt": "2023-12-13T15:00:00+01:00",
+            "startDateOfEffect": "2023-12-13T15:00:00+01:00",
+            "expectedEndDateOfEffect": "2025-12-17T08:00:00+01:00",
+            "affectedSitesSender": [],
+            "affectedSitesRecipient": [],
+            "materialsAffected": [],
+            "relatedNotificationIds": []
+            
         }
     }
 }
