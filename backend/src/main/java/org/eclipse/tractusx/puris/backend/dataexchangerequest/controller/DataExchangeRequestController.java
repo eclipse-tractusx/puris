@@ -35,6 +35,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDa
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.dto.DataExchangeRequestDto;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestApiService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.DataExchangeRequestForwardService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.ReportedDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
@@ -48,6 +49,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -81,6 +83,8 @@ public class DataExchangeRequestController {
     @Autowired
     private DataExchangeApprovalController dataExchangeApprovalController;
     @Autowired
+    private DataExchangeRequestForwardService dataExchangeForwardService;
+    @Autowired
     private ModelMapper modelMapper;
     @Autowired
     private ExecutorService executorService;
@@ -113,12 +117,11 @@ public class DataExchangeRequestController {
 
         OwnDataExchangeRequest ownDataExchangeRequest = modelMapper.map(requestDto, OwnDataExchangeRequest.class);
         ownDataExchangeRequest.setNotification(notification);
+        ownDataExchangeRequest.setRelatedDataExchangeRequest(null);
         try {
             OwnDataExchangeRequest newEntity = ownDataExchangeRequestService.create(ownDataExchangeRequest);
             executorService.submit(() -> dataExchangeRequestApiService.sendDataExchangeRequest(newEntity, partner));
-            DataExchangeRequestDto dto = modelMapper.map(newEntity, DataExchangeRequestDto.class);
-            dto.setNotificationId(newEntity.getNotification().getNotificationId());
-            return dto;
+            return convertToDto(newEntity);
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Request already exists.");
         } catch (IllegalArgumentException e) {
@@ -139,19 +142,38 @@ public class DataExchangeRequestController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public DataExchangeApprovalDto createDataExchangeApproval(@PathVariable UUID id, @RequestBody DataExchangeApprovalDto requestDto) {
-        ReportedDataExchangeRequest reportedRequest =
-                reportedDataExchangeRequestService.findById(id);
+    public DataExchangeApprovalDto createDataExchangeApproval(@PathVariable UUID id, @RequestParam(name = "forward", defaultValue = "false") boolean forward, @RequestBody DataExchangeApprovalDto requestDto) {
+        ReportedDataExchangeRequest reportedRequest = reportedDataExchangeRequestService.findById(id);
 
         if (reportedRequest == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referenced reported data exchange request does not exist.");
         }
         Partner partner = reportedRequest.getNotification().getPartner();
+
+        List<DataExchangeRequestForwardService.ForwardTarget> targets = List.of();
+        if (forward) {
+            targets = dataExchangeForwardService.resolveForwardTargets(reportedRequest);
+            if (targets.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot forward: no related notifications could be resolved for this request.");
+            }
+        }
+
+
         OwnDataExchangeApproval ownDataExchangeApproval = modelMapper.map(requestDto, OwnDataExchangeApproval.class);
         ownDataExchangeApproval.setDataExchangeRequest(reportedRequest);
+        ownDataExchangeApproval.setFinalized(!forward);
 
         try {
             OwnDataExchangeApproval newEntity = ownDataExchangeApprovalService.create(ownDataExchangeApproval);
+
+            if (forward) {
+                for (OwnDataExchangeRequest fwd : dataExchangeForwardService.createForwardedRequests(reportedRequest, targets)) {
+                    Partner target = fwd.getNotification().getPartner();
+                    executorService.submit(() -> dataExchangeRequestApiService.sendDataExchangeRequest(fwd, target));
+                }
+            }
+
             executorService.submit(() -> dataExchangeApprovalApiService.sendDataExchangeApproval(newEntity, partner));
             DataExchangeApprovalDto responseDto = modelMapper.map(newEntity, DataExchangeApprovalDto.class);
             responseDto.setDataExchangeRequestId(reportedRequest.getRequestId());
@@ -198,6 +220,7 @@ public class DataExchangeRequestController {
     private DataExchangeRequestDto convertToDto(OwnDataExchangeRequest entity) {
         DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
         dto.setNotificationId(entity.getNotification().getNotificationId());
+        dto.setRelatedDataExchangeRequestId(entity.getRelatedDataExchangeRequest() != null ? entity.getRelatedDataExchangeRequest().getRequestId() : null);
         return dto;
     }
 
