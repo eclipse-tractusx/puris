@@ -574,7 +574,7 @@ backend:
       # erp adapter will be sent (days)
       timelimit: 7
     # -- Configuration for the IRS adapter. The IRS adapter is used to send requests to the IRS for data exchange.
-    # The IRS is not part of the PURIS application and must be provided by the user. Please note that in addition to enabled = true, 
+    # The IRS is not part of the PURIS application and must be provided by the user. Please note that in addition to enabled = true,
     # the IRS url must be specified and the adminauthsecret must be set correctly for the IRS adapter to be active.
     irsadapter:
       # -- Toggles usage of the IRS adapter

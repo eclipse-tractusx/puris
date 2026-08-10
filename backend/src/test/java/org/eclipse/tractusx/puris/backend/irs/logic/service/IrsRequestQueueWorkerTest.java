@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,10 +36,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +73,7 @@ class IrsRequestQueueWorkerTest {
     private IrsQueuedRequest dueRequest(int attemptCount, int maxAttempts) {
         IrsQueuedRequest request = new IrsQueuedRequest();
         request.setUuid(UUID.randomUUID());
-        request.setMethod("POST");
+        request.setMethod(IrsQueuedRequestMethodEnumeration.POST);
         request.setPath("irs/policies");
         request.setBody("{}");
         request.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
@@ -101,7 +104,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueRequest(0, 5);
         stubDue(request);
 
-        when(irsRequestService.execute("POST", "irs/policies", null, "{}"))
+        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
             .thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
@@ -109,5 +112,38 @@ class IrsRequestQueueWorkerTest {
         assertThat(request.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.PENDING);
         assertThat(request.getAttemptCount()).isEqualTo(1);
         assertThat(request.getLastErrorMessage()).contains("adapter disabled");
+    }
+
+    @Test
+    void processDueRequests_OnDispatchExceptionWithNewlineMessage_SanitizesLastErrorMessageBeforeSaving() {
+        IrsQueuedRequest request = dueRequest(0, 5);
+        stubDue(request);
+
+        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+            .thenThrow(new IllegalStateException("line one\nline two"));
+
+        assertThatCode(worker::processDueRequests).doesNotThrowAnyException();
+
+        assertThat(request.getLastErrorMessage()).doesNotContain("\n").contains("line one", "line two");
+        verify(irsQueuedRequestRepository, times(1)).save(request);
+    }
+
+    @Test
+    void processDueRequests_OnFailedResponseWithNewlineBody_SanitizesLastErrorMessageBeforeSaving() {
+        IrsQueuedRequest request = dueRequest(0, 5);
+        stubDue(request);
+
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(500)
+            .responseBody("line one\nline two")
+            .successful(false)
+            .build();
+        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+            .thenReturn(response);
+
+        assertThatCode(worker::processDueRequests).doesNotThrowAnyException();
+
+        assertThat(request.getLastErrorMessage()).doesNotContain("\n").contains("line one", "line two");
+        verify(irsQueuedRequestRepository, times(1)).save(request);
     }
 }

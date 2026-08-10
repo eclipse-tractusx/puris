@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
@@ -57,7 +58,7 @@ public class IrsRequestQueueService {
 	 * {@code linkedEntityUuid}. Any request already {@code PENDING} for that same linked entity is
 	 * cancelled first, so at most one live request per entity is ever in flight.
 	 *
-	 * @param method    the HTTP method ("GET", "POST", "PUT" or "DELETE")
+	 * @param method    the HTTP method
 	 * @param path      the IRS-relative path to call
 	 * @param jsonBody  the resolved JSON request body, or {@code null} if not applicable
 	 * @param queryParams the query parameters to send, or {@code null} if none
@@ -65,7 +66,7 @@ public class IrsRequestQueueService {
 	 * @param linkedEntityUuid the UUID of the entity this request originated from, or {@code null}
 	 * @return the persisted queued request, or {@code null} if the IRS adapter is disabled
 	 */
-	public IrsQueuedRequest enqueue(String method, String path, String jsonBody, Map<String, String> queryParams,
+	public IrsQueuedRequest enqueue(IrsQueuedRequestMethodEnumeration method, String path, String jsonBody, Map<String, String> queryParams,
 			IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid) {
 		if (!irsRequestService.isEnabled()) {
 			log.info("IRS adapter is disabled. Skipping enqueue of {} {}", method, path);

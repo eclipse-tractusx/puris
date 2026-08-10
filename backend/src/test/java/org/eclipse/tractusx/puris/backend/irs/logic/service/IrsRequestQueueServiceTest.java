@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
@@ -69,7 +70,7 @@ class IrsRequestQueueServiceTest {
     void enqueue_WhenDisabled_ReturnsNullWithoutPersisting() {
         when(irsRequestService.isEnabled()).thenReturn(false);
 
-        IrsQueuedRequest result = irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, "{}",
+        IrsQueuedRequest result = irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, "{}",
                 null,
                 IrsQueuedRequestTypeEnumeration.POLICY_CREATE, UUID.randomUUID());
 
@@ -81,12 +82,12 @@ class IrsRequestQueueServiceTest {
     void enqueue_WhenEnabled_PersistsPendingRequest() {
         UUID jobUuid = UUID.randomUUID();
 
-        IrsQueuedRequest result = irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH,
+        IrsQueuedRequest result = irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH,
                 "{\"a\":1}", null,
                 IrsQueuedRequestTypeEnumeration.POLICY_CREATE, jobUuid);
 
         assertThat(result).isNotNull();
-        assertThat(result.getMethod()).isEqualTo("POST");
+        assertThat(result.getMethod()).isEqualTo(IrsQueuedRequestMethodEnumeration.POST);
         assertThat(result.getPath()).isEqualTo(IrsAdapterConfiguration.POLICIES_PATH);
         assertThat(result.getBody()).isEqualTo("{\"a\":1}");
         assertThat(result.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.PENDING);
@@ -102,7 +103,7 @@ class IrsRequestQueueServiceTest {
     void enqueue_WithQueryParams_SerializesToJson() {
         UUID jobUuid = UUID.randomUUID();
 
-        IrsQueuedRequest result = irsRequestQueueService.enqueue("DELETE", IrsAdapterConfiguration.POLICIES_PATH,
+        IrsQueuedRequest result = irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.DELETE, IrsAdapterConfiguration.POLICIES_PATH,
                 null, Map.of("openingId", "abc"), IrsQueuedRequestTypeEnumeration.POLICY_CREATE, jobUuid);
 
         assertThat(result.getQueryParams()).contains("openingId").contains("abc");
@@ -120,7 +121,7 @@ class IrsRequestQueueServiceTest {
                 IrsQueuedRequestTypeEnumeration.POLICY_CREATE, jobUuid, IrsQueuedRequestStatusEnumeration.PENDING))
                 .thenReturn(List.of(existingPending));
 
-        irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, "{}", null,
+        irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, "{}", null,
                 IrsQueuedRequestTypeEnumeration.POLICY_CREATE, jobUuid);
 
         assertThat(existingPending.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.CANCELLED);
@@ -139,7 +140,7 @@ class IrsRequestQueueServiceTest {
                 IrsQueuedRequestTypeEnumeration.POLICY_CREATE, grantUuid, IrsQueuedRequestStatusEnumeration.PENDING))
                 .thenReturn(List.of(existingPending));
 
-        irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, "{}", null,
+        irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, "{}", null,
                 IrsQueuedRequestTypeEnumeration.POLICY_CREATE, grantUuid);
 
         assertThat(existingPending.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.CANCELLED);

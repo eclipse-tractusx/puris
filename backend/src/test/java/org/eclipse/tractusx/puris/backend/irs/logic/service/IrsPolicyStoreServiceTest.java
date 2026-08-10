@@ -20,6 +20,7 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,14 +70,14 @@ class IrsPolicyStoreServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(irsRequestBodybuilder.buildPurisFrameworkPolicyCreationRequestBody()).thenReturn(body);
-        when(irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
+        when(irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null)).thenReturn(queuedRequest);
 
         IrsQueuedRequest result = irsPolicyStoreService.createPurisFrameworkPolicy();
 
         assertThat(result).isEqualTo(queuedRequest);
         verify(irsRequestBodybuilder, times(1)).buildPurisFrameworkPolicyCreationRequestBody();
-        verify(irsRequestQueueService, times(1)).enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
     }
 
@@ -97,14 +98,14 @@ class IrsPolicyStoreServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(irsRequestBodybuilder.buildDtrFrameworkPolicyCreationRequestBody()).thenReturn(body);
-        when(irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
+        when(irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null)).thenReturn(queuedRequest);
 
         IrsQueuedRequest result = irsPolicyStoreService.createDtrFrameworkPolicy();
 
         assertThat(result).isEqualTo(queuedRequest);
         verify(irsRequestBodybuilder, times(1)).buildDtrFrameworkPolicyCreationRequestBody();
-        verify(irsRequestQueueService, times(1)).enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
     }
 }

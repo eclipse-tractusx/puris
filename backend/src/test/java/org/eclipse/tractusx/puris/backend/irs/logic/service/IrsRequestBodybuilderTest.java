@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,6 +69,8 @@ class IrsRequestBodybuilderTest {
         JsonNode payload = irsRequestBodybuilder.buildFrameworkPolicyCreationRequestBody("some-policy-id", "some-purpose").get("payload");
 
         assertThat(payload.get("@context").get("odrl").asText()).isEqualTo(JsonLdConstants.ODRL_NAMESPACE);
+        assertThat(payload.get("@context").get("edc").asText()).isEqualTo(JsonLdConstants.EDC_NAMESPACE);
+        assertThat(payload.get("@context").get("cx-policy").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_CONTEXT);
         assertThat(payload.get("@id").asText()).isEqualTo("some-policy-id");
     }
 
@@ -76,25 +79,25 @@ class IrsRequestBodybuilderTest {
         JsonNode payload = irsRequestBodybuilder.buildFrameworkPolicyCreationRequestBody("some-policy-id", "some-purpose").get("payload");
         JsonNode permission = payload.get("policy").get("odrl:permission").get(0);
 
-        assertThat(permission.get("action").asText()).isEqualTo("use");
+        assertThat(permission.get("odrl:action").asText()).isEqualTo("use");
     }
 
     @Test
     void buildFrameworkPolicyCreationRequestBody_ConstrainsOnFrameworkAgreementAndUsagePurpose() {
         JsonNode payload = irsRequestBodybuilder.buildFrameworkPolicyCreationRequestBody("some-policy-id", "some-purpose").get("payload");
-        JsonNode andArray = payload.get("policy").get("odrl:permission").get(0).get("constraint").get("and");
+        JsonNode andArray = payload.get("policy").get("odrl:permission").get(0).get("odrl:constraint").get("odrl:and");
 
         assertThat(andArray).hasSize(2);
 
         JsonNode frameworkAgreementConstraint = andArray.get(0);
-        assertThat(frameworkAgreementConstraint.get("leftOperand").asText()).isEqualTo("FrameworkAgreement");
-        assertThat(frameworkAgreementConstraint.get("operator").get("@id").asText()).isEqualTo("odrl:eq");
-        assertThat(frameworkAgreementConstraint.get("rightOperand").asText()).isEqualTo(FRAMEWORK_AGREEMENT_WITH_VERSION);
+        assertThat(frameworkAgreementConstraint.get("odrl:leftOperand").asText()).isEqualTo("cx-policy:FrameworkAgreement");
+        assertThat(frameworkAgreementConstraint.get("odrl:operator").get("@id").asText()).isEqualTo("odrl:eq");
+        assertThat(frameworkAgreementConstraint.get("odrl:rightOperand").asText()).isEqualTo(FRAMEWORK_AGREEMENT_WITH_VERSION);
 
         JsonNode usagePurposeConstraint = andArray.get(1);
-        assertThat(usagePurposeConstraint.get("leftOperand").asText()).isEqualTo("UsagePurpose");
-        assertThat(usagePurposeConstraint.get("operator").get("@id").asText()).isEqualTo("odrl:eq");
-        assertThat(usagePurposeConstraint.get("rightOperand").asText()).isEqualTo("some-purpose");
+        assertThat(usagePurposeConstraint.get("odrl:leftOperand").asText()).isEqualTo("cx-policy:UsagePurpose");
+        assertThat(usagePurposeConstraint.get("odrl:operator").get("@id").asText()).isEqualTo("odrl:eq");
+        assertThat(usagePurposeConstraint.get("odrl:rightOperand").asText()).isEqualTo("some-purpose");
     }
 
     // --- buildPurisFrameworkPolicyCreationRequestBody ---
@@ -102,10 +105,10 @@ class IrsRequestBodybuilderTest {
     @Test
     void buildPurisFrameworkPolicyCreationRequestBody_UsesPurisPolicyIdAndPurpose() {
         JsonNode payload = irsRequestBodybuilder.buildPurisFrameworkPolicyCreationRequestBody().get("payload");
-        JsonNode andArray = payload.get("policy").get("odrl:permission").get(0).get("constraint").get("and");
+        JsonNode andArray = payload.get("policy").get("odrl:permission").get(0).get("odrl:constraint").get("odrl:and");
 
         assertThat(payload.get("@id").asText()).isEqualTo("puris-framework-policy");
-        assertThat(andArray.get(1).get("rightOperand").asText()).isEqualTo(PURPOSE_WITH_VERSION);
+        assertThat(andArray.get(1).get("odrl:rightOperand").asText()).isEqualTo(PURPOSE_WITH_VERSION);
     }
 
     // --- buildDtrFrameworkPolicyCreationRequestBody ---
@@ -113,9 +116,9 @@ class IrsRequestBodybuilderTest {
     @Test
     void buildDtrFrameworkPolicyCreationRequestBody_UsesDtrPolicyIdAndPurpose() {
         JsonNode payload = irsRequestBodybuilder.buildDtrFrameworkPolicyCreationRequestBody().get("payload");
-        JsonNode andArray = payload.get("policy").get("odrl:permission").get(0).get("constraint").get("and");
+        JsonNode andArray = payload.get("policy").get("odrl:permission").get(0).get("odrl:constraint").get("odrl:and");
 
         assertThat(payload.get("@id").asText()).isEqualTo("dtr-framework-policy");
-        assertThat(andArray.get(1).get("rightOperand").asText()).isEqualTo("cx.core.digitalTwinRegistry:1");
+        assertThat(andArray.get(1).get("odrl:rightOperand").asText()).isEqualTo("cx.core.digitalTwinRegistry:1");
     }
 }

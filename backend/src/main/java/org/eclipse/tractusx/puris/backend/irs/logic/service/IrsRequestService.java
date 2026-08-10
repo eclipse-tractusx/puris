@@ -28,6 +28,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -49,23 +50,23 @@ public class IrsRequestService {
 	}
 
 	public IrsResponse get(String path, Map<String, String> queryParams) {
-		return execute("GET", path, queryParams, null);
+		return execute(IrsQueuedRequestMethodEnumeration.GET, path, queryParams, null);
 	}
 
 	public IrsResponse post(String path, String jsonBody) {
-		return execute("POST", path, null, jsonBody);
+		return execute(IrsQueuedRequestMethodEnumeration.POST, path, null, jsonBody);
 	}
 
 	public IrsResponse put(String path, String jsonBody) {
-		return execute("PUT", path, null, jsonBody);
+		return execute(IrsQueuedRequestMethodEnumeration.PUT, path, null, jsonBody);
 	}
 
 	public IrsResponse delete(String path, Map<String, String> queryParams) {
-		return execute("DELETE", path, queryParams, null);
+		return execute(IrsQueuedRequestMethodEnumeration.DELETE, path, queryParams, null);
 	}
 
 	protected IrsResponse execute(
-		String method,
+		IrsQueuedRequestMethodEnumeration method,
 		String path,
 		Map<String, String> queryParams,
 		String jsonBody
@@ -78,12 +79,12 @@ public class IrsRequestService {
 		requestBuilder.header(irsAdapterConfiguration.getIrsAdapterAuthKey(), irsAdapterConfiguration.getIrsAdapterAuthSecret());
 
 		switch (method) {
-			case "GET" -> requestBuilder.get();
-			case "DELETE" -> requestBuilder.delete();
-			case "POST", "PUT" -> {
+			case GET -> requestBuilder.get();
+			case DELETE -> requestBuilder.delete();
+			case POST, PUT -> {
 				String payload = jsonBody == null ? "{}" : jsonBody;
 				RequestBody body = RequestBody.create(payload, JSON_MEDIA_TYPE);
-				if ("POST".equals(method)) {
+				if (method == IrsQueuedRequestMethodEnumeration.POST) {
 					requestBuilder.post(body);
 				} else {
 					requestBuilder.put(body);
@@ -109,7 +110,7 @@ public class IrsRequestService {
 		}
 	}
 
-	private void ensureIrsAdapterEnabled(String method, String path) {
+	private void ensureIrsAdapterEnabled(IrsQueuedRequestMethodEnumeration method, String path) {
 		if (!isEnabled()) {
 			String message = "IRS integration is disabled. Skipping HTTP " + method + " call to " + path;
 			log.warn(message);

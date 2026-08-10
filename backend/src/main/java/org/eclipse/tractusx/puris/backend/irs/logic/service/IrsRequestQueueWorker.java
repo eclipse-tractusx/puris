@@ -102,21 +102,21 @@ public class IrsRequestQueueWorker {
 			response = dispatch(request);
 		} catch (Exception e) {
 			response = null;
-			request.setLastErrorMessage(e.getMessage());
+			request.setLastErrorMessage(sanitizeForStorage(e.getMessage()));
 		}
 
 		boolean successful = response != null && response.isSuccessful();
 
 		if (successful) {
 			request.setStatus(IrsQueuedRequestStatusEnumeration.SUCCEEDED);
-			updateLinkedEntity(request, true);
+			updateLinkedEntity(request);
 		} else {
 			if (response != null) {
-				request.setLastErrorMessage("HTTP " + response.getStatusCode() + ": " + response.getResponseBody());
+				request.setLastErrorMessage(sanitizeForStorage("HTTP " + response.getStatusCode() + ": " + response.getResponseBody()));
 			}
 			if (request.getAttemptCount() >= request.getMaxAttempts()) {
 				request.setStatus(IrsQueuedRequestStatusEnumeration.FAILED);
-				updateLinkedEntity(request, false);
+				updateLinkedEntity(request);
 			} else {
 				request.setNextAttemptAt(Instant.now().plusSeconds(computeBackoffSeconds(request.getAttemptCount())));
 			}
@@ -135,7 +135,7 @@ public class IrsRequestQueueWorker {
 		}
 	}
 
-	private void updateLinkedEntity(IrsQueuedRequest request, boolean successful) {
+	private void updateLinkedEntity(IrsQueuedRequest request) {
 		if (request.getLinkedEntityUuid() == null) {
 			return;
 		}
@@ -150,6 +150,25 @@ public class IrsRequestQueueWorker {
 		double delay = irsAdapterConfiguration.getQueueInitialRetryDelaySeconds()
 			* Math.pow(irsAdapterConfiguration.getQueueBackoffMultiplier(), attemptCount - 1);
 		return Math.min((long) delay, irsAdapterConfiguration.getQueueMaxRetryDelaySeconds());
+	}
+
+	/**
+	 * Replaces runs of vertical whitespace (the characters
+	 * {@code PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING} excludes) with a single space
+	 * and trims the result, so the value satisfies that pattern before being stored in
+	 * {@link IrsQueuedRequest#getLastErrorMessage()}. Messages sourced from exceptions or raw IRS
+	 * response bodies can otherwise contain newlines, which would fail that constraint at save
+	 * time and leave the request's attempt never recorded.
+	 *
+	 * @return the sanitized, non-blank message, or {@code null} if {@code raw} is {@code null} or
+	 *         blank after sanitization
+	 */
+	private String sanitizeForStorage(String raw) {
+		if (raw == null) {
+			return null;
+		}
+		String sanitized = raw.replaceAll("[\\n\\x0B\\f\\r\\x85\\u2028\\u2029]+", " ").trim();
+		return sanitized.isEmpty() ? null : sanitized;
 	}
 
 	private Map<String, String> deserializeQueryParams(String queryParams) {

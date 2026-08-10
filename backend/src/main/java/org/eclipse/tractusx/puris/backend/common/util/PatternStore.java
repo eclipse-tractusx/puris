@@ -119,5 +119,18 @@ public class PatternStore {
      */
     public final static Pattern URN_OR_UUID_PATTERN = Pattern.compile(URN_OR_UUID_STRING);
 
+    /**
+     * Contains a Java-Regex-String that matches a relative API path made up of one or more
+     * slash-separated segments of letters, digits and hyphens, e.g. "irs/policies" or
+     * "irs/recursive/chain-openings/grants". Disallows a leading or trailing slash, empty/double
+     * slashes, whitespace, and "."/".." traversal segments.
+     */
+    public final static String RELATIVE_PATH_STRING = "^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*(/[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*)*$";
+
+    /**
+     * Contains a Pattern that matches a relative API path.
+     * It is constructed from the RELATIVE_PATH_STRING constant.
+     */
+    public final static Pattern RELATIVE_PATH_PATTERN = Pattern.compile(RELATIVE_PATH_STRING);
 
 }

@@ -21,6 +21,8 @@ package org.eclipse.tractusx.puris.backend.irs.domain.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+
 import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,6 +30,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,15 +57,19 @@ public class IrsQueuedRequest {
     @GeneratedValue
     private UUID uuid;
 
-    private String method;
+    @Enumerated(EnumType.STRING)
+    private IrsQueuedRequestMethodEnumeration method;
 
+    @Pattern(regexp = PatternStore.RELATIVE_PATH_STRING)
     private String path;
 
     @Nullable
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @Column(columnDefinition = "TEXT")
     private String body;
 
     @Nullable
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @Column(columnDefinition = "TEXT")
     private String queryParams;
 
@@ -81,6 +88,7 @@ public class IrsQueuedRequest {
     private Instant createdAt;
 
     @Nullable
+    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     @Column(columnDefinition = "TEXT")
     private String lastErrorMessage;
 

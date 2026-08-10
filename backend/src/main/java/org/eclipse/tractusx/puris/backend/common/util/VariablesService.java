@@ -321,12 +321,6 @@ public class VariablesService {
      */
     private String edcDataplanePublicUrl;
 
-    @Value("${puris.irsadapter.enabled}")
-    /**
-     * A flag that signals whether the IRS adapter is enabled or not.
-     */
-    private boolean irsAdapterEnabled;
-
     @Value("${own.bpnl}")
     /**
      * The BPNL that was assigned to you.
