@@ -19,6 +19,7 @@ The **need for configuration updates** is **marked bold**.
   - Added Data exchange approval edc integration ([#1173](https://github.com/eclipse-tractusx/puris/pull/1173))
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
+  - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
 
 ### Changed
 
