@@ -311,3 +311,82 @@ databaseChangeLog:
             referencedTableName: own_data_exchange_request
             referencedColumnNames: uuid
             constraintName: fk_reported_data_exchange_approval_data_exchange_request
+  - changeSet:
+      id: "6"
+      author: ReneSchroederLJ
+      changes:
+        - createTable:
+            tableName: irs_queued_request
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: irs_queued_request_pkey
+              - column:
+                  name: method
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: body
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: query_params
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: attempt_count
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_attempts
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: next_attempt_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_attempt_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_error_message
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: linked_entity_uuid
+                  type: UUID
+                  constraints:
+                    nullable: true

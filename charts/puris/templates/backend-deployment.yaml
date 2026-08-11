@@ -229,6 +229,31 @@ spec:
               value: "{{ .Values.backend.puris.erpadapter.timelimit }}"
             - name: PURIS_ERPADAPTER_REFRESHINTERVAL
               value: "{{ .Values.backend.puris.erpadapter.refreshinterval }}"
+            {{- with .Values.backend.puris }}
+            {{- if and .irsadapter .irsadapter.enabled .irsadapter.url .irsadapter.adminauthsecret }}
+            - name: PURIS_IRSADAPTER_ENABLED
+              value: "{{ .irsadapter.enabled }}"
+            - name: PURIS_IRSADAPTER_URL
+              value: "{{ .irsadapter.url }}"
+            - name: PURIS_IRSADAPTER_AUTHKEY
+              value: "{{ .irsadapter.authkey }}"
+            - name: PURIS_IRSADAPTER_ADMINAUTHSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .existingSecret }}"
+                  key: "puris-irsadapter-adminauthsecret"
+            - name: PURIS_IRSADAPTER_QUEUE_POLL_INTERVAL_SECONDS
+              value: "{{ .irsadapter.queue.pollintervalseconds | default 30 }}"
+            - name: PURIS_IRSADAPTER_QUEUE_MAX_ATTEMPTS
+              value: "{{ .irsadapter.queue.maxattempts | default 5 }}"
+            - name: PURIS_IRSADAPTER_QUEUE_INITIAL_RETRY_DELAY_SECONDS
+              value: "{{ .irsadapter.queue.initialretrydelayseconds | default 30 }}"
+            - name: PURIS_IRSADAPTER_QUEUE_BACKOFF_MULTIPLIER
+              value: "{{ .irsadapter.queue.backoffmultiplier | default 2 }}"
+            - name: PURIS_IRSADAPTER_QUEUE_MAX_RETRY_DELAY_SECONDS
+              value: "{{ .irsadapter.queue.maxretrydelayseconds | default 3600 }}"
+            {{- end }}
+            {{- end }}
             - name: PURIS_BATCH_PARTNERDATAUPDATE_ENABLED
               value: "{{ .Values.backend.puris.batch.partnerdataupdate.enabled }}"
             - name: PURIS_BATCH_PARTNERDATAUPDATE_CRON

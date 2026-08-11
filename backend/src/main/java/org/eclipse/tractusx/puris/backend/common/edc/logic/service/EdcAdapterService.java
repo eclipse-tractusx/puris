@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBu
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsPolicyStoreService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
@@ -67,6 +68,9 @@ public class EdcAdapterService {
 
     @Autowired
     private JsonLdUtils jsonLdUtils;
+
+    @Autowired
+    private IrsPolicyStoreService irsPolicyStoreService;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
@@ -378,6 +382,13 @@ public class EdcAdapterService {
                 }
                 return false;
             }
+            /** 
+             * if the IRS adapter is enabled the framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createPurisFrameworkPolicy();
+            }
             return true;
         } catch (Exception e) {
             log.error("Failed to register Framework Policy", e);
@@ -403,6 +414,13 @@ public class EdcAdapterService {
                     log.warn("Response: \n" + response.body().string());
                 }
                 return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the DTR framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createDtrFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
