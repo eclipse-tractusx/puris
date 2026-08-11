@@ -279,7 +279,7 @@ public class SupplyServiceTest {
             TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
-            DirectionCharacteristic.INBOUND,
+            DirectionEnum.INBOUND,
             numberOfDays
         )).thenReturn(inboundDeliveryQuantities);
 
@@ -287,7 +287,7 @@ public class SupplyServiceTest {
             TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
-            DirectionCharacteristic.INBOUND,
+            DirectionEnum.INBOUND,
             numberOfDays
         )).thenReturn(reportedInboundDeliveryQuantities);
 
@@ -365,7 +365,7 @@ public class SupplyServiceTest {
             TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
-            DirectionCharacteristic.OUTBOUND,
+            DirectionEnum.OUTBOUND,
             numberOfDays
         )).thenReturn(outboundDeliveryQuantities);
 
@@ -373,7 +373,7 @@ public class SupplyServiceTest {
             TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
-            DirectionCharacteristic.OUTBOUND,
+            DirectionEnum.OUTBOUND,
             numberOfDays
         )).thenReturn(reportedOutboundDeliveryQuantities);
 

@@ -42,7 +42,7 @@ public class DataExchangeRequestDto implements Serializable {
     private String requestId;
 
     @NotNull
-    private UUID notificationId;
+    private String notificationId;
 
     @NotNull
     private CriticalityEnumeration criticality;

@@ -64,7 +64,7 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
                 .toList();
     }
 
-    public final TEntity findByBpnlAndSourceDisruptionId(String bpnl, UUID sourceDisruptionId) {
+    public final TEntity findByBpnlAndSourceDisruptionId(String bpnl, String sourceDisruptionId) {
         return repository.findByPartnerBpnlAndSourceDisruptionId(bpnl, sourceDisruptionId).orElse(null);
     }
 
