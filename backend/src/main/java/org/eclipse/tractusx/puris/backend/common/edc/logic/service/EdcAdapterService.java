@@ -248,7 +248,9 @@ public class EdcAdapterService {
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
+        log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoLegacySubmodelAsset()));
+        result &= assetRegistration;
+        log.info("Registration of PartTypeInformation 2.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
         result &= assetRegistration;
         log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
@@ -275,7 +277,8 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
-        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
+        result &= createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
+        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeLegacySubmodelApiAssetId(), partner) && result;
     }
 
     /**
@@ -414,6 +417,11 @@ public class EdcAdapterService {
     private boolean registerDtrAsset() {
         var body = edcRequestBodyBuilder.buildDtrRegistrationBody();
         return sendAssetRegistrationRequest(body, "DTR");
+    }
+
+    private boolean registerPartTypeInfoLegacySubmodelAsset() {
+        var body = edcRequestBodyBuilder.buildPartTypeInfoLegacySubmodelRegistrationBody();
+        return sendAssetRegistrationRequest(body, variablesService.getPartTypeLegacySubmodelApiAssetId());
     }
 
     private boolean registerPartTypeInfoSubmodelAsset() {
@@ -856,6 +864,7 @@ public class EdcAdapterService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchPartTypeLegacySubmodelData(mpr);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
         };
         boolean failed = true;
@@ -1044,8 +1053,13 @@ public class EdcAdapterService {
         return fetchSubmodelData(mpr, semanticId, manufacturerPartId, manufacturerId);
     }
 
+    private SubmodelData fetchPartTypeLegacySubmodelData(MaterialPartnerRelation mpr) {
+        return fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID,
+            mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+    }
+
     private SubmodelData fetchPartTypeSubmodelData(MaterialPartnerRelation mpr) {
-        return fetchSubmodelData(mpr, "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation",
+        return fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID,
             mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
     }
 
@@ -1302,6 +1316,7 @@ public class EdcAdapterService {
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchPartTypeLegacySubmodelData(mpr);
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
@@ -1411,18 +1426,37 @@ public class EdcAdapterService {
     }
 
     /**
-     * This method will return the partnerCXId from the supplier partner and
-     * for the material that are contained in the given MaterialPartnerRelation.
+     * Returns the partner's CatenaX-Id for the material in the given MaterialPartnerRelation.
      * <p>
-     * If the partner is not a supplier for that material, we can't expect to find a
-     * result a that partner's PartType Submodel API.
+     * PartTypeInformation 2.0.0 is attempted first, since it is the version used by default.
+     * Only if the partner does not offer it, the legacy version 1.0.0 is used as a fallback.
      *
      * @param mpr the MaterialPartnerRelation
-     * @return the partner's CXid for that material
+     * @return the partner's CX Id for that material, or null if it could not be obtained
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
-        var data = getSubmodelFromPartner(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL, null, 1);
-        return data.get("catenaXId").asText();
+        String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL, "globalAssetId");
+        if (cxId != null) {
+            return cxId;
+        }
+        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0",
+            mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
+        return fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "catenaXId");
+    }
+
+    private String fetchCxId(MaterialPartnerRelation mpr, AssetType type, String cxIdProperty) {
+        try {
+            var data = getSubmodelFromPartner(mpr, type, null, 1);
+            if (data == null) {
+                return null;
+            }
+            var cxIdNode = data.get(cxIdProperty);
+            return cxIdNode == null ? null : cxIdNode.asText();
+        } catch (Exception e) {
+            log.warn("Could not obtain {} for {} from partner {}",
+                cxIdProperty, type, mpr.getPartner().getBpnl());
+            return null;
+        }
     }
 
     /**

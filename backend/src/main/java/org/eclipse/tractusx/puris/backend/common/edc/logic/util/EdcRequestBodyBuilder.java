@@ -323,6 +323,7 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", JsonLdConstants.EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", getPartTypeInfoLegacyAssetId());
         assetsSelector.put("operandRight", getPartTypeInfoAssetId());
         return body;
     }
@@ -527,6 +528,35 @@ public class EdcRequestBodyBuilder {
         return dataAddress;
     }
 
+    public JsonNode buildPartTypeInfoLegacySubmodelRegistrationBody() {
+        var body = getAssetRegistrationContext();
+        body.put("@id", getPartTypeInfoLegacyAssetId());
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", JsonLdConstants.CX_TAXO_NAMESPACE + "Submodel");
+        propertiesObject.put("cx-common:version", "3.0");
+        var semanticIdObject = MAPPER.createObjectNode();
+        propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
+        semanticIdObject.put("@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
+        var dataAddress = MAPPER.createObjectNode();
+        String url = variablesService.getParttypeInformationLegacyServerendpoint();
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyQueryParams", "false");
+        dataAddress.put("proxyMethod", "false");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", url);
+        dataAddress.put("authKey", "x-api-key");
+        dataAddress.put("authCode", variablesService.getApiKey());
+        body.set("dataAddress", dataAddress);
+        return body;
+    }
+
     public JsonNode buildPartTypeInfoSubmodelRegistrationBody() {
         var body = getAssetRegistrationContext();
         body.put("@id", getPartTypeInfoAssetId());
@@ -538,7 +568,7 @@ public class EdcRequestBodyBuilder {
         propertiesObject.put("cx-common:version", "3.0");
         var semanticIdObject = MAPPER.createObjectNode();
         propertiesObject.set("aas-semantics:semanticId", semanticIdObject);
-        semanticIdObject.put("@id", "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation");
+        semanticIdObject.put("@id", "urn:samm:io.catenax.part_type_information:2.0.0#PartTypeInformation");
         var dataAddress = MAPPER.createObjectNode();
         String url = variablesService.getParttypeInformationServerendpoint();
         if (!url.endsWith("/")) {
@@ -558,6 +588,10 @@ public class EdcRequestBodyBuilder {
 
     private String getDtrAssetId() {
         return "DigitalTwinRegistryId@" + variablesService.getOwnBpnl();
+    }
+
+    private String getPartTypeInfoLegacyAssetId() {
+        return variablesService.getPartTypeLegacySubmodelApiAssetId();
     }
 
     private String getPartTypeInfoAssetId() {

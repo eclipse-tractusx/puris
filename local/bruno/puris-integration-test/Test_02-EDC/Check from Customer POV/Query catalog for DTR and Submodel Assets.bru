@@ -53,7 +53,7 @@ tests {
   test("Verify response contains six data offers", function () {
       expect(contractOffers).to.be.an("array");
       // dtr, part type information, stock, demand, delivery, production
-      expect(contractOffers.length).to.eq(7);
+      expect(contractOffers.length).to.eq(8);
   });
   
   
@@ -69,6 +69,7 @@ tests {
   const expectedSemanticIds = [
       "urn:samm:io.catenax.item_stock:2.0.0#ItemStock",
       "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation",
+      "urn:samm:io.catenax.part_type_information:2.0.0#PartTypeInformation",
       "urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand",
       "urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput",
       "urn:samm:io.catenax.delivery_information:2.0.0#DeliveryInformation",
