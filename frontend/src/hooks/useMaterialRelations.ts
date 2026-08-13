@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2026 Volkswagen AG
+Copyright (c) 2026 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -20,15 +20,14 @@ SPDX-License-Identifier: Apache-2.0
 
 import { useFetch } from '@hooks/useFetch';
 import { config } from '@models/constants/config';
-import { Material } from '@models/types/data/stock';
+import { MaterialRelation } from '@models/types/data/material-relation';
 
-export const useAllMaterials = () => {
-    const endpoint = config.app.ENDPOINT_ALL_MATERIALS + "/all";
-    const { data: materials, isLoading: isLoadingMaterials } = useFetch<Material[]>(
-        `${config.app.BACKEND_BASE_URL}${endpoint}`
+export const useMaterialRelations = () => {
+    const { data: materialRelations, isLoading: isLoadingMaterialRelations } = useFetch<MaterialRelation[]>(
+        `${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_MATERIAL_RELATIONS}`
     );
     return {
-        materials,
-        isLoadingMaterials,
+        materialRelations,
+        isLoadingMaterialRelations,
     };
-}
+};

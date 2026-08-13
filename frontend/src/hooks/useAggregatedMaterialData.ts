@@ -1,6 +1,6 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2026 Volkswagen AG
+Copyright (c) 2026 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -20,15 +20,17 @@ SPDX-License-Identifier: Apache-2.0
 
 import { useFetch } from '@hooks/useFetch';
 import { config } from '@models/constants/config';
-import { Material } from '@models/types/data/stock';
+import { AggregatedMaterialData } from '@models/types/data/aggregated-material-data';
 
-export const useAllMaterials = () => {
-    const endpoint = config.app.ENDPOINT_ALL_MATERIALS + "/all";
-    const { data: materials, isLoading: isLoadingMaterials } = useFetch<Material[]>(
-        `${config.app.BACKEND_BASE_URL}${endpoint}`
+const NO_AGGREGATED_MATERIAL_DATA: AggregatedMaterialData[] = [];
+
+export const useAggregatedMaterialData = (ownMaterialNumber: string) => {
+    const query = `?ownMaterialNumber=${btoa(ownMaterialNumber)}`;
+    const { data: aggregatedMaterialData, isLoading: isLoadingAggregatedMaterialData } = useFetch<AggregatedMaterialData[]>(
+        config.app.BACKEND_BASE_URL + config.app.ENDPOINT_AGGREGATED_DATA + query
     );
     return {
-        materials,
-        isLoadingMaterials,
+        aggregatedMaterialData: aggregatedMaterialData ?? NO_AGGREGATED_MATERIAL_DATA,
+        isLoadingAggregatedMaterialData,
     };
-}
+};

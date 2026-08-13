@@ -47,6 +47,7 @@ const app = {
     ENDPOINT_MATERIAL_PARTNER_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_PARTNER_RELATIONS.trim() as string,
     ENDPOINT_PARTNER_DATA_UPDATE_BATCH: import.meta.env.VITE_ENDPOINT_PARTNER_DATA_UPDATE_BATCH.trim() as string,
     ENDPOINT_MATERIAL_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_RELATIONS.trim() as string,
+    ENDPOINT_AGGREGATED_DATA: import.meta.env.VITE_ENDPOINT_AGGREGATED_DATA.trim() as string,
 };
 
 const auth = {
