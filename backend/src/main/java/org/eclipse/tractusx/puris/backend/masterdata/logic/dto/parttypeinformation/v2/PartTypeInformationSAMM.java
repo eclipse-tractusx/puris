@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.PartTypeInformationLegacySAMM;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -50,9 +50,9 @@ tests {
   
   const contractOffers = res.getBody()[datasetPropertyName];
   
-  test("Verify response contains six data offers", function () {
+  test("Verify response contains eight data offers", function () {
       expect(contractOffers).to.be.an("array");
-      // dtr, part type information, stock, demand, delivery, production
+      // dtr, part type information, part type information legacy, stock, demand, delivery, production, days of supply
       expect(contractOffers.length).to.eq(8);
   });
   

@@ -26,7 +26,8 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.FunctionEnum;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.FunctionEnum;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.PartTypeInformationLegacySAMM;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v2.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
@@ -49,6 +50,8 @@ public class PartTypeInformationSAMMMapperTest {
         }
     }
  
+    /* V2.0 */
+
     @Test
     void testSammMapperShouldSuccess() {
         Material material = getTestMaterial();
@@ -129,5 +132,79 @@ public class PartTypeInformationSAMMMapperTest {
         material.setName("A wonderful test balloon");
         material.setProductFlag(true);
         return material;
+    }
+
+    /* V1.0 */
+    @Test
+    void testLegacySammMapperShouldSuccess() {
+        Material material = getTestMaterial();
+        System.out.println("Fail test Mat" + material);
+        PartTypeInformationLegacySAMM samm =  partTypeSammMapper.productToLegacySamm(material);
+        Assertions.assertEquals(samm.getCatenaXId(), material.getMaterialNumberCx());
+        Assertions.assertEquals(samm.getPartTypeInformation().getManufacturerPartId(), material.getOwnMaterialNumber());
+        Assertions.assertEquals(samm.getPartTypeInformation().getNameAtManufacturer(), material.getName());
+    }
+ 
+    @Test
+    void testLegacySammMapperShouldFail() {
+        Material material = getTestMaterial();
+        material.setProductFlag(false);
+        PartTypeInformationLegacySAMM samm =  partTypeSammMapper.productToLegacySamm(material);
+        System.out.println(samm);
+        Assertions.assertNull(samm);
+    }
+ 
+    @Test
+    void testValidationLegacyShouldSuccess() {
+        PartTypeInformationLegacySAMM samm = getPartTypeInformationLegacySAMMExample();
+        Assertions.assertEquals(validator.validate(samm).size(), 0);
+    }
+ 
+    @Test
+    void testValidationLegacyShouldFail() {
+        PartTypeInformationLegacySAMM samm = getPartTypeInformationLegacySAMMExample();
+        var partSitesInformation = samm.getPartSitesInformationAsPlanned().stream().findFirst().get();
+        partSitesInformation.setFunctionValidUntil("\n");
+        Assertions.assertNotEquals(validator.validate(samm).size(), 0);
+    }
+ 
+    @Test
+    void testMarshallingAndUnmarshallingLegacy() throws Exception {
+        PartTypeInformationLegacySAMM partTypeInformationSAMM = getPartTypeInformationLegacySAMMExample();
+ 
+        Assertions.assertEquals(validator.validate(partTypeInformationSAMM).size(), 0);
+ 
+        JsonNode marshalledSamm = objectMapper.readTree(objectMapper.writeValueAsString(partTypeInformationSAMM));
+        log.info("Marshalled object: \n" + marshalledSamm.toPrettyString());
+        JsonNode unmarshalledSamm = objectMapper.readTree(marshalledSamm.toString());
+        PartTypeInformationLegacySAMM sammFromJson = objectMapper.readValue(unmarshalledSamm.toString(), PartTypeInformationLegacySAMM.class);
+ 
+        Assertions.assertEquals(sammFromJson, partTypeInformationSAMM);
+ 
+ 
+    }
+ 
+    @NotNull
+    private static PartTypeInformationLegacySAMM getPartTypeInformationLegacySAMMExample() {
+        PartTypeInformationLegacySAMM partTypeInformationSAMM = new PartTypeInformationLegacySAMM();
+        partTypeInformationSAMM.setCatenaXId(UUID.randomUUID().toString());
+ 
+        org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.PartSitesInformationAsPlanned partSitesInformationAsPlanned = new org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.PartSitesInformationAsPlanned();
+        partSitesInformationAsPlanned.setFunction(FunctionEnum.PRODUCTION);
+        partSitesInformationAsPlanned.setCatenaXsiteId("BPNS1234567890ZZ");
+        partSitesInformationAsPlanned.setFunctionValidFrom("2024-01-29T12:00:00.123+02:00");
+        partSitesInformationAsPlanned.setFunctionValidUntil("2024-01-30T12:00:00.123+02:00");
+        partTypeInformationSAMM.getPartSitesInformationAsPlanned().add(partSitesInformationAsPlanned);
+ 
+        org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.PartTypeInformationBody ptb = partTypeInformationSAMM.getPartTypeInformation();
+        ptb.setNameAtManufacturer("Foo");
+        ptb.setManufacturerPartId("Manufacturer Example Id");
+        org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.Classification classification = new org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.Classification();
+        classification.setClassificationDescription("Some Description");
+        classification.setClassificationID("Some Classification-Id");
+        classification.setClassificationStandard("Some Classification-Standard");
+        ptb.getPartClassification().add(classification);
+        partTypeInformationSAMM.setPartTypeInformation(ptb);
+        return partTypeInformationSAMM;
     }
 }

@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1;
+package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

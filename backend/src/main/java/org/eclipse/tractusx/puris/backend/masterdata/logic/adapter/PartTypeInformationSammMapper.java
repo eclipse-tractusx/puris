@@ -142,7 +142,7 @@ public class PartTypeInformationSammMapper {
             if (mpr.getPartnerMaterialNumber() != null) {
                 // This should never happen, because partners are not expected to change the materialNumber
                 // of an existing material
-                log.warn("Replacing previous Partner-MaterialNumber " + mpr.getPartnerMaterialNumber() + " with " + "new PartId from SAMM: " + partId + " by Partner " + sendingPartner.getBpnl());
+                log.warn("Replacing previous Partner-MaterialNumber " + mpr.getPartnerMaterialNumber() + " with new PartId from SAMM: " + partId + " by Partner " + sendingPartner.getBpnl());
             }
             mpr.setPartnerMaterialNumber(partId);
         }
@@ -151,14 +151,14 @@ public class PartTypeInformationSammMapper {
         if (!nameAtManufacturer.equals(mpr.getNameAtManufacturer())) {
             // Notification if partner changed the Name for his product
             if (mpr.getNameAtManufacturer() != null) {
-                log.warn("Replacing previous Name at Manufacturer " + mpr.getNameAtManufacturer() + " with " + "new Name from SAMM: " + nameAtManufacturer + " by Partner " + sendingPartner.getBpnl());
+                log.warn("Replacing previous Name at Manufacturer " + mpr.getNameAtManufacturer() + " with new Name from SAMM: " + nameAtManufacturer + " by Partner " + sendingPartner.getBpnl());
             }
             mpr.setNameAtManufacturer(nameAtManufacturer);
         }
  
         if (!cxId.equals(mpr.getPartnerCXNumber())) {
             if (mpr.getPartnerCXNumber() != null) {
-                log.warn("Replacing previous Partner CX Number " + mpr.getPartnerCXNumber() + " with " + "new Partner CX Number from SAMM: " + cxId + " by Partner " + sendingPartner.getBpnl());
+                log.warn("Replacing previous Partner CX Number " + mpr.getPartnerCXNumber() + " with new Partner CX Number from SAMM: " + cxId + " by Partner " + sendingPartner.getBpnl());
             }
             mpr.setPartnerCXNumber(cxId);
         }

@@ -248,9 +248,17 @@ public class EdcAdapterService {
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoLegacySubmodelAsset()));
+        log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getPartTypeLegacySubmodelApiAssetId(),
+            variablesService.getParttypeInformationLegacyServerendpoint(),
+            AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID
+        )));
         result &= assetRegistration;
-        log.info("Registration of PartTypeInformation 2.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
+        log.info("Registration of PartTypeInformation 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getPartTypeSubmodelApiAssetId(),
+            variablesService.getParttypeInformationServerendpoint(),
+            AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID
+        )));
         result &= assetRegistration;
         log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
@@ -417,16 +425,6 @@ public class EdcAdapterService {
     private boolean registerDtrAsset() {
         var body = edcRequestBodyBuilder.buildDtrRegistrationBody();
         return sendAssetRegistrationRequest(body, "DTR");
-    }
-
-    private boolean registerPartTypeInfoLegacySubmodelAsset() {
-        var body = edcRequestBodyBuilder.buildPartTypeInfoLegacySubmodelRegistrationBody();
-        return sendAssetRegistrationRequest(body, variablesService.getPartTypeLegacySubmodelApiAssetId());
-    }
-
-    private boolean registerPartTypeInfoSubmodelAsset() {
-        var body = edcRequestBodyBuilder.buildPartTypeInfoSubmodelRegistrationBody();
-        return sendAssetRegistrationRequest(body, variablesService.getPartTypeSubmodelApiAssetId());
     }
 
     private boolean registerSubmodelAsset(String assetId, String endpoint, String semanticId) {
@@ -864,8 +862,8 @@ public class EdcAdapterService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchPartTypeLegacySubmodelData(mpr);
-            case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+            case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
         };
         boolean failed = true;
         try {
@@ -1051,16 +1049,6 @@ public class EdcAdapterService {
             case OUTBOUND -> mpr.getPartner().getBpnl();
         };
         return fetchSubmodelData(mpr, semanticId, manufacturerPartId, manufacturerId);
-    }
-
-    private SubmodelData fetchPartTypeLegacySubmodelData(MaterialPartnerRelation mpr) {
-        return fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID,
-            mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
-    }
-
-    private SubmodelData fetchPartTypeSubmodelData(MaterialPartnerRelation mpr) {
-        return fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID,
-            mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
     }
 
     private record SubmodelData(String assetId, String dspUrl, String href) {
@@ -1316,8 +1304,8 @@ public class EdcAdapterService {
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchPartTypeLegacySubmodelData(mpr);
-            case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->  fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+            case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
@@ -1435,16 +1423,21 @@ public class EdcAdapterService {
      * @return the partner's CX Id for that material, or null if it could not be obtained
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
-        String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL, "globalAssetId");
+        String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL);
         if (cxId != null) {
             return cxId;
         }
         log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0",
             mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
-        return fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "catenaXId");
+        return fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
     }
 
-    private String fetchCxId(MaterialPartnerRelation mpr, AssetType type, String cxIdProperty) {
+    private String fetchCxId(MaterialPartnerRelation mpr, AssetType type) {
+        String cxIdProperty = switch (type) {
+            case PART_TYPE_INFORMATION_SUBMODEL -> "globalAssetId";
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> "catenaXId";
+            default -> throw new IllegalArgumentException("Unsupported type for PartTypeInformation: " + type);
+        };
         try {
             var data = getSubmodelFromPartner(mpr, type, null, 1);
             if (data == null) {
@@ -1453,8 +1446,7 @@ public class EdcAdapterService {
             var cxIdNode = data.get(cxIdProperty);
             return cxIdNode == null ? null : cxIdNode.asText();
         } catch (Exception e) {
-            log.warn("Could not obtain {} for {} from partner {}",
-                cxIdProperty, type, mpr.getPartner().getBpnl());
+            log.warn("Could not obtain {} for {} from partner {}", cxIdProperty, type, mpr.getPartner().getBpnl());
             return null;
         }
     }

@@ -97,7 +97,7 @@ public class PartTypeInformationController {
                                         @PathVariable String materialnumber,
                                                               @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
         var lookup = resolveProduct(bpnl, materialnumber, representation, VERSION_2_0_0);
-        if (lookup.failed()) {
+        if (lookup.error != null) {
             return ResponseEntity.status(lookup.error()).build();
         }
         return ResponseEntity.ok(sammMapper.productToSamm(lookup.material()));
@@ -120,7 +120,7 @@ public class PartTypeInformationController {
                                         @PathVariable String materialnumber,
                                                               @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
         var lookup = resolveProduct(bpnl, materialnumber, representation, VERSION_1_0_0);
-        if (lookup.failed()) {
+        if (lookup.error != null) {
             return ResponseEntity.status(lookup.error()).build();
         }
         return ResponseEntity.ok(sammMapper.productToLegacySamm(lookup.material()));
@@ -168,10 +168,6 @@ public class PartTypeInformationController {
  
         private static ProductLookup found(Material material) {
             return new ProductLookup(material, null);
-        }
- 
-        private boolean failed() {
-            return error != null;
         }
     }
 }
