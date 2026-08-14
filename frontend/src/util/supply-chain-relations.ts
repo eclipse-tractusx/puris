@@ -56,20 +56,14 @@ export function buildSupplyChainTree(rootOwnMaterialNumber: string, relations: M
     return walk(rootOwnMaterialNumber, 1, new Set([rootOwnMaterialNumber]), relations);
 }
 
+function flattenMaterialNumbers(nodes: SupplyChainTreeNodeData[], into: Set<string>): Set<string> {
+    for (const node of nodes) {
+        into.add(node.ownMaterialNumber);
+        flattenMaterialNumbers(node.children, into);
+    }
+    return into;
+}
+
 export function getDescendantMaterialNumbers(rootOwnMaterialNumber: string, relations: MaterialRelation[]): Set<string> {
-    const descendants = new Set<string>();
-    const visited = new Set<string>([rootOwnMaterialNumber]);
-    const collect = (parentOwnMaterialNumber: string, depth: number) => {
-        if (depth > MAX_SUPPLY_CHAIN_DEPTH) return;
-        relations
-            .filter((mr) => mr.parentOwnMaterialNumber === parentOwnMaterialNumber)
-            .filter((mr) => !visited.has(mr.childOwnMaterialNumber))
-            .forEach((mr) => {
-                visited.add(mr.childOwnMaterialNumber);
-                descendants.add(mr.childOwnMaterialNumber);
-                collect(mr.childOwnMaterialNumber, depth + 1);
-            });
-    };
-    collect(rootOwnMaterialNumber, 1);
-    return descendants;
+    return flattenMaterialNumbers(buildSupplyChainTree(rootOwnMaterialNumber, relations), new Set<string>());
 }
