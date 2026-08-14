@@ -20,12 +20,17 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Material } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
-import { Add, ChevronLeftOutlined, Refresh, Schedule } from '@mui/icons-material';
+import { Add, ChevronLeftOutlined, NotificationsActive, Refresh, Schedule } from '@mui/icons-material';
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { LoadingButton } from '@components/ui/LoadingButton';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
+import { DemandCapacityNotificationImpactTooltip } from '@components/ui/DemandCapacityNotificationImpactTooltip';
+import { getAffectingNotifications } from '@util/affecting-notifications';
+import { useDemandCapacityNotifications } from '@features/notifications/hooks/useDemandCapacityNotifications';
+import { useMaterialRelations } from '@hooks/useMaterialRelations';
 
 type MaterialDetailsHeaderProps = {
     material: Material;
@@ -38,24 +43,59 @@ type MaterialDetailsHeaderProps = {
 
 export function MaterialDetailsHeader({ material, direction, isRefreshing, isSchedulingUpdate, onRefresh, onScheduleUpdate }: MaterialDetailsHeaderProps) {
     const { openDialog } = useDataModal();
+    const { notifications } = useDemandCapacityNotifications();
+    const { materialRelations } = useMaterialRelations();
+    const affectingNotifications = useMemo(() => {
+        const openNotifications = notifications.filter((n) => n.status === 'open');
+        return getAffectingNotifications(material.ownMaterialNumber ?? '', direction === DirectionType.Outbound, openNotifications, materialRelations ?? []);
+    }, [notifications, materialRelations, direction, material.ownMaterialNumber]);
+    // TODO: link inbound (demand) impacts to their affected component once that view exists
+    const notificationLinkTo = direction === DirectionType.Outbound ? `/materials/outbound/${material.ownMaterialNumber}/supply-chain` : undefined;
     return (
         <>
             <Stack direction="row" alignItems="center" spacing={1} width="100%">
                 <Link to="/materials" data-testid="back-button"> <Box padding="0.25rem" display="flex" alignItems="center"> <ChevronLeftOutlined /> </Box> </Link>
-                <Typography variant="h3" component="h1" marginRight="auto !important">
+                <Typography variant="h3" component="h1">
                     {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} (<TextToClipboard text={material?.ownMaterialNumber ?? ""} />, {capitalize(direction.toLowerCase())})
                 </Typography>
-                <Stack gap="0.5rem" sx={{flexDirection: { xs: 'column', xl: 'row'}}}>
+                {affectingNotifications.length > 0 && (
+                    <DemandCapacityNotificationImpactTooltip impacts={affectingNotifications}>
+                        <Box
+                            {...(notificationLinkTo && { component: Link, to: notificationLinkTo })}
+                            data-testid="material-notification-indicator"
+                            display="flex"
+                            alignItems="center"
+                            color="warning.main"
+                            sx={{
+                                marginLeft: '1rem',
+                                padding: '0.25rem',
+                                '& svg': {
+                                    fontSize: '1.5rem',
+                                },
+                                ...(notificationLinkTo && {
+                                    textDecoration: 'none',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        color: 'warning.dark',
+                                    },
+                                }),
+                            }}
+                        >
+                            <NotificationsActive />
+                        </Box>
+                    </DemandCapacityNotificationImpactTooltip>
+                )}
+                <Stack marginLeft="auto !important" gap="0.5rem" sx={{ flexDirection: { xs: 'column', xl: 'row' } }}>
                     <Stack direction="row" gap="0.5rem">
                         {direction === DirectionType.Outbound ? (
-                            <Button 
+                            <Button
                                 sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('production', {}, [], 'create')}
                                 data-testid="add-production-button"
                             >
                                 <Add></Add> Add Production
                             </Button>
                         ) : (
-                            <Button 
+                            <Button
                                 sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => openDialog('demand', {}, [], 'create')}
                                 data-testid="add-demand-button"
                             >
@@ -96,7 +136,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                         </Button>
                     </Stack>
                     <Stack direction="row" gap="0.5rem" justifyContent="end">
-                        <LoadingButton 
+                        <LoadingButton
                             Icon={Schedule}
                             isLoading={isSchedulingUpdate}
                             onClick={onScheduleUpdate}
