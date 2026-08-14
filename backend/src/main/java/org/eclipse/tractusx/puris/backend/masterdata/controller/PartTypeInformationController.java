@@ -92,10 +92,9 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
     })
     @GetMapping("/" + VERSION_2_0_0 + "/{materialnumber}/submodel/{representation}")
-    public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl,
-                                                              @Parameter(description = "The material number that the request receiving party uses for the material in question")
-                                        @PathVariable String materialnumber,
-                                                              @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
+    public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl, 
+                        @Parameter(description = "The material number that the request receiving party uses for the material in question") @PathVariable String materialnumber, 
+                        @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
         var lookup = resolveProduct(bpnl, materialnumber, representation, VERSION_2_0_0);
         if (lookup.error != null) {
             return ResponseEntity.status(lookup.error()).build();
@@ -116,9 +115,8 @@ public class PartTypeInformationController {
     })
     @GetMapping("/" + VERSION_1_0_0 + "/{materialnumber}/submodel/{representation}")
     public ResponseEntity<PartTypeInformationLegacySAMM> getLegacyMapping(@RequestHeader("edc-bpn") String bpnl,
-                                                              @Parameter(description = "The material number that the request receiving party uses for the material in question")
-                                        @PathVariable String materialnumber,
-                                                              @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
+                        @Parameter(description = "The material number that the request receiving party uses for the material in question") @PathVariable String materialnumber,
+                        @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
         var lookup = resolveProduct(bpnl, materialnumber, representation, VERSION_1_0_0);
         if (lookup.error != null) {
             return ResponseEntity.status(lookup.error()).build();
@@ -136,11 +134,16 @@ public class PartTypeInformationController {
      * @return                  the resolved product or the status to be returned to the partner
      */
     private ProductLookup resolveProduct(String bpnl, String materialnumber, String representation, String version) {
-        materialnumber = new String(Base64.getDecoder().decode(materialnumber.getBytes(StandardCharsets.UTF_8)));
-        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
+        String decodedMaterialNumber;
+        try {
+            decodedMaterialNumber = new String(Base64.getDecoder().decode(materialnumber.getBytes(StandardCharsets.UTF_8)),StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            log.warn("Received invalid base64 encoded material number from {}", bpnl);
             return ProductLookup.error(HttpStatus.BAD_REQUEST);
         }
- 
+        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(decodedMaterialNumber).matches()) {
+            return ProductLookup.error(HttpStatus.BAD_REQUEST);
+        }
         if (!"$value".equals(representation)) {
             return ProductLookup.error(HttpStatus.NOT_IMPLEMENTED);
         }
@@ -148,7 +151,7 @@ public class PartTypeInformationController {
         if (partner == null) {
             return ProductLookup.error(HttpStatus.UNAUTHORIZED);
         }
-        log.info("{} requests part type information {} on {}", bpnl, version, materialnumber);
+        log.info("{} requests part type information {} on {}", bpnl, version, decodedMaterialNumber.replaceAll("[\\r\\n]", "_"));
         Material material = materialService.findByOwnMaterialNumber(materialnumber);
         if (material == null || !material.isProductFlag()) {
             return ProductLookup.error(HttpStatus.NOT_FOUND);
