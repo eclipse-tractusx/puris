@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnu
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningGrantRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService.IrsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,9 @@ public class IrsRequestQueueWorker {
 
 	@Autowired
 	private IrsChainOpeningGrantRepository irsChainOpeningGrantRepository;
+
+	@Autowired
+	private IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
 
 	@Autowired
 	private IrsRequestService irsRequestService;
@@ -147,6 +151,16 @@ public class IrsRequestQueueWorker {
 		}
 
 		switch (request.getType()) {
+			case CHAIN_OPENING_ROOT_GRANT_CREATE -> irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.SYNCED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				irsChainOpeningRootGrantRepository.save(grant);
+			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
+				request.getLinkedEntityUuid(), request.getUuid()));
+			case CHAIN_OPENING_ROOT_GRANT_DELETE -> irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.DELETED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				irsChainOpeningRootGrantRepository.save(grant);
+			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
+				request.getLinkedEntityUuid(), request.getUuid()));
 			case CHAIN_OPENING_GRANT_CREATE -> irsChainOpeningGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
 				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.SYNCED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
 				irsChainOpeningGrantRepository.save(grant);
@@ -157,7 +171,7 @@ public class IrsRequestQueueWorker {
 				irsChainOpeningGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening grant {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
-			case POLICY_CREATE -> 
+			case POLICY_CREATE ->
 				log.warn("Policy requests should have no Linked entity. No update is required. Please check why the policy request {} has a linked entity.", request.getUuid());
 		}
 	}

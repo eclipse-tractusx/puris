@@ -53,15 +53,15 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Represents a Chain Opening Grant requesting recursive access to a material's chain for a
- * partner, as it is created at and deleted from the IRS.
+ * Represents a Chain Opening Grant requesting recursive access to a material's chain for
+ * ourselves, as it is created at and deleted from the IRS.
  * <p>
- * A grant allows the {@link #requesterBpn} (a partner's BPNL) to recursively query the set of
- * {@link #getAllowedBpnls()} for child materials of the material identified by {@link #globalAssetId}
- * (a material directly affected by one of our own disruption notifications that we approved data exchange
- * for), for the duration of the [{@link #validFrom}, {@link #validUntil}] window. The allowed
- * BPNLs are derived from the partners of {@link #reportedNotifications}, the set of reported
- * notifications currently backing this grant.
+ * A root grant's {@link #requesterBpn} is always our own company BPNL. It allows us to
+ * recursively query the set of {@link #getAllowedBpnls()} for child materials of the material identified
+ * by {@link #globalAssetId} (a parent of a material affected by a reported disruption notification),
+ * for the duration of the [{@link #validFrom}, {@link #validUntil}] window. The allowed BPNLs are
+ * derived from the partners of {@link #reportedNotifications}, the set of reported notifications
+ * currently backing this grant.
  * <p>
  * A grant is uniquely identified by the combination of {@link #requesterBpn},
  * {@link #globalAssetId} and {@link #sourceDisruptionId}. The {@code @JsonProperty}
@@ -76,11 +76,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Entity
-@Table(name = "chain_opening_grant", uniqueConstraints = @UniqueConstraint(
-	name = "uc_chain_opening_grant_key",
+@Table(name = "chain_opening_root_grant", uniqueConstraints = @UniqueConstraint(
+	name = "uc_chain_opening_root_grant_key",
 	columnNames = { "requester_bpn", "global_asset_id", "source_disruption_id" }
 ))
-public class IrsChainOpeningGrant implements IrsChainOpeningGrantLike {
+public class IrsChainOpeningRootGrant implements IrsChainOpeningGrantLike {
 
 	@Id
 	@GeneratedValue
@@ -96,8 +96,8 @@ public class IrsChainOpeningGrant implements IrsChainOpeningGrantLike {
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
-		name = "chain_opening_grant_notification",
-		joinColumns = @JoinColumn(name = "chain_opening_grant_uuid"),
+		name = "chain_opening_root_grant_notification",
+		joinColumns = @JoinColumn(name = "chain_opening_root_grant_uuid"),
 		inverseJoinColumns = @JoinColumn(name = "reported_notification_uuid")
 	)
 	@JsonIgnore

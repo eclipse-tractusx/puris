@@ -5,7 +5,7 @@ import java.time.Instant;
 
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrantLike;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,13 +35,14 @@ public class IrsRequestBodybuilder {
     /**
      * Builds the request body for creating a Chain Opening Grant at the IRS.
      * <p>
-     * {@link IrsChainOpeningGrant} already carries the wire shape (via its
-     * {@code @JsonProperty} annotations), so it is serialized directly instead of being mapped field by field.
+     * {@link IrsChainOpeningGrantLike} implementations already carry the wire shape (via their
+     * {@code @JsonProperty} annotations), so the grant is serialized directly instead of being
+     * mapped field by field.
      *
      * @param grant the Chain Opening Grant to build the request body for
      * @return the grant creation request body
      */
-    public JsonNode buildGrantCreationRequestBody(IrsChainOpeningGrant grant) {
+    public JsonNode buildGrantCreationRequestBody(IrsChainOpeningGrantLike grant) {
         return objectMapper.valueToTree(grant);
     }
 
