@@ -72,4 +72,9 @@ public class IrsChainOpeningRootGrant extends IrsChainOpeningGrant {
 	@JsonIgnore
 	@Builder.Default
 	private Set<ReportedDemandAndCapacityNotification> reportedNotifications = new HashSet<>();
+
+	@Override
+	public Set<ReportedDemandAndCapacityNotification> getReportedNotifications() {
+		return reportedNotifications;
+	}
 }

@@ -185,7 +185,6 @@ public class IrsChainOpeningPartnerGrantService {
 	 * Reacts to an update of a reported notification, keeping the chain opening grants that (via the
 	 * relatedDataExchangeRequest chain) depend on it in sync.
 	 *
-	 * @param previous the notification's state before the update
 	 * @param updated  the notification's state after the update
 	 */
 	public void onReportedNotificationUpdated(ReportedDemandAndCapacityNotification updated) {
