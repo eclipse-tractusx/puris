@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,15 +39,15 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
     /*
      * Uses the repository directly (not ReportedDemandAndCapacityNotificationService) to avoid a
      * circular bean dependency: ReportedDemandAndCapacityNotificationService depends on
-     * IrsChainOpeningGrantService, which depends on this class.
+     * IrsChainOpeningPartnerGrantService, which depends on this class.
      */
     @Autowired
     private ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository;
 
-    private final IrsChainOpeningGrantService irsChainOpeningGrantService;
+    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
 
     public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService,
-            MaterialPartnerRelationService mpr, IrsChainOpeningGrantService irsChainOpeningGrantService) {
+            MaterialPartnerRelationService mpr, IrsChainOpeningPartnerGrantService irsChainOpeningGrantService) {
         super(ownNotificationRepository, partnerService, mpr);
         this.irsChainOpeningGrantService = irsChainOpeningGrantService;
     }

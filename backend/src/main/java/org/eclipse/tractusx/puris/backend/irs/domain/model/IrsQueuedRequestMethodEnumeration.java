@@ -16,20 +16,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.irs.domain.repository;
+package org.eclipse.tractusx.puris.backend.irs.domain.model;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface IrsChainOpeningGrantRepository extends JpaRepository<IrsChainOpeningGrant, UUID> {
-
-	Optional<IrsChainOpeningGrant> findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-		String requesterBpn, String globalAssetId, String sourceDisruptionId);
-
-	List<IrsChainOpeningGrant> findAllByReportedNotifications_Uuid(UUID notificationUuid);
-
+/**
+ * The HTTP method of an {@link IrsQueuedRequest}.
+ */
+public enum IrsQueuedRequestMethodEnumeration {
+    GET, POST, PUT, DELETE
 }

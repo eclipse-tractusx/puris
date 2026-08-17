@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
-import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningGrantRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningPartnerGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService.IrsResponse;
@@ -54,7 +54,7 @@ public class IrsRequestQueueWorker {
 	private IrsQueuedRequestRepository irsQueuedRequestRepository;
 
 	@Autowired
-	private IrsChainOpeningGrantRepository irsChainOpeningGrantRepository;
+	private IrsChainOpeningPartnerGrantRepository irsChainOpeningPartnerGrantRepository;
 
 	@Autowired
 	private IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
@@ -112,7 +112,7 @@ public class IrsRequestQueueWorker {
 			response = dispatch(request);
 		} catch (Exception e) {
 			response = null;
-			request.setLastErrorMessage(e.getMessage());
+			request.setLastErrorMessage(sanitizeForStorage(e.getMessage()));
 		}
 
 		boolean successful = response != null && response.isSuccessful();
@@ -122,7 +122,7 @@ public class IrsRequestQueueWorker {
 			updateLinkedEntity(request, true);
 		} else {
 			if (response != null) {
-				request.setLastErrorMessage("HTTP " + response.getStatusCode() + ": " + response.getResponseBody());
+				request.setLastErrorMessage(sanitizeForStorage("HTTP " + response.getStatusCode() + ": " + response.getResponseBody()));
 			}
 			if (request.getAttemptCount() >= request.getMaxAttempts()) {
 				request.setStatus(IrsQueuedRequestStatusEnumeration.FAILED);
@@ -152,7 +152,12 @@ public class IrsRequestQueueWorker {
 
 		switch (request.getType()) {
 			case CHAIN_OPENING_ROOT_GRANT_CREATE -> irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
-				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.SYNCED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				if (successful) {
+					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+				} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
+					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				}
+				// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
 				irsChainOpeningRootGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
@@ -161,14 +166,19 @@ public class IrsRequestQueueWorker {
 				irsChainOpeningRootGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
-			case CHAIN_OPENING_GRANT_CREATE -> irsChainOpeningGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
-				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.SYNCED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-				irsChainOpeningGrantRepository.save(grant);
+			case CHAIN_OPENING_GRANT_CREATE -> irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+				if (successful) {
+					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+				} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
+					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				}
+				// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
+				irsChainOpeningPartnerGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening grant {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
-			case CHAIN_OPENING_GRANT_DELETE -> irsChainOpeningGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+			case CHAIN_OPENING_GRANT_DELETE -> irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
 				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.DELETED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-				irsChainOpeningGrantRepository.save(grant);
+				irsChainOpeningPartnerGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening grant {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
 			case POLICY_CREATE ->
@@ -180,6 +190,25 @@ public class IrsRequestQueueWorker {
 		double delay = irsAdapterConfiguration.getQueueInitialRetryDelaySeconds()
 			* Math.pow(irsAdapterConfiguration.getQueueBackoffMultiplier(), attemptCount - 1);
 		return Math.min((long) delay, irsAdapterConfiguration.getQueueMaxRetryDelaySeconds());
+	}
+
+	/**
+	 * Replaces runs of vertical whitespace (the characters
+	 * {@code PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING} excludes) with a single space
+	 * and trims the result, so the value satisfies that pattern before being stored in
+	 * {@link IrsQueuedRequest#getLastErrorMessage()}. Messages sourced from exceptions or raw IRS
+	 * response bodies can otherwise contain newlines, which would fail that constraint at save
+	 * time and leave the request's attempt never recorded.
+	 *
+	 * @return the sanitized, non-blank message, or {@code null} if {@code raw} is {@code null} or
+	 *         blank after sanitization
+	 */
+	private String sanitizeForStorage(String raw) {
+		if (raw == null) {
+			return null;
+		}
+		String sanitized = raw.replaceAll("[\\n\\x0B\\f\\r\\x85\\u2028\\u2029]+", " ").trim();
+		return sanitized.isEmpty() ? null : sanitized;
 	}
 
 	private Map<String, String> deserializeQueryParams(String queryParams) {

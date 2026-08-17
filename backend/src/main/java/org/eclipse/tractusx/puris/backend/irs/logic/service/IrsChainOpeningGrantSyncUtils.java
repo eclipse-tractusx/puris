@@ -30,19 +30,19 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrantLike;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 
 /**
  * Stateless helpers shared by {@link IrsChainOpeningRootGrantService} and
- * {@link IrsChainOpeningGrantService}, extracted so both grant flavors reuse exactly the same
+ * {@link IrsChainOpeningPartnerGrantService}, extracted so both grant flavors reuse exactly the same
  * notification-activity, material-relation-validity and allowed-BPNL-eligibility logic.
  */
-final class IrsChainOpeningGrantSyncSupport {
+final class IrsChainOpeningGrantSyncUtils {
 
-	private IrsChainOpeningGrantSyncSupport() {
+	private IrsChainOpeningGrantSyncUtils() {
 	}
 
 	/**
@@ -120,7 +120,7 @@ final class IrsChainOpeningGrantSyncSupport {
 	 *
 	 * @return {@code true} if the notification was added, {@code false} if it was already present
 	 */
-	static boolean addNotificationIfAbsent(IrsChainOpeningGrantLike grant, ReportedDemandAndCapacityNotification notification) {
+	static boolean addNotificationIfAbsent(IrsChainOpeningGrant grant, ReportedDemandAndCapacityNotification notification) {
 		boolean alreadyPresent = grant.getReportedNotifications().stream()
 			.anyMatch(existing -> existing.getUuid().equals(notification.getUuid()));
 		if (alreadyPresent) {
@@ -134,7 +134,7 @@ final class IrsChainOpeningGrantSyncSupport {
 	 *
 	 * @return {@code true} if the notification was present and removed
 	 */
-	static boolean removeNotificationIfPresent(IrsChainOpeningGrantLike grant, ReportedDemandAndCapacityNotification notification) {
+	static boolean removeNotificationIfPresent(IrsChainOpeningGrant grant, ReportedDemandAndCapacityNotification notification) {
 		return grant.getReportedNotifications().removeIf(existing -> existing.getUuid().equals(notification.getUuid()));
 	}
 
@@ -144,7 +144,7 @@ final class IrsChainOpeningGrantSyncSupport {
 	 *
 	 * @return {@code true} if the grant's reportedNotifications changed as a result
 	 */
-	static boolean reconcile(IrsChainOpeningGrantLike grant, Set<ReportedDemandAndCapacityNotification> desired) {
+	static boolean reconcile(IrsChainOpeningGrant grant, Set<ReportedDemandAndCapacityNotification> desired) {
 		Set<UUID> desiredUuids = desired.stream()
 			.map(ReportedDemandAndCapacityNotification::getUuid)
 			.collect(Collectors.toSet());

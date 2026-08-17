@@ -20,6 +20,7 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.springframework.stereotype.Service;
 
@@ -79,7 +80,7 @@ public class IrsPolicyStoreService {
      * @return the queued request
      */
     private IrsQueuedRequest createFrameworkPolicy(String payload) {
-        IrsQueuedRequest queuedRequest = irsRequestQueueService.enqueue("POST", IrsAdapterConfiguration.POLICIES_PATH, payload, null,
+        IrsQueuedRequest queuedRequest = irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, payload, null,
             IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
         log.info("Enqueued framework policy creation request");
 

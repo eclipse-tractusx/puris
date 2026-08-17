@@ -86,7 +86,7 @@ public class IrsChainOpeningRootGrantService {
 
 		assertGrantEligible(grant);
 
-		IrsQueuedRequest queuedRequest = gateway.create(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE);
+		IrsQueuedRequest queuedRequest = gateway.createOrUpdate(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE);
 		log.info("Enqueued chain opening root grant creation request for sourceDisruptionId {}", grant.getSourceDisruptionId());
 
 		return queuedRequest;
@@ -157,7 +157,7 @@ public class IrsChainOpeningRootGrantService {
 			.filter(Objects::nonNull)
 			.map(Material::getOwnMaterialNumber)
 			.flatMap(childOwnMaterialNumber -> materialRelationService.findAllParents(childOwnMaterialNumber).stream())
-			.filter(relation -> IrsChainOpeningGrantSyncSupport.isRelationValidNow(relation, now))
+			.filter(relation -> IrsChainOpeningGrantSyncUtils.isRelationValidNow(relation, now))
 			.map(MaterialRelation::getParentOwnMaterialNumber)
 			.collect(Collectors.toSet());
 	}
@@ -184,7 +184,7 @@ public class IrsChainOpeningRootGrantService {
 				.build();
 		}
 
-		boolean changed = IrsChainOpeningGrantSyncSupport.addNotificationIfAbsent(grant, notification);
+		boolean changed = IrsChainOpeningGrantSyncUtils.addNotificationIfAbsent(grant, notification);
 
 		Instant notificationStart = notification.getStartDateOfEffect().toInstant();
 		Instant notificationEnd = notification.getExpectedEndDateOfEffect() != null
@@ -279,7 +279,7 @@ public class IrsChainOpeningRootGrantService {
 	 * Otherwise, since the grant's allowedBpnls just shrank, the grant is re-pushed to the IRS.
 	 */
 	private void removeNotificationFromGrant(IrsChainOpeningRootGrant grant, ReportedDemandAndCapacityNotification notification) {
-		boolean removed = IrsChainOpeningGrantSyncSupport.removeNotificationIfPresent(grant, notification);
+		boolean removed = IrsChainOpeningGrantSyncUtils.removeNotificationIfPresent(grant, notification);
 		if (!removed) {
 			return;
 		}
@@ -332,10 +332,10 @@ public class IrsChainOpeningRootGrantService {
 			log.error("No material found for globalAssetId {} while checking allowed BPNL eligibility", grant.getGlobalAssetId());
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncSupport.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 
-		IrsChainOpeningGrantSyncSupport.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
 
 	/**
@@ -354,13 +354,13 @@ public class IrsChainOpeningRootGrantService {
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
 
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncSupport.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 
 		UUID sourceDisruptionId = UUID.fromString(grant.getSourceDisruptionId());
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications = reportedNotificationRepository
 			.findAllBySourceDisruptionId(sourceDisruptionId).stream()
-			.filter(notification -> IrsChainOpeningGrantSyncSupport.isNotificationActiveNow(notification, now))
+			.filter(notification -> IrsChainOpeningGrantSyncUtils.isNotificationActiveNow(notification, now))
 			.filter(notification -> notification.getMaterials() != null && notification.getMaterials().stream()
 				.filter(Objects::nonNull)
 				.map(Material::getOwnMaterialNumber)

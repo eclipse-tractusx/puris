@@ -20,12 +20,20 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningPartnerGrantRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,10 +43,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,6 +67,12 @@ class IrsRequestQueueWorkerTest {
     @Mock
     private ExecutorService executorService;
 
+    @Mock
+    private IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
+
+    @Mock
+    private IrsChainOpeningPartnerGrantRepository irsChainOpeningGrantRepository;
+
     @InjectMocks
     private IrsRequestQueueWorker worker;
 
@@ -70,7 +86,7 @@ class IrsRequestQueueWorkerTest {
     private IrsQueuedRequest dueRequest(int attemptCount, int maxAttempts) {
         IrsQueuedRequest request = new IrsQueuedRequest();
         request.setUuid(UUID.randomUUID());
-        request.setMethod("POST");
+        request.setMethod(IrsQueuedRequestMethodEnumeration.POST);
         request.setPath("irs/policies");
         request.setBody("{}");
         request.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
@@ -84,6 +100,23 @@ class IrsRequestQueueWorkerTest {
     private void stubDue(IrsQueuedRequest... requests) {
         when(irsQueuedRequestRepository.findAllByStatusAndNextAttemptAtBefore(eq(IrsQueuedRequestStatusEnumeration.PENDING), any()))
             .thenReturn(List.of(requests));
+    }
+
+    /** A due, terminal-on-first-failure (maxAttempts=1) queued grant create request. */
+    private IrsQueuedRequest dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid) {
+        IrsQueuedRequest request = new IrsQueuedRequest();
+        request.setUuid(UUID.randomUUID());
+        request.setMethod(IrsQueuedRequestMethodEnumeration.POST);
+        request.setPath("irs/recursive/chain-openings/grants");
+        request.setBody("{}");
+        request.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
+        request.setAttemptCount(0);
+        request.setMaxAttempts(1);
+        request.setNextAttemptAt(Instant.now().minusSeconds(10));
+        request.setCreatedAt(Instant.now().minusSeconds(100));
+        request.setType(type);
+        request.setLinkedEntityUuid(linkedEntityUuid);
+        return request;
     }
 
     @Test
@@ -101,7 +134,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueRequest(0, 5);
         stubDue(request);
 
-        when(irsRequestService.execute("POST", "irs/policies", null, "{}"))
+        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
             .thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
@@ -109,5 +142,114 @@ class IrsRequestQueueWorkerTest {
         assertThat(request.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.PENDING);
         assertThat(request.getAttemptCount()).isEqualTo(1);
         assertThat(request.getLastErrorMessage()).contains("adapter disabled");
+    }
+
+    @Test
+    void processDueRequests_OnDispatchExceptionWithNewlineMessage_SanitizesLastErrorMessageBeforeSaving() {
+        IrsQueuedRequest request = dueRequest(0, 5);
+        stubDue(request);
+
+        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+            .thenThrow(new IllegalStateException("line one\nline two"));
+
+        assertThatCode(worker::processDueRequests).doesNotThrowAnyException();
+
+        assertThat(request.getLastErrorMessage()).doesNotContain("\n").contains("line one", "line two");
+        verify(irsQueuedRequestRepository, times(1)).save(request);
+    }
+
+    @Test
+    void processDueRequests_OnFailedResponseWithNewlineBody_SanitizesLastErrorMessageBeforeSaving() {
+        IrsQueuedRequest request = dueRequest(0, 5);
+        stubDue(request);
+
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(500)
+            .responseBody("line one\nline two")
+            .successful(false)
+            .build();
+        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+            .thenReturn(response);
+
+        assertThatCode(worker::processDueRequests).doesNotThrowAnyException();
+
+        assertThat(request.getLastErrorMessage()).doesNotContain("\n").contains("line one", "line two");
+        verify(irsQueuedRequestRepository, times(1)).save(request);
+    }
+
+    // --- updateLinkedEntity: CREATE-type status preservation (root grants) ---
+
+    @Test
+    void processDueRequests_WhenRootGrantCreateFailsAndWasNotSynced_KeepsNotSynced() {
+        UUID grantUuid = UUID.randomUUID();
+        IrsChainOpeningRootGrant grant = IrsChainOpeningRootGrant.builder()
+            .uuid(grantUuid)
+            .syncStatus(IrsGrantSyncStatusEnumeration.NOT_SYNCED)
+            .build();
+        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grantUuid);
+        stubDue(request);
+        when(irsChainOpeningRootGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
+        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+
+        worker.processDueRequests();
+
+        assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
+        verify(irsChainOpeningRootGrantRepository).save(grant);
+    }
+
+    @Test
+    void processDueRequests_WhenRootGrantCreateFailsAndWasAlreadySynced_MarksOutOfSync() {
+        UUID grantUuid = UUID.randomUUID();
+        IrsChainOpeningRootGrant grant = IrsChainOpeningRootGrant.builder()
+            .uuid(grantUuid)
+            .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
+            .build();
+        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grantUuid);
+        stubDue(request);
+        when(irsChainOpeningRootGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
+        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+
+        worker.processDueRequests();
+
+        assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+        verify(irsChainOpeningRootGrantRepository).save(grant);
+    }
+
+    // --- updateLinkedEntity: CREATE-type status preservation (partner grants) ---
+
+    @Test
+    void processDueRequests_WhenGrantCreateFailsAndWasNotSynced_KeepsNotSynced() {
+        UUID grantUuid = UUID.randomUUID();
+        IrsChainOpeningPartnerGrant grant = IrsChainOpeningPartnerGrant.builder()
+            .uuid(grantUuid)
+            .syncStatus(IrsGrantSyncStatusEnumeration.NOT_SYNCED)
+            .build();
+        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE, grantUuid);
+        stubDue(request);
+        when(irsChainOpeningGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
+        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+
+        worker.processDueRequests();
+
+        assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
+        verify(irsChainOpeningGrantRepository).save(grant);
+    }
+
+    @Test
+    void processDueRequests_WhenGrantCreateFailsAndWasAlreadyOutOfSync_StaysOutOfSync() {
+        UUID grantUuid = UUID.randomUUID();
+        IrsChainOpeningPartnerGrant grant = IrsChainOpeningPartnerGrant.builder()
+            .uuid(grantUuid)
+            .syncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC)
+            .build();
+        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE, grantUuid);
+        stubDue(request);
+        when(irsChainOpeningGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
+        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+
+        worker.processDueRequests();
+
+        assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+        verify(irsChainOpeningGrantRepository).save(grant);
     }
 }

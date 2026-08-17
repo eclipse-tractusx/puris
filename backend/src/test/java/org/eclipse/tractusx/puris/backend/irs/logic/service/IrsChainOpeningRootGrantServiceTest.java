@@ -26,6 +26,7 @@ import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
@@ -254,7 +255,70 @@ class IrsChainOpeningRootGrantServiceTest {
 
         assertThat(result).isEqualTo(queuedRequest);
         verify(irsRequestBodybuilder, times(1)).buildGrantCreationRequestBody(grant);
-        verify(irsRequestQueueService, times(1)).enqueue("POST", GRANTS_PATH, body.toString(), null,
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, GRANTS_PATH, body.toString(), null,
+            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
+    }
+
+    @Test
+    void createGrant_WhenGrantAlreadySynced_SendsPut() {
+        IrsChainOpeningRootGrant grant = grant(Set.of());
+        grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
+        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
+            .thenReturn(List.of(reportedNotificationAffectingChild()));
+        when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
+        when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
+
+        chainOpeningGrantService.createGrant(grant);
+
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.PUT, GRANTS_PATH, body.toString(), null,
+            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
+    }
+
+    @Test
+    void createGrant_WhenGrantOutOfSync_SendsPut() {
+        IrsChainOpeningRootGrant grant = grant(Set.of());
+        grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
+        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
+            .thenReturn(List.of(reportedNotificationAffectingChild()));
+        when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
+        when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
+
+        chainOpeningGrantService.createGrant(grant);
+
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.PUT, GRANTS_PATH, body.toString(), null,
+            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
+    }
+
+    @Test
+    void createGrant_WhenGrantWasDeletedAtIrs_SendsPostToRecreate() {
+        IrsChainOpeningRootGrant grant = grant(Set.of());
+        grant.setSyncStatus(IrsGrantSyncStatusEnumeration.DELETED);
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
+        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
+            .thenReturn(List.of(reportedNotificationAffectingChild()));
+        when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
+        when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
+
+        chainOpeningGrantService.createGrant(grant);
+
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, GRANTS_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
     }
 
@@ -470,7 +534,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(irsRequestQueueService, times(1)).enqueue(eq("DELETE"), eq(GRANTS_PATH), isNull(), paramsCaptor.capture(),
+        verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.DELETE), eq(GRANTS_PATH), isNull(), paramsCaptor.capture(),
             eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_DELETE), isNull());
 
         Map<String, String> params = paramsCaptor.getValue();
@@ -506,7 +570,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         assertThat(grant.getReportedNotifications()).isEmpty();
         assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.PENDING);
-        verify(irsRequestQueueService, times(1)).enqueue(eq("DELETE"), eq(GRANTS_PATH), isNull(), any(),
+        verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.DELETE), eq(GRANTS_PATH), isNull(), any(),
             eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_DELETE), eq(grant.getUuid()));
     }
 

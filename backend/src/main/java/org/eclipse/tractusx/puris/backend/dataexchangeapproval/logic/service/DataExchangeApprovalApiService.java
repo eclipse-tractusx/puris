@@ -27,7 +27,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnD
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.adapter.DataExchangeApprovalSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.dataexchangeapprovalsamm.DataExchangeApprovalSamm;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -54,7 +54,7 @@ public class DataExchangeApprovalApiService {
     @Autowired
     private IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
     @Autowired
-    private IrsChainOpeningGrantService irsChainOpeningGrantService;
+    private IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
 
     public ReportedDataExchangeApproval handleIncomingDataExchangeApproval(String bpnl, DataExchangeApprovalSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);

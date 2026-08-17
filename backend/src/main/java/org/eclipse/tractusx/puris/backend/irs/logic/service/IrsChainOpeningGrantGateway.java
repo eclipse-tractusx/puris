@@ -21,8 +21,9 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrantLike;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Enqueues Chain Opening Grant creation/deletion requests at the IRS, shared by
- * {@link IrsChainOpeningRootGrantService} and {@link IrsChainOpeningGrantService}.
+ * {@link IrsChainOpeningRootGrantService} and {@link IrsChainOpeningPartnerGrantService}.
  * <p>
  * Deliberately does not check {@code IrsRequestService.isEnabled()} or assert grant eligibility
  * itself — both stay the caller's responsibility, and specifically in that order, so that a
@@ -47,17 +48,23 @@ public class IrsChainOpeningGrantGateway {
 	private final IrsRequestQueueService irsRequestQueueService;
 
 	/**
-	 * Enqueues a Chain Opening Grant creation request, to be sent and retried asynchronously by
-	 * {@link IrsRequestQueueWorker}.
+	 * Enqueues a Chain Opening Grant creation or update request, to be sent and retried
+	 * asynchronously by {@link IrsRequestQueueWorker}. Issues a {@code POST} if the grant does not
+	 * yet exist at IRS ({@link IrsChainOpeningGrant#existsAtIrs()}), or a {@code PUT} to update
+	 * it if it does - IRS's grant endpoint is create-only for {@code POST}, so re-POSTing an
+	 * already-existing grant does not work.
 	 *
-	 * @param grant the Chain Opening Grant to create
+	 * @param grant the Chain Opening Grant to create or update
 	 * @param type  the queued request type identifying which grant flavor/repository the worker
 	 *              should update once the request reaches a terminal outcome
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 */
-	public IrsQueuedRequest create(IrsChainOpeningGrantLike grant, IrsQueuedRequestTypeEnumeration type) {
+	public IrsQueuedRequest createOrUpdate(IrsChainOpeningGrant grant, IrsQueuedRequestTypeEnumeration type) {
 		String payload = irsRequestBodybuilder.buildGrantCreationRequestBody(grant).toString();
-		return irsRequestQueueService.enqueue("POST", GRANTS_PATH, payload, null, type, grant.getUuid());
+		IrsQueuedRequestMethodEnumeration method = grant.existsAtIrs()
+			? IrsQueuedRequestMethodEnumeration.PUT
+			: IrsQueuedRequestMethodEnumeration.POST;
+		return irsRequestQueueService.enqueue(method, GRANTS_PATH, payload, null, type, grant.getUuid());
 	}
 
 	/**
@@ -69,13 +76,13 @@ public class IrsChainOpeningGrantGateway {
 	 *              should update once the request reaches a terminal outcome
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 */
-	public IrsQueuedRequest delete(IrsChainOpeningGrantLike grant, IrsQueuedRequestTypeEnumeration type) {
+	public IrsQueuedRequest delete(IrsChainOpeningGrant grant, IrsQueuedRequestTypeEnumeration type) {
 		Map<String, String> queryParams = new LinkedHashMap<>();
 		queryParams.put("openingId", grant.getSourceDisruptionId());
 		queryParams.put("useCase", grant.getUseCase());
 		queryParams.put("requesterBpn", grant.getRequesterBpn());
 		queryParams.put("globalAssetId", grant.getGlobalAssetId());
 
-		return irsRequestQueueService.enqueue("DELETE", GRANTS_PATH, null, queryParams, type, grant.getUuid());
+		return irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.DELETE, GRANTS_PATH, null, queryParams, type, grant.getUuid());
 	}
 }

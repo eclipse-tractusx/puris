@@ -38,11 +38,11 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
-import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningGrantRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningPartnerGrantRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Creates, updates and deletes Chain Opening Grants requesting recursive access to our own
  * materials' chains for a partner, both locally (persisted via
- * {@link IrsChainOpeningGrantRepository}) and at the IRS.
+ * {@link IrsChainOpeningPartnerGrantRepository}) and at the IRS.
  * <p>
  * A grant's {@code requesterBpn} is the partner we approved a data exchange request for; its
  * {@code globalAssetId} is a material directly affected by the notification behind that approval
@@ -66,7 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class IrsChainOpeningGrantService {
+public class IrsChainOpeningPartnerGrantService {
 
 	private final IrsRequestService irsRequestService;
 
@@ -91,7 +91,7 @@ public class IrsChainOpeningGrantService {
 
 	private final MaterialRelationService materialRelationService;
 
-	private final IrsChainOpeningGrantRepository irsChainOpeningGrantRepository;
+	private final IrsChainOpeningPartnerGrantRepository irsChainOpeningPartnerGrantRepository;
 
 	/**
 	 * Enqueues a Chain Opening Grant creation request, to be sent and retried asynchronously by
@@ -101,7 +101,7 @@ public class IrsChainOpeningGrantService {
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 * @throws IllegalArgumentException if the grant is not eligible to be created
 	 */
-	public IrsQueuedRequest createGrant(IrsChainOpeningGrant grant) {
+	public IrsQueuedRequest createGrant(IrsChainOpeningPartnerGrant grant) {
 		if (!irsRequestService.isEnabled()) {
 			log.info("IRS adapter is disabled. Skipping creation of chain opening grant for sourceDisruptionId {}",
 				grant.getSourceDisruptionId());
@@ -110,7 +110,7 @@ public class IrsChainOpeningGrantService {
 
 		assertGrantEligible(grant);
 
-		IrsQueuedRequest queuedRequest = gateway.create(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE);
+		IrsQueuedRequest queuedRequest = gateway.createOrUpdate(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE);
 		log.info("Enqueued chain opening grant creation request for sourceDisruptionId {}", grant.getSourceDisruptionId());
 
 		return queuedRequest;
@@ -123,7 +123,7 @@ public class IrsChainOpeningGrantService {
 	 * @param grant the Chain Opening Grant to delete
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 */
-	public IrsQueuedRequest deleteGrant(IrsChainOpeningGrant grant) {
+	public IrsQueuedRequest deleteGrant(IrsChainOpeningPartnerGrant grant) {
 		if (!irsRequestService.isEnabled()) {
 			log.info("IRS adapter is disabled. Skipping deletion of chain opening grant for sourceDisruptionId {}",
 				grant.getSourceDisruptionId());
@@ -223,7 +223,7 @@ public class IrsChainOpeningGrantService {
 			if (currentMaterialCxIds.contains(removedCx)) {
 				continue;
 			}
-			irsChainOpeningGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(requesterBpn, removedCx, sourceDisruptionId)
+			irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(requesterBpn, removedCx, sourceDisruptionId)
 				.ifPresent(this::tearDownGrant);
 		}
 
@@ -272,13 +272,13 @@ public class IrsChainOpeningGrantService {
 		String sourceDisruptionId = ownNotification.getSourceDisruptionId().toString();
 		Date now = new Date();
 
-		IrsChainOpeningGrant grant = irsChainOpeningGrantRepository
+		IrsChainOpeningPartnerGrant grant = irsChainOpeningPartnerGrantRepository
 			.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(requesterBpn, globalAssetId, sourceDisruptionId)
 			.orElse(null);
 
 		boolean isNew = grant == null;
 		if (isNew) {
-			grant = IrsChainOpeningGrant.builder()
+			grant = IrsChainOpeningPartnerGrant.builder()
 				.requesterBpn(requesterBpn)
 				.globalAssetId(globalAssetId)
 				.sourceDisruptionId(sourceDisruptionId)
@@ -290,12 +290,12 @@ public class IrsChainOpeningGrantService {
 				.build();
 		}
 
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncSupport.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 		Set<ReportedDemandAndCapacityNotification> candidateNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now);
 
-		boolean changed = IrsChainOpeningGrantSyncSupport.reconcile(grant, candidateNotifications);
+		boolean changed = IrsChainOpeningGrantSyncUtils.reconcile(grant, candidateNotifications);
 
 		if (grant.getReportedNotifications().isEmpty() && !isNew) {
 			tearDownGrant(grant);
@@ -306,7 +306,7 @@ public class IrsChainOpeningGrantService {
 			grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
 		}
 
-		IrsChainOpeningGrant saved = irsChainOpeningGrantRepository.save(grant);
+		IrsChainOpeningPartnerGrant saved = irsChainOpeningPartnerGrantRepository.save(grant);
 
 		try {
 			IrsQueuedRequest queuedRequest = createGrant(saved);
@@ -319,7 +319,7 @@ public class IrsChainOpeningGrantService {
 			saved.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
 		}
 
-		irsChainOpeningGrantRepository.save(saved);
+		irsChainOpeningPartnerGrantRepository.save(saved);
 	}
 
 	/**
@@ -327,13 +327,13 @@ public class IrsChainOpeningGrantService {
 	 * status is set to {@code DELETED} asynchronously by {@link IrsRequestQueueWorker} once that
 	 * succeeds).
 	 */
-	private void tearDownGrant(IrsChainOpeningGrant grant) {
+	private void tearDownGrant(IrsChainOpeningPartnerGrant grant) {
 		grant.getReportedNotifications().clear();
 		IrsQueuedRequest queuedRequest = deleteGrant(grant);
 		if (queuedRequest != null) {
 			grant.setSyncStatus(IrsGrantSyncStatusEnumeration.PENDING);
 		}
-		irsChainOpeningGrantRepository.save(grant);
+		irsChainOpeningPartnerGrantRepository.save(grant);
 	}
 
 	/**
@@ -348,7 +348,7 @@ public class IrsChainOpeningGrantService {
 			.map(forwardedRequest -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwardedRequest.getUuid()))
 			.filter(Objects::nonNull)
 			.map(approval -> approval.getDataExchangeRequest().getNotification())
-			.filter(notification -> IrsChainOpeningGrantSyncSupport.isNotificationActiveNow(notification, now))
+			.filter(notification -> IrsChainOpeningGrantSyncUtils.isNotificationActiveNow(notification, now))
 			.filter(notification -> notification.getMaterials() != null && notification.getMaterials().stream()
 				.filter(Objects::nonNull)
 				.map(Material::getOwnMaterialNumber)
@@ -366,15 +366,15 @@ public class IrsChainOpeningGrantService {
 	 *
 	 * @throws IllegalArgumentException if the grant does not satisfy the applicable conditions
 	 */
-	private void assertGrantEligible(IrsChainOpeningGrant grant) {
+	private void assertGrantEligible(IrsChainOpeningPartnerGrant grant) {
 		Date now = new Date();
 		UUID sourceDisruptionId = UUID.fromString(grant.getSourceDisruptionId());
 
 		OwnDemandAndCapacityNotification matchingNotification = ownNotificationRepository
 			.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, grant.getRequesterBpn()).stream()
-			.filter(notification -> IrsChainOpeningGrantSyncSupport.isNotificationActiveNow(notification, now))
-			.filter(notification -> IrsChainOpeningGrantSyncSupport.isWithinNotificationBounds(notification, grant.getValidFrom(), grant.getValidUntil()))
-			.filter(notification -> IrsChainOpeningGrantSyncSupport.affectsMaterialWithCx(notification, grant.getGlobalAssetId()))
+			.filter(notification -> IrsChainOpeningGrantSyncUtils.isNotificationActiveNow(notification, now))
+			.filter(notification -> IrsChainOpeningGrantSyncUtils.isWithinNotificationBounds(notification, grant.getValidFrom(), grant.getValidUntil()))
+			.filter(notification -> IrsChainOpeningGrantSyncUtils.affectsMaterialWithCx(notification, grant.getGlobalAssetId()))
 			.findFirst()
 			.orElse(null);
 
@@ -400,12 +400,12 @@ public class IrsChainOpeningGrantService {
 			log.error("No material found for globalAssetId {} while checking allowed BPNL eligibility", grant.getGlobalAssetId());
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncSupport.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();
 
-		IrsChainOpeningGrantSyncSupport.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
 }

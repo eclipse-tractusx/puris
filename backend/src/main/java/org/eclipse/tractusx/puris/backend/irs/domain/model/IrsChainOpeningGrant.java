@@ -19,7 +19,6 @@
 package org.eclipse.tractusx.puris.backend.irs.domain.model;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -36,14 +35,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,81 +46,83 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 /**
- * Represents a Chain Opening Grant requesting recursive access to a material's chain for a
- * partner, as it is created at and deleted from the IRS.
+ * Common shape of a Chain Opening Grant as it is created at and deleted from the IRS, shared by
+ * {@link IrsChainOpeningRootGrant} and {@link IrsChainOpeningPartnerGrant}.
  * <p>
- * A grant allows the {@link #requesterBpn} (a partner's BPNL) to recursively query the set of
- * {@link #getAllowedBpnls()} for child materials of the material identified by {@link #globalAssetId}
- * (a material directly affected by one of our own disruption notifications that we approved data exchange
- * for), for the duration of the [{@link #validFrom}, {@link #validUntil}] window. The allowed
- * BPNLs are derived from the partners of {@link #reportedNotifications}, the set of reported
- * notifications currently backing this grant.
+ * A grant allows {@link #requesterBpn} to recursively query the set of {@link #getAllowedBpnls()}
+ * for the material identified by {@link #globalAssetId}, for the duration of the
+ * [{@link #validFrom}, {@link #validUntil}] window. A grant is uniquely identified by the
+ * combination of {@link #requesterBpn}, {@link #globalAssetId} and {@link #sourceDisruptionId}.
  * <p>
- * A grant is uniquely identified by the combination of {@link #requesterBpn},
- * {@link #globalAssetId} and {@link #sourceDisruptionId}. The {@code @JsonProperty}
- * annotations reflect the wire shape expected by the IRS grant-creation request, so
- * that this class can be serialized directly instead of being mapped field by field;
- * fields that are not part of that wire shape are marked {@code @JsonIgnore}.
+ * {@link #getReportedNotifications()} is declared abstract rather than mapped here: a real
+ * {@code @ManyToMany} needs its own join table per concrete subclass, since JPA can't express a
+ * single shared join table whose "grant" side polymorphically references either of two separate
+ * {@code TABLE_PER_CLASS}-mapped tables.
+ * <p>
+ * The {@code @JsonProperty} annotations reflect the wire shape expected by the IRS
+ * grant-creation request, so that this class can be serialized directly instead of being mapped
+ * field by field; fields that are not part of that wire shape are marked {@code @JsonIgnore}.
  */
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 @Entity
-@Table(name = "chain_opening_grant", uniqueConstraints = @UniqueConstraint(
-	name = "uc_chain_opening_grant_key",
-	columnNames = { "requester_bpn", "global_asset_id", "source_disruption_id" }
-))
-public class IrsChainOpeningGrant implements IrsChainOpeningGrantLike {
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class IrsChainOpeningGrant {
 
 	@Id
 	@GeneratedValue
 	@JsonIgnore
-	private UUID uuid;
+	protected UUID uuid;
 
-	private String globalAssetId;
+	protected String globalAssetId;
 
 	@JsonProperty("openingId")
-	private String sourceDisruptionId;
+	protected String sourceDisruptionId;
 
-	private String requesterBpn;
+	protected String requesterBpn;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(
-		name = "chain_opening_grant_notification",
-		joinColumns = @JoinColumn(name = "chain_opening_grant_uuid"),
-		inverseJoinColumns = @JoinColumn(name = "reported_notification_uuid")
-	)
-	@JsonIgnore
-	@Builder.Default
-	private Set<ReportedDemandAndCapacityNotification> reportedNotifications = new HashSet<>();
+	protected Instant validFrom;
 
-	private Instant validFrom;
-
-	private Instant validUntil;
+	protected Instant validUntil;
 
 	@Builder.Default
-	private String useCase = IrsAdapterConfiguration.PURIS_USE_CASE;
+	protected String useCase = IrsAdapterConfiguration.PURIS_USE_CASE;
 
 	@Enumerated(EnumType.STRING)
 	@JsonIgnore
-	private IrsGrantSyncStatusEnumeration syncStatus;
+	protected IrsGrantSyncStatusEnumeration syncStatus;
+
+	public abstract Set<ReportedDemandAndCapacityNotification> getReportedNotifications();
 
 	/**
 	 * The BPNLs allowed to be recursively queried under this grant, derived from the partners
-	 * of {@link #reportedNotifications}. This is the wire shape expected by the IRS
+	 * of {@link #getReportedNotifications()}. This is the wire shape expected by the IRS
 	 * grant-creation request.
 	 */
 	@JsonProperty("allowedBpnls")
 	public Set<String> getAllowedBpnls() {
-		return reportedNotifications.stream()
+		return getReportedNotifications().stream()
 			.map(ReportedDemandAndCapacityNotification::getPartner)
 			.filter(Objects::nonNull)
 			.map(Partner::getBpnl)
 			.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
+	/**
+	 * Whether IRS currently has a copy of this grant, i.e. whether pushing a change should be a
+	 * {@code PUT} (update) rather than a {@code POST} (create). {@code NOT_SYNCED} (never attempted,
+	 * or a first attempt that never actually reached IRS) and {@code DELETED} (IRS confirmed it's
+	 * gone) mean it does not currently exist there; every other status means it does (or very
+	 * recently did).
+	 */
+	public boolean existsAtIrs() {
+		return syncStatus != null && syncStatus != IrsGrantSyncStatusEnumeration.NOT_SYNCED && syncStatus != IrsGrantSyncStatusEnumeration.DELETED;
 	}
 }

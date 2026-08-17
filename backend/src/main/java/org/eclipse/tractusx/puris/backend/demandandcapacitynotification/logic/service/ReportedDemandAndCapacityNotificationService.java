@@ -25,7 +25,7 @@ import java.util.List;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -36,11 +36,11 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
 
     private final IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
 
-    private final IrsChainOpeningGrantService irsChainOpeningGrantService;
+    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
 
     public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
             PartnerService partnerService, MaterialPartnerRelationService mpr, IrsChainOpeningRootGrantService irsChainOpeningRootGrantService,
-            IrsChainOpeningGrantService irsChainOpeningGrantService) {
+            IrsChainOpeningPartnerGrantService irsChainOpeningGrantService) {
         super(reportedNotificationRepository, partnerService, mpr);
         this.irsChainOpeningRootGrantService = irsChainOpeningRootGrantService;
         this.irsChainOpeningGrantService = irsChainOpeningGrantService;
