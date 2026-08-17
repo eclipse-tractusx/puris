@@ -134,6 +134,9 @@ public class PartTypeInformationController {
      * @return                  the resolved product or the status to be returned to the partner
      */
     private ProductLookup resolveProduct(String bpnl, String materialnumber, String representation, String version) {
+        if (!bpnlPattern.matcher(bpnl).matches()) {
+            return ProductLookup.error(HttpStatus.BAD_REQUEST);
+        }
         String decodedMaterialNumber;
         try {
             decodedMaterialNumber = new String(Base64.getDecoder().decode(materialnumber.getBytes(StandardCharsets.UTF_8)),StandardCharsets.UTF_8);
@@ -141,7 +144,7 @@ public class PartTypeInformationController {
             log.warn("Received invalid base64 encoded material number from {}", bpnl);
             return ProductLookup.error(HttpStatus.BAD_REQUEST);
         }
-        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(decodedMaterialNumber).matches()) {
+        if (!materialNumberPattern.matcher(decodedMaterialNumber).matches()) {
             return ProductLookup.error(HttpStatus.BAD_REQUEST);
         }
         if (!"$value".equals(representation)) {
