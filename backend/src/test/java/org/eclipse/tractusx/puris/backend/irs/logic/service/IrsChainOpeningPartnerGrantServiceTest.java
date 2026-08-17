@@ -638,7 +638,6 @@ class IrsChainOpeningPartnerGrantServiceTest {
         OwnDataExchangeApproval sentApproval = sentApproval(triggering);
 
         UUID notificationUuid = UUID.randomUUID();
-        ReportedDemandAndCapacityNotification previous = reportedNotification(notificationUuid, SUPPLIER_BPNL, List.of());
         Material childMaterial = material(CHILD_MATERIAL_NUMBER, null);
         ReportedDemandAndCapacityNotification updated = reportedNotification(notificationUuid, SUPPLIER_BPNL, List.of(childMaterial));
         OwnDataExchangeRequest forwarded = forwardedRequest(UUID.randomUUID(), updated, triggering);
@@ -652,7 +651,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(receivedApproval(forwarded));
         when(irsRequestService.isEnabled()).thenReturn(false);
 
-        chainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
+        chainOpeningGrantService.onReportedNotificationUpdated(updated);
 
         ArgumentCaptor<IrsChainOpeningPartnerGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningPartnerGrant.class);
         verify(irsChainOpeningPartnerGrantRepository, atLeastOnce()).save(captor.capture());
@@ -662,12 +661,11 @@ class IrsChainOpeningPartnerGrantServiceTest {
     @Test
     void onReportedNotificationUpdated_WhenNotChainLinked_NoOp() {
         UUID notificationUuid = UUID.randomUUID();
-        ReportedDemandAndCapacityNotification previous = reportedNotification(notificationUuid, SUPPLIER_BPNL, List.of());
         ReportedDemandAndCapacityNotification updated = reportedNotification(notificationUuid, SUPPLIER_BPNL, List.of());
 
         when(ownDataExchangeRequestRepository.findByNotification_Uuid(notificationUuid)).thenReturn(Optional.empty());
 
-        chainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
+        chainOpeningGrantService.onReportedNotificationUpdated(updated);
 
         verify(irsChainOpeningPartnerGrantRepository, never()).findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(any(), any(), any());
     }

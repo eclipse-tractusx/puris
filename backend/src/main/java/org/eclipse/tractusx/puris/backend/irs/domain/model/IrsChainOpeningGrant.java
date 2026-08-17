@@ -99,7 +99,7 @@ public abstract class IrsChainOpeningGrant {
 	@JsonIgnore
 	protected IrsGrantSyncStatusEnumeration syncStatus;
 
-	public abstract Set<ReportedDemandAndCapacityNotification> getReportedNotifications();
+	public Set<ReportedDemandAndCapacityNotification> reportedNotifications;
 
 	/**
 	 * The BPNLs allowed to be recursively queried under this grant, derived from the partners

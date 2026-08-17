@@ -49,7 +49,7 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
     @Override
     protected void afterUpdate(ReportedDemandAndCapacityNotification previous, ReportedDemandAndCapacityNotification updated) {
         irsChainOpeningRootGrantService.onReportedNotificationUpdated(previous, updated);
-        irsChainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
+        irsChainOpeningGrantService.onReportedNotificationUpdated(updated);
     }
 
     public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {

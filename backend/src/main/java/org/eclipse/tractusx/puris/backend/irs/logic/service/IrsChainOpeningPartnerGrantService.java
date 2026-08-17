@@ -188,7 +188,7 @@ public class IrsChainOpeningPartnerGrantService {
 	 * @param previous the notification's state before the update
 	 * @param updated  the notification's state after the update
 	 */
-	public void onReportedNotificationUpdated(ReportedDemandAndCapacityNotification previous, ReportedDemandAndCapacityNotification updated) {
+	public void onReportedNotificationUpdated(ReportedDemandAndCapacityNotification updated) {
 		OwnDataExchangeRequest forwardedRequest = ownDataExchangeRequestRepository.findByNotification_Uuid(updated.getUuid()).orElse(null);
 		if (forwardedRequest == null) {
 			return;
