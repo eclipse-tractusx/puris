@@ -70,10 +70,10 @@ public class IndustryCoreMessageService {
             throw new IllegalArgumentException("Body is missing");
         }
         validate(body.get("header"), senderBpn, expectedContext);
-        return parseContent(body.get("content"), expectedContext, contentType);
+        return parseContent(body.get("content"), contentType);
     }
 
-    private <T> T parseContent(JsonNode content, IndustryCoreMessageContext context, Class<T> contentType) {
+    private <T> T parseContent(JsonNode content, Class<T> contentType) {
         if (content == null || content.isMissingNode() || content.isNull()) {
             throw new IllegalArgumentException("Content is missing");
         }
