@@ -60,7 +60,7 @@ public abstract class DemandAndCapacityNotification {
         joinColumns = @JoinColumn(name = "notification_uuid")
     )
     @Column(name = "related_notification_id")
-    protected List<@Pattern(regexp = PatternStore.URN_OR_UUID_STRING) String> relatedNotificationIds;
+    protected List<String> relatedNotificationIds;
 
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     protected String sourceDisruptionId;

@@ -192,7 +192,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
     }
 
     @ParameterizedTest
-    @MethodSource("strings")
+    @MethodSource("supplierStrings")
     void testSammDeSerializationAsCustomer(String receivedSammString, String materialNumber) throws Exception {
         // parse a Samm, we received from supplier as a customer
 
@@ -350,7 +350,7 @@ public class DemandAndCapacityNotificationSammMapperTest {
     }
 
     @ParameterizedTest
-    @MethodSource("strings")
+    @MethodSource("customerStrings")
     void testSammDeSerializationAsSupplier(String receivedSammString, String materialNumber) throws Exception {
         // parse a Samm, we received from customer as a supplier
 
@@ -363,11 +363,14 @@ public class DemandAndCapacityNotificationSammMapperTest {
 
         MaterialPartnerRelation materialPartnerRelation = new MaterialPartnerRelation(semiconductorMaterial, externalPartner,
             CUSTOMER_MAT_NUMBER, false, true);
+        materialPartnerRelation.setMaterial(semiconductorMaterial);
 
         when(materialService.findByMaterialNumberCx(materialNumber)).thenReturn(semiconductorMaterial);
         when(materialService.findByOwnMaterialNumber(SUPPLIER_MAT_NUMBER)).thenReturn(semiconductorMaterial);
         when(mprService.findAllByPartnerMaterialNumber(CUSTOMER_MAT_NUMBER)).thenReturn(List.of(semiconductorMaterial));
         when(mprService.find(semiconductorMaterial, externalPartner)).thenReturn(materialPartnerRelation);
+        when(mprService.findByPartnerAndPartnerCXNumber(externalPartner, materialNumber)).thenReturn(materialPartnerRelation);
+
         when(partnerService.getOwnPartnerEntity()).thenReturn(mySelf);
 
         ReportedDemandAndCapacityNotification reportedDemandAndCapacityNotification =
@@ -547,12 +550,12 @@ public class DemandAndCapacityNotificationSammMapperTest {
             "  \"effect\" : \"capacity-reduction\",\n" +
             "  \"text\" : \"We are in big trouble!\",\n" +
             "  \"materialsAffected\" : [ { \n" +
-            "       \"materialGlobalAssetId\" : \"caf4a1df-6b97-46c9-8492-d137e911e611\",\n" +
+            "       \"materialGlobalAssetId\" : \""+ materialNumber +"\",\n" +
             "       \"materialNumberCustomer\" : \"MNR-7307-AU340474.002\",\n" +
             "       \"materialNumberSupplier\" : \"MNR-8101-ID146955.001\"\n" +
             "   }, \n" +
             "   {\n" +
-            "       \"materialGlobalAssetId\" : \"dbf4a1df-6b97-46c9-8492-d137e911e722\",\n" +
+            "       \"materialGlobalAssetId\" : \""+ materialNumberDummy +"\",\n" +
             "       \"materialNumberCustomer\" : \"customer-mnr-456\",\n" +
             "       \"materialNumberSupplier\" : \"supplier-mnr-123\"\n" +
             "   } ],\n" +
@@ -603,12 +606,20 @@ public class DemandAndCapacityNotificationSammMapperTest {
         Assertions.assertEquals(EffectEnumeration.CAPACITY_REDUCTION, reportedDemandAndCapacityNotification.getEffect());
     }
     
-    private static Stream<Arguments> strings() {
-    return Stream.of(
-        Arguments.of(regularSammFromSupplier, CX_MAT_NUMBER),
-        Arguments.of(sammWithoutCXIdFromSupplier, CX_MAT_NUMBER),
-        Arguments.of(sammWithoutCXIdAndSupplierMnrFromSupplier, CX_MAT_NUMBER_URN)
-    );
-}
+    private static Stream<Arguments> supplierStrings() {
+        return Stream.of(
+            Arguments.of(regularSammFromSupplier, CX_MAT_NUMBER),
+            Arguments.of(sammWithoutCXIdFromSupplier, CX_MAT_NUMBER),
+            Arguments.of(sammWithoutCXIdAndSupplierMnrFromSupplier, CX_MAT_NUMBER_URN)
+        );
+    }
+
+    private static Stream<Arguments> customerStrings() {
+        return Stream.of(
+            Arguments.of(regularSammFromCustomer, CX_MAT_NUMBER),
+            Arguments.of(sammWithoutCXIdFromCustomer, CX_MAT_NUMBER),
+            Arguments.of(sammWithoutCXIdAndCustomerMnrFromCustomer, CX_MAT_NUMBER_URN)
+        );
+    }
 
 }

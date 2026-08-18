@@ -19,6 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
@@ -125,6 +126,9 @@ public class DemandAndCapacityNotificationSammMapper {
                 }
             }
             default -> throw new IllegalStateException("Unexpected value: " + samm.getEffect());
+        }
+        if (samm.getRelatedNotificationIds() != null && samm.getRelatedNotificationIds().stream().anyMatch(id -> !PatternStore.URN_OR_UUID_PATTERN.matcher(id).matches())) {
+            throw new IllegalArgumentException("Related Notfications must be URN or UUID format");
         }
 
         var affectedSitesSender = partner.getSites().stream()

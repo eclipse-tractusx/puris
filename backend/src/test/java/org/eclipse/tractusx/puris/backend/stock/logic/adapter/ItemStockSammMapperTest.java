@@ -140,7 +140,7 @@ public class ItemStockSammMapperTest {
     }
 
     @Test
-    @Order(2)
+    @Order(5)
     void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStockTestUrn(){
         map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(CX_MAT_NUMBER_URN);
     }
@@ -160,7 +160,7 @@ public class ItemStockSammMapperTest {
     }
 
     @Test
-    @Order(3)
+    @Order(6)
     void test_unmarshallingUrn(){
         test_unmarshalling(CX_MAT_NUMBER_URN);
     }
@@ -182,7 +182,7 @@ public class ItemStockSammMapperTest {
     }
 
     @Test
-    @Order(4)
+    @Order(7)
     void test_deserializationFromJsonUrn() throws Exception {
         test_deserializationFromJson(CX_MAT_NUMBER_URN);
     }
