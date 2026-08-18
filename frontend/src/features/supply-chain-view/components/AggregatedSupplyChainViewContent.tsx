@@ -33,10 +33,10 @@ import { useProduction } from '@features/material-details/hooks/useProduction';
 import { useDelivery } from '@features/material-details/hooks/useDelivery';
 import { useStocks } from '@features/stock-view/hooks/useStocks';
 import { useSites } from '@features/stock-view/hooks/useSites';
-import { useMaterialRelations } from '@hooks/useMaterialRelations';
 import { useAllMaterials } from '@hooks/useAllMaterials';
-import { buildSupplyChainTree } from '@util/supply-chain-relations';
-import { SupplyChainTreeNode } from './SupplyChainTreeNode';
+import { useAggregatedMaterialData } from '@hooks/useAggregatedMaterialData';
+import { useMaterialNumbersMapping } from '@hooks/useMaterialNumbersMapping';
+import { AggregatedMaterialDataNodeSummary } from './AggregatedMaterialDataNodeSummary';
 
 type AggregatedSupplyChainViewContentProps = {
     material: Material;
@@ -57,13 +57,16 @@ export function AggregatedSupplyChainViewContent({ material }: AggregatedSupplyC
         [productions, outgoingShipments, stocks]
     );
 
-    const { materialRelations } = useMaterialRelations();
     const { materials } = useAllMaterials();
-    const materialsByNumber = useMemo(
-        () => new Map((materials ?? []).filter((m) => m.ownMaterialNumber).map((m) => [m.ownMaterialNumber as string, m])),
-        [materials]
-    );
-    const supplyChainTree = useMemo(() => buildSupplyChainTree(ownMaterialNumber, materialRelations ?? []), [materialRelations, ownMaterialNumber]);
+    const { aggregatedMaterialData } = useAggregatedMaterialData(ownMaterialNumber);
+    const mappingByOwnMaterialNumber = useMaterialNumbersMapping(materials);
+    const materialBySupplierNumber = useMemo(() => {
+        const map = new Map<string, string>();
+        mappingByOwnMaterialNumber.forEach((partnerNumbers, matchedOwnMaterialNumber) => {
+            Object.values(partnerNumbers).forEach((partnerMaterialNumber) => map.set(partnerMaterialNumber, matchedOwnMaterialNumber));
+        });
+        return map;
+    }, [mappingByOwnMaterialNumber]);
 
     return (
         <CalendarWeekProvider>
@@ -86,19 +89,23 @@ export function AggregatedSupplyChainViewContent({ material }: AggregatedSupplyC
                         summary={summary}
                         materialNumber={ownMaterialNumber}
                         showHeader
-                        includeDaysOfSupply
                     />
-                    {supplyChainTree.length === 0 ? (
+                    {aggregatedMaterialData.length === 0 ? (
                         <Typography padding="1rem" color="text.secondary">
-                            This material has no BOM components configured.
+                            No aggregated data available for this material.
                         </Typography>
                     ) : (
-                        supplyChainTree.map((node) => (
-                            <SupplyChainTreeNode
-                                key={`${node.depth}-${node.ownMaterialNumber}`}
-                                node={node}
-                                materialsByNumber={materialsByNumber}
-                            />
+                        aggregatedMaterialData.map((data) => (
+                            <Stack key={data.uuid}>
+                                {data.childMaterialData.map((node) => (
+                                    <AggregatedMaterialDataNodeSummary
+                                        key={node.uuid}
+                                        node={node}
+                                        depth={1}
+                                        materialBySupplierNumber={materialBySupplierNumber}
+                                    />
+                                ))}
+                            </Stack>
                         ))
                     )}
                 </SummaryContainer>

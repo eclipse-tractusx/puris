@@ -21,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 import { ReactNode } from 'react';
 import { IconButton, Stack, Typography } from '@mui/material';
 import { ChevronRightOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import { getSupplyChainTierLabel } from '@util/supply-chain-relations';
 
 type SupplyChainRowHeaderProps = {
     depth: number;
@@ -62,9 +61,11 @@ export function SupplyChainRowHeader({
             <IconButton size="small" onClick={onToggle} sx={{ color: 'inherit' }} data-testid={toggleTestId}>
                 {isExpanded ? <ExpandMoreOutlined fontSize="small" /> : <ChevronRightOutlined fontSize="small" />}
             </IconButton>
-            <Typography variant="body3" sx={{ opacity: 0.7 }}>
-                {getSupplyChainTierLabel(depth)}
-            </Typography>
+            {depth > 1 && (
+                <Typography variant="body3" sx={{ opacity: 0.7 }} aria-hidden>
+                    {'└─'.repeat(depth - 1)}
+                </Typography>
+            )}
             {beforeTitle}
             <Typography variant="body1">{title}</Typography>
             {numberNode && (

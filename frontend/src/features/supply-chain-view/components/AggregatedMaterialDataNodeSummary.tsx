@@ -19,10 +19,11 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useMemo, useState } from 'react';
-import { Box, Chip, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { AggregatedMaterialDataNode } from '@models/types/data/aggregated-material-data';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
+import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { createAnonymizedSummary } from '../util/anonymized-summary';
 import { AnonymizedSummaryPanel } from './AnonymizedSummaryPanel';
 import { SupplyChainRowHeader } from './SupplyChainRowHeader';
@@ -30,9 +31,14 @@ import { SupplyChainRowHeader } from './SupplyChainRowHeader';
 type AggregatedMaterialDataNodeSummaryProps = {
     node: AggregatedMaterialDataNode;
     depth: number;
+    materialBySupplierNumber: Map<string, string>;
 };
 
-export function AggregatedMaterialDataNodeSummary({ node, depth }: AggregatedMaterialDataNodeSummaryProps) {
+export function AggregatedMaterialDataNodeSummary({
+    node,
+    depth,
+    materialBySupplierNumber,
+}: AggregatedMaterialDataNodeSummaryProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const hasBlockedStock = node.stocks.some((stock) => stock.blocked);
     const hasAnonymizedData = node.productions.length > 0 || node.deliveries.length > 0 || node.stocks.length > 0;
@@ -41,6 +47,11 @@ export function AggregatedMaterialDataNodeSummary({ node, depth }: AggregatedMat
         [node.productions, node.deliveries, node.stocks]
     );
 
+    // Only tier-1 nodes are supplied by a partner we directly know - deeper tiers are anonymized partners-of-partners.
+    const matchedOwnMaterialNumber =
+        depth === 1 && node.externalMaterialNumber ? materialBySupplierNumber.get(node.externalMaterialNumber) ?? null : null;
+    const { partners } = usePartners('material', matchedOwnMaterialNumber);
+
     return (
         <Box data-testid="aggregated-material-data-node">
             <SupplyChainRowHeader
@@ -48,11 +59,29 @@ export function AggregatedMaterialDataNodeSummary({ node, depth }: AggregatedMat
                 isExpanded={isExpanded}
                 onToggle={() => setIsExpanded((expanded) => !expanded)}
                 toggleTestId="aggregated-material-data-node-toggle"
+                beforeTitle={
+                    partners &&
+                    partners.length > 0 && (
+                        <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            {partners.map((partner, index) => (
+                                <Box component="span" key={partner.bpnl} sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    {index > 0 && ','}
+                                    {partner.name} (<TextToClipboard text={partner.bpnl} variant="light" />)
+                                </Box>
+                            ))}
+                            {' /'}
+                        </Typography>
+                    )
+                }
                 title={node.externalMaterialName ?? node.externalMaterialNumber ?? 'Unknown component'}
                 numberNode={node.externalMaterialNumber && <TextToClipboard text={node.externalMaterialNumber} variant="light" />}
                 quantity={node.quantity}
                 unit={getUnitOfMeasurement(node.measurementUnit)}
-                afterQuantity={hasBlockedStock && <Chip label="Blocked stock" size="small" color="warning" />}
+                afterQuantity={
+                    <Typography variant="body3" sx={{ opacity: 0.7 }}>
+                        Blocked: {hasBlockedStock ? 'Yes' : 'No'}
+                    </Typography>
+                }
             />
             {isExpanded &&
                 (hasAnonymizedData ? (
@@ -63,7 +92,14 @@ export function AggregatedMaterialDataNodeSummary({ node, depth }: AggregatedMat
                     </Typography>
                 ))}
             {isExpanded &&
-                node.childMaterialData.map((child) => <AggregatedMaterialDataNodeSummary key={child.uuid} node={child} depth={depth + 1} />)}
+                node.childMaterialData.map((child) => (
+                    <AggregatedMaterialDataNodeSummary
+                        key={child.uuid}
+                        node={child}
+                        depth={depth + 1}
+                        materialBySupplierNumber={materialBySupplierNumber}
+                    />
+                ))}
         </Box>
     );
 }
