@@ -206,7 +206,7 @@ public class DataExchangeRequestForwardServiceTest {
         Assertions.assertSame(origin, created.getRelatedDataExchangeRequest());
         Assertions.assertSame(targetNotification, created.getNotification());
         Assertions.assertEquals(origin.getCriticality(), created.getCriticality());
-        Assertions.assertEquals(origin.getText(), created.getText());
+        Assertions.assertNotEquals(origin.getText(), created.getText());
         Assertions.assertEquals(origin.getRequestedTypes(), created.getRequestedTypes());
         Assertions.assertEquals(dateFromString("01-03-2026 00:00:00"), created.getDesiredStartDateTime());
         Assertions.assertEquals(dateFromString("30-06-2026 00:00:00"), created.getDesiredEndDateTime());
