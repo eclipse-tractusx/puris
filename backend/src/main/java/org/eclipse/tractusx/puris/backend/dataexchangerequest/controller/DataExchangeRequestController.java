@@ -167,11 +167,9 @@ public class DataExchangeRequestController {
         try {
             OwnDataExchangeApproval newEntity = ownDataExchangeApprovalService.create(ownDataExchangeApproval);
 
-            if (forward) {
-                for (OwnDataExchangeRequest fwd : dataExchangeForwardService.createForwardedRequests(reportedRequest, targets)) {
-                    Partner target = fwd.getNotification().getPartner();
-                    executorService.submit(() -> dataExchangeRequestApiService.sendDataExchangeRequest(fwd, target));
-                }
+            for (OwnDataExchangeRequest fwd : dataExchangeForwardService.createForwardedRequests(reportedRequest, targets)) {
+                Partner target = fwd.getNotification().getPartner();
+                executorService.submit(() -> dataExchangeRequestApiService.sendDataExchangeRequest(fwd, target));
             }
 
             executorService.submit(() -> dataExchangeApprovalApiService.sendDataExchangeApproval(newEntity, partner));

@@ -147,8 +147,8 @@ public class DataExchangeApprovalApiService {
             log.error("Failed to finalize approval {}", originApproval.getApprovalId());
             return;
         }
-        Partner customer = origin.getNotification().getPartner();
-        executorService.submit(() -> sendDataExchangeApproval(originApproval, customer));
+        Partner partner = origin.getNotification().getPartner();
+        executorService.submit(() -> sendDataExchangeApproval(originApproval, partner));
     }
 
     private JsonNode createDataExchangeApprovalBody(OwnDataExchangeApproval approval) {

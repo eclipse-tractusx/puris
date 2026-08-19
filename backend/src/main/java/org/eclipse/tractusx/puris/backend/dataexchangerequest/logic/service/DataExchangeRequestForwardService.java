@@ -87,7 +87,7 @@ public class DataExchangeRequestForwardService {
                 .desiredStartDateTime(target.start())
                 .desiredEndDateTime(target.end())
                 .requestedTypes(new ArrayList<>(origin.getRequestedTypes()))
-                .text(origin.getText())
+                .text("Forwarded data exchange request from a downstream partner")
                 .build();
             try {
                 created.add(ownDataExchangeRequestService.create(forwarded));
