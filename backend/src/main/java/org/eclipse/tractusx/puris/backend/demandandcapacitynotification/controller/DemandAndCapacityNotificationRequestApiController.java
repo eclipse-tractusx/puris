@@ -95,8 +95,7 @@ public class DemandAndCapacityNotificationRequestApiController {
         "    \"version\": \"3.0.0\"\n" +
         "  },\n" +
         "  \"content\": {\n" +
-        "    \"demandAndCapacityNotification\": {\n" +
-    "        \"affectedSitesSender\": [],\n" +
+        "    \"affectedSitesSender\": [],\n" +
         "    \"affectedSitesRecipient\": [],\n" +
         "    \"materialsAffected\": [],\n" +
         "    \"contentChangedAt\": \"2023-12-13T15:00:00+01:00\",\n" +

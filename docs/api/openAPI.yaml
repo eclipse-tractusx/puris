@@ -2975,25 +2975,24 @@ paths:
           application/json:
             example:
               content:
-                demandAndCapacityNotification:
-                  affectedSitesRecipient: []
-                  affectedSitesSender: []
-                  contentChangedAt: '2023-12-13T15:00:00+01:00'
-                  effect: demand-reduction
-                  expectedEndDateOfEffect: '2023-12-17T08:00:00+01:00'
-                  leadingRootCause: strike
-                  materialsAffected: []
-                  notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
-                  relatedNotificationIds:
-                  - urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
-                  resolvingMeasureDescription: An agreement was found and the strike
-                    was ended.
-                  sourceDisruptionId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
-                  startDateOfEffect: '2023-12-13T15:00:00+01:00'
-                  status: resolved
-                  text: Capacity reduction due to ongoing strike.
+                affectedSitesRecipient: []
+                affectedSitesSender: []
+                contentChangedAt: '2023-12-13T15:00:00+01:00'
+                effect: demand-reduction
+                expectedEndDateOfEffect: '2023-12-17T08:00:00+01:00'
+                leadingRootCause: strike
+                materialsAffected: []
+                notificationId: urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362
+                relatedNotificationIds:
+                - urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04
+                resolvingMeasureDescription: An agreement was found and the strike
+                  was ended.
+                sourceDisruptionId: urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e
+                startDateOfEffect: '2023-12-13T15:00:00+01:00'
+                status: resolved
+                text: Capacity reduction due to ongoing strike.
               header:
-                context: CX-DemandAndCapacityNotificationAPI-Receive:2.0
+                context: CX-DemandAndCapacityNotificationAPI-Receive:3.0
                 messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9
                 receiverBpn: BPNL6666787765VQ
                 senderBpn: BPNL7588787849VQ
@@ -3010,7 +3009,7 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-      summary: 'This endpoint receives the DemandAndCapacityNotification 2.0.0 requests.
+      summary: 'This endpoint receives the DemandAndCapacityNotification 3.0.0 requests.
         This endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - demand-and-capacity-notification-request-api-controller
