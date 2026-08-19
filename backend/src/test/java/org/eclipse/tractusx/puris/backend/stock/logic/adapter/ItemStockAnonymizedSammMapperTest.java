@@ -110,7 +110,7 @@ public class ItemStockAnonymizedSammMapperTest {
     }
     
     @Test
-    @Order(1)
+    @Order(2)
     void map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSammWithCxMatNumberUrn() {
         map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm(CX_MAT_NUMBER_URN);
     }

@@ -115,11 +115,22 @@ public class ItemStockSammMapperTest {
     }
 
     @Test
-    @Order(1)
-    void map_WhenSingleMaterialItemStock_ReturnsItemStockSammTestUrn(){
-        map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(CX_MAT_NUMBER_URN);
+    @Order(2)
+    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStockTestUuid(){
+        map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(CX_MAT_NUMBER);
     }
 
+    @Test
+    @Order(3)
+    void test_unmarshallingUuid(){
+        test_unmarshalling(CX_MAT_NUMBER);
+    }
+
+    @Test
+    @Order(4)
+    void test_deserializationFromJsonUuid() throws Exception{
+        test_deserializationFromJson(CX_MAT_NUMBER);
+    }
 
     /**
      * Tests following Scenario: Supplier asks the Customer for Stocks of a given material that the customer
@@ -133,16 +144,29 @@ public class ItemStockSammMapperTest {
      *
      * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
      */
-    @Test
-    @Order(2)
-    void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStockTestUuid(){
-        map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(CX_MAT_NUMBER);
-    }
 
     @Test
     @Order(5)
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockSammTestUrn(){
+        map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(CX_MAT_NUMBER_URN);
+    }
+
+    @Test
+    @Order(6)
     void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStockTestUrn(){
         map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(CX_MAT_NUMBER_URN);
+    }
+
+    @Test
+    @Order(7)
+    void test_unmarshallingUrn(){
+        test_unmarshalling(CX_MAT_NUMBER_URN);
+    }
+    
+    @Test
+    @Order(8)
+    void test_deserializationFromJsonUrn() throws Exception {
+        test_deserializationFromJson(CX_MAT_NUMBER_URN);
     }
 
     /**
@@ -153,18 +177,9 @@ public class ItemStockSammMapperTest {
      * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
      * <li>Then: Validate that mapping took place</li>
      */
-    @Test
-    @Order(3)
-    void test_unmarshallingUuid(){
-        test_unmarshalling(CX_MAT_NUMBER);
-    }
 
-    @Test
-    @Order(6)
-    void test_unmarshallingUrn(){
-        test_unmarshalling(CX_MAT_NUMBER_URN);
-    }
-    
+
+
 
     /**
      * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock via the
@@ -175,54 +190,10 @@ public class ItemStockSammMapperTest {
      * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
      * <li>Then: Validate that mapping took place</li>
      */
-    @Test
-    @Order(4)
-    void test_deserializationFromJsonUuid() throws Exception{
-        test_deserializationFromJson(CX_MAT_NUMBER);
-    }
 
-    @Test
-    @Order(7)
-    void test_deserializationFromJsonUrn() throws Exception {
-        test_deserializationFromJson(CX_MAT_NUMBER_URN);
-    }
+
+
     
-
-
-    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
-
-        if (position.getOrderPositionReference() == null) {
-
-            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
-                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
-                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
-                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
-                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
-                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
-                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
-                .filter(item -> item.getCustomerOrderId() == null)
-                .filter(item -> item.getSupplierOrderId() == null)
-                .filter(item -> item.getCustomerOrderPositionId() == null)
-                .collect(Collectors.toList());
-            return potentialStocks;
-        } else {
-            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
-                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
-                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
-                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
-                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
-                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
-                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
-                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
-                .filter(item -> item.getCustomerOrderId().equals(position.getOrderPositionReference().getCustomerOrderId()))
-                .filter(item -> item.getSupplierOrderId().equals(position.getOrderPositionReference().getSupplierOrderId()))
-                .filter(item -> item.getCustomerOrderPositionId().equals(position.getOrderPositionReference().getCustomerOrderPositionId()))
-                .collect(Collectors.toList());
-            return potentialStocks;
-        }
-    }
-
     void map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(String materialNumber) {
         // Given
         Material semiconductorMaterial = Material.builder()
@@ -525,6 +496,40 @@ public class ItemStockSammMapperTest {
         assertEquals(SAMM_FROM_CUSTOMER_PARTNER, itemStockSamm);
         var list = itemStockSammMapper.itemStockSammToReportedProductItemStock(itemStockSamm, supplierPartner);
         assertEquals(5, list.size());
+    }
+
+    private List<? extends ItemStock> filterReportedItemStock(List<? extends ItemStock> reportedProductItemStocks, AllocatedStock allocatedStock, Position position, String cxMaterialNumber) {
+
+        if (position.getOrderPositionReference() == null) {
+
+            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
+                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
+                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
+                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
+                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
+                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
+                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
+                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
+                .filter(item -> item.getCustomerOrderId() == null)
+                .filter(item -> item.getSupplierOrderId() == null)
+                .filter(item -> item.getCustomerOrderPositionId() == null)
+                .collect(Collectors.toList());
+            return potentialStocks;
+        } else {
+            List<? extends ItemStock> potentialStocks = reportedProductItemStocks.stream()
+                .filter(item -> item.isBlocked() == allocatedStock.getIsBlocked())
+                .filter(item -> item.getMeasurementUnit().equals(allocatedStock.getQuantityOnAllocatedStock().getUnit()))
+                .filter(item -> item.getQuantity() == allocatedStock.getQuantityOnAllocatedStock().getValue())
+                .filter(item -> item.getMaterial().getMaterialNumberCx().equals(cxMaterialNumber))
+                .filter(item -> item.getLocationBpna().equals(allocatedStock.getStockLocationBPNA()))
+                .filter(item -> item.getLocationBpns().equals(allocatedStock.getStockLocationBPNS()))
+                .filter(item -> item.getLastUpdatedOnDateTime() == allocatedStock.getLastUpdatedOnDateTime())
+                .filter(item -> item.getCustomerOrderId().equals(position.getOrderPositionReference().getCustomerOrderId()))
+                .filter(item -> item.getSupplierOrderId().equals(position.getOrderPositionReference().getSupplierOrderId()))
+                .filter(item -> item.getCustomerOrderPositionId().equals(position.getOrderPositionReference().getCustomerOrderPositionId()))
+                .collect(Collectors.toList());
+            return potentialStocks;
+        }
     }
     
 }
