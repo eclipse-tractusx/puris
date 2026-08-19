@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation;
+package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,7 +44,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @ToString
-public class PartTypeInformationSAMM {
+public class PartTypeInformationLegacySAMM {
 
 	@NotNull
 	@Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
@@ -56,7 +56,7 @@ public class PartTypeInformationSAMM {
 	private Set<PartSitesInformationAsPlanned> partSitesInformationAsPlanned = new HashSet<>();
 
 	@JsonCreator
-	public PartTypeInformationSAMM(@JsonProperty(value = "catenaXId") String catenaXId,
+	public PartTypeInformationLegacySAMM(@JsonProperty(value = "catenaXId") String catenaXId,
                                    @JsonProperty(value = "partTypeInformation") PartTypeInformationBody partTypeInformation,
                                    @JsonProperty(value = "partSitesInformationAsPlanned") Set<PartSitesInformationAsPlanned> partSitesInformationAsPlanned) {
 		this.catenaXId = catenaXId;
@@ -73,7 +73,7 @@ public class PartTypeInformationSAMM {
 			return false;
 		}
 
-		final PartTypeInformationSAMM that = (PartTypeInformationSAMM) o;
+		final PartTypeInformationLegacySAMM that = (PartTypeInformationLegacySAMM) o;
 		return Objects.equals(catenaXId, that.catenaXId)
 				&& Objects.equals(partTypeInformation, that.partTypeInformation)
 				&& Objects.equals(partSitesInformationAsPlanned, that.partSitesInformationAsPlanned);

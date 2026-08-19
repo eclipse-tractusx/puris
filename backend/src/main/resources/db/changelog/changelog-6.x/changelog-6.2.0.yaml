@@ -313,7 +313,26 @@ databaseChangeLog:
             constraintName: fk_reported_data_exchange_approval_data_exchange_request
   - changeSet:
       id: "6"
-      author: yourname
+      author: OlgaIvkovic
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: part_type_legacy_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: part_type_legacy_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: part_type_legacy_contract_mapping
+  - changeSet:
+      id: "7"
+      author: OlgaIvkovic
       changes:
         - delete:
             tableName: notification_related_notification_ids
