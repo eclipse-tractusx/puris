@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2026 Volkswagen AG
-Copyright (c) 2026 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -21,8 +20,6 @@ SPDX-License-Identifier: Apache-2.0
 import { UnitOfMeasurementKey } from './uom';
 import { ArrivalType, DepartureType } from './delivery';
 
-export type TransitEventType = DepartureType | ArrivalType;
-
 export type AnonymizedDelivery = {
     uuid: string;
     aggregatedMaterialDataNodeId: string;
@@ -31,8 +28,8 @@ export type AnonymizedDelivery = {
     lastUpdatedOnDateTime: string;
     dateOfDeparture: string;
     dateOfArrival?: string;
-    departureType: TransitEventType;
-    arrivalType?: TransitEventType;
+    departureType: DepartureType;
+    arrivalType?: ArrivalType;
     originBpnsAnonymized: string;
     destinationBpnsAnonymized: string;
 };

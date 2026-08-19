@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2026 Volkswagen AG
-Copyright (c) 2026 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -21,8 +20,6 @@ SPDX-License-Identifier: Apache-2.0
 import { useFetch } from '@hooks/useFetch';
 import { config } from '@models/constants/config';
 import { AggregatedMaterialData } from '@models/types/data/aggregated-material-data';
-
-const NO_AGGREGATED_MATERIAL_DATA: AggregatedMaterialData[] = [];
 
 export const useAggregatedMaterialData = (ownMaterialNumber: string) => {
     const query = `?ownMaterialNumber=${btoa(ownMaterialNumber)}`;

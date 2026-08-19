@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2026 Volkswagen AG
-Copyright (c) 2026 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -18,35 +17,23 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
-import { ReactNode } from 'react';
-import { IconButton, Stack, Typography } from '@mui/material';
+import { Box, IconButton, Stack, Typography } from '@mui/material';
 import { ChevronRightOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { InfoButton } from '@components/ui/InfoButton';
+import { TextToClipboard } from '@components/ui/TextToClipboard';
+import { AggregatedMaterialDataNode } from '@models/types/data/aggregated-material-data';
+import { Partner } from '@models/types/edc/partner';
+import { getUnitOfMeasurement } from '@util/helpers';
 
 type SupplyChainRowHeaderProps = {
+    node: AggregatedMaterialDataNode;
     depth: number;
     isExpanded: boolean;
     onToggle: () => void;
-    toggleTestId: string;
-    beforeTitle?: ReactNode;
-    title: ReactNode;
-    numberNode?: ReactNode;
-    quantity: number;
-    unit: string | undefined;
-    afterQuantity?: ReactNode;
+    partner?: Partner;
 };
 
-export function SupplyChainRowHeader({
-    depth,
-    isExpanded,
-    onToggle,
-    toggleTestId,
-    beforeTitle,
-    title,
-    numberNode,
-    quantity,
-    unit,
-    afterQuantity,
-}: SupplyChainRowHeaderProps) {
+export function SupplyChainRowHeader({ node, depth, isExpanded, onToggle, partner }: SupplyChainRowHeaderProps) {
     return (
         <Stack
             direction="row"
@@ -58,7 +45,7 @@ export function SupplyChainRowHeader({
                 padding: '0.375rem 0.5rem',
             }}
         >
-            <IconButton size="small" onClick={onToggle} sx={{ color: 'inherit' }} data-testid={toggleTestId}>
+            <IconButton size="small" onClick={onToggle} sx={{ color: 'inherit' }} data-testid="aggregated-material-data-node-toggle">
                 {isExpanded ? <ExpandMoreOutlined fontSize="small" /> : <ChevronRightOutlined fontSize="small" />}
             </IconButton>
             {depth > 1 && (
@@ -66,17 +53,31 @@ export function SupplyChainRowHeader({
                     {'└─'.repeat(depth - 1)}
                 </Typography>
             )}
-            {beforeTitle}
-            <Typography variant="body1">{title}</Typography>
-            {numberNode && (
+            {partner && (
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        {partner.name} (<TextToClipboard text={partner.bpnl} variant="light" />)
+                    </Box>
+                    {' /'}
+                </Typography>
+            )}
+            <Typography variant="body1">
+                {node.externalMaterialName ??
+                    node.externalMaterialNumber ?? (
+                        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                            Unknown component
+                            <InfoButton text="There was an error when fetching the material data for this node." />
+                        </Box>
+                    )}
+            </Typography>
+            {node.externalMaterialNumber && (
                 <Typography variant="body3" sx={{ opacity: 0.7 }}>
-                    ({numberNode})
+                    (<TextToClipboard text={node.externalMaterialNumber} variant="light" />)
                 </Typography>
             )}
             <Typography variant="body2">
-                {quantity} {unit}
+                {node.quantity} {getUnitOfMeasurement(node.measurementUnit)}
             </Typography>
-            {afterQuantity}
         </Stack>
     );
 }
