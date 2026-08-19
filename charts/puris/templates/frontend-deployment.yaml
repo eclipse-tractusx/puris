@@ -73,6 +73,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointSupplier }}"
             - name: ENDPOINT_REPORTED_MATERIAL_STOCKS
               value: "{{ .Values.frontend.puris.endpointReportedMaterialStocks }}"
+            - name: ENDPOINT_MATERIAL_NUMBERS_MAPPING
+              value: "{{ .Values.frontend.puris.endpointMaterialNumbersMapping }}"
             - name: ENDPOINT_REPORTED_PRODUCT_STOCKS
               value: "{{ .Values.frontend.puris.endpointReportedProductStocks }}"
             - name: ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS
@@ -107,6 +109,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointPartnerDataUpdateBatch | default "batch/partner-data-update" }}"
             - name: ENDPOINT_MATERIAL_RELATIONS
               value: "{{ .Values.frontend.puris.endpointMaterialRelations | default "material-relations" }}"
+            - name: ENDPOINT_AGGREGATED_DATA
+              value: "{{ .Values.frontend.puris.endpointAggregatedData }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
             - name: IDP_REALM

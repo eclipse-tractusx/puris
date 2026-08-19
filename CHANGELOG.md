@@ -16,6 +16,7 @@ The **need for configuration updates** is **marked bold**.
 - Added base entities and repositories for Aggregated Supply Chain Data ([#1182](https://github.com/eclipse-tractusx/puris/pull/1182))
 - Updated data model for base entities and repositories for Aggregated Supply Chain Data ([#1187](https://github.com/eclipse-tractusx/puris/pull/1187))
 - Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
+- Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
 
 ### Changed
 
