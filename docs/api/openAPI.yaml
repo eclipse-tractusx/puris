@@ -229,7 +229,6 @@ components:
           maxItems: 50
           type: string
         notificationId:
-          format: uuid
           maxItems: 50
           type: string
         requestId:
@@ -574,8 +573,8 @@ components:
           maxItems: 50
           type: string
         notificationId:
-          format: uuid
           maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         partnerBpnl:
           maxItems: 50
@@ -583,8 +582,8 @@ components:
           type: string
         relatedNotificationIds:
           items:
-            format: uuid
             maxItems: 50
+            pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
             type: string
           maxItems: 50
           type: array
@@ -595,8 +594,8 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
         sourceDisruptionId:
-          format: uuid
           maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         startDateOfEffect:
           format: date-time

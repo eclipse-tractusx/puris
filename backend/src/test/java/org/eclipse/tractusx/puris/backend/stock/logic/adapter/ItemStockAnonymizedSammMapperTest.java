@@ -115,9 +115,6 @@ public class ItemStockAnonymizedSammMapperTest {
         map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm(CX_MAT_NUMBER_URN);
     }
     
-
-
-
     void map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm(String materialNumber) {
         // Given
         Material semiconductorMaterial = Material.builder()

@@ -335,6 +335,8 @@ databaseChangeLog:
             tableName: reported_demand_and_capacity_notification
             columnName: source_disruption_id
             newDataType: VARCHAR(255)
+  - changeSet:
+      id: "7"
       author: OlgaIvkovic
       preConditions:
         - onFail: MARK_RAN

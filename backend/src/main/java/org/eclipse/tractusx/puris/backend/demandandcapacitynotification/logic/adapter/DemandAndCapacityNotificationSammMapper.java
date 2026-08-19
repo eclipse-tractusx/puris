@@ -139,7 +139,7 @@ public class DemandAndCapacityNotificationSammMapper {
             .collect(Collectors.toList());
         var notification = builder
                 .notificationId(samm.getNotificationId())
-                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id -> id).toList() : null)
+                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds() : null)
                 .sourceDisruptionId(samm.getSourceDisruptionId() != null ? samm.getSourceDisruptionId() : null)
                 .text(samm.getText())
                 .resolvingMeasureDescription(samm.getResolvingMeasureDescription())

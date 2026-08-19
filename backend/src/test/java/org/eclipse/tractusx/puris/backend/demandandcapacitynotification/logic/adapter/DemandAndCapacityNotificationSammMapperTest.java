@@ -449,12 +449,10 @@ public class DemandAndCapacityNotificationSammMapperTest {
     public void testSammCreationWithTwoMaterialsAsSupplierWithCxMatNumber() throws Exception{
         testSammCreationWithTwoMaterialsAsSupplier(CX_MAT_NUMBER, DUMMY_MATERIAL_CX);
     }
-    
     @Test
     public void testSammCreationWithTwoMaterialsAsSupplierWithCxMatNumberUrn() throws Exception{
         testSammCreationWithTwoMaterialsAsSupplier(CX_MAT_NUMBER_URN, DUMMY_MATERIAL_CX_URN);
     }
-    
     public void testSammCreationWithTwoMaterialsAsSupplier(String materialNumber, String materialNumberDummy) throws Exception {
         // create Samm from Entity as a supplier
         Partner mySelf = supplierPartner;
