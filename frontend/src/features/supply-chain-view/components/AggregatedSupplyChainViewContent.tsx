@@ -79,13 +79,13 @@ export function AggregatedSupplyChainViewContent({ material }: AggregatedSupplyC
                         </Box>
                     </Link>
                     <Typography variant="h3" component="h1">
-                        Production Information for {material.name} (<TextToClipboard text={ownMaterialNumber} />, Outbound)
+                        Supply Chain Overview for {material.name} (<TextToClipboard text={ownMaterialNumber} />, Outbound)
                     </Typography>
                     <Chip label="Aggregated Supply Chain View" size="small" data-testid="aggregated-supply-chain-view-indicator" />
                 </Stack>
                 <SummaryContainer>
                     <OwnSummaryPanel
-                        title="Production Summary"
+                        title="Supply Chain Overview"
                         summary={summary}
                         materialNumber={ownMaterialNumber}
                         showHeader

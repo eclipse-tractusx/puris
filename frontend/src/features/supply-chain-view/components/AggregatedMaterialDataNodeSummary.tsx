@@ -85,7 +85,7 @@ export function AggregatedMaterialDataNodeSummary({
                     <AnonymizedSummaryPanel summary={anonymizedSummary} />
                 ) : (
                     <Typography variant="body3" color="text.secondary" padding="0.5rem 1rem">
-                        No anonymized data reported for this component.
+                        There was an error fetching the anonymized data for this material.
                     </Typography>
                 ))}
             {isExpanded &&

@@ -30,7 +30,7 @@ export const useAggregatedMaterialData = (ownMaterialNumber: string) => {
         config.app.BACKEND_BASE_URL + config.app.ENDPOINT_AGGREGATED_DATA + query
     );
     return {
-        aggregatedMaterialData: aggregatedMaterialData ?? NO_AGGREGATED_MATERIAL_DATA,
+        aggregatedMaterialData: aggregatedMaterialData ?? [],
         isLoadingAggregatedMaterialData,
     };
 };

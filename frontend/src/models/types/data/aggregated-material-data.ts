@@ -21,8 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 import { UnitOfMeasurementKey } from './uom';
 import { ArrivalType, DepartureType } from './delivery';
 
-// Mirrors the flattened ReportedAnonymized* JPA entities returned by AggregatedMaterialDataNodeDto,
-// not the nested DeliveryInformationAnonymized/ProductionInformationAnonymized DSP aspect models.
 export type TransitEventType = DepartureType | ArrivalType;
 
 export type AnonymizedDelivery = {
