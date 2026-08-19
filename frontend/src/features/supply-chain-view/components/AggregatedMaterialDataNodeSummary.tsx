@@ -63,12 +63,9 @@ export function AggregatedMaterialDataNodeSummary({
                     partners &&
                     partners.length > 0 && (
                         <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            {partners.map((partner, index) => (
-                                <Box component="span" key={partner.bpnl} sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                    {index > 0 && ','}
-                                    {partner.name} (<TextToClipboard text={partner.bpnl} variant="light" />)
+                                <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    {partners[0].name} (<TextToClipboard text={partners[0].bpnl} variant="light" />)
                                 </Box>
-                            ))}
                             {' /'}
                         </Typography>
                     )
