@@ -32,7 +32,8 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.adapter.PartTypeInformationSammMapper;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.PartTypeInformationSAMM;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1.PartTypeInformationLegacySAMM;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v2.PartTypeInformationSAMM;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -49,6 +50,18 @@ import java.util.regex.Pattern;
 @RequestMapping("parttypeinformation")
 @Slf4j
 public class PartTypeInformationController {
+    /**
+     * Url path segment of the PartTypeInformation 2.0.0 submodel. This is the version that is
+     * used by default.
+     */
+    public static final String VERSION_2_0_0 = "2-0-0";
+ 
+    /**
+     * Url path segment of the PartTypeInformation 1.0.0 submodel. Only kept to stay
+     * interoperable with partners that have not migrated yet.
+     */
+    public static final String VERSION_1_0_0 = "1-0-0";
+
     static Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
     static Pattern materialNumberPattern = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_PATTERN;
 
@@ -67,7 +80,7 @@ public class PartTypeInformationController {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
-    @Operation(description = "Endpoint that delivers PartTypeInformation of own products to customer partners. " +
+    @Operation(description = "Endpoint that delivers PartTypeInformation 2.0.0 of own products to customer partners. " +
         "'materialnumber' must be set to the ownMaterialNumber of the party, that receives the request. Please note that the " +
         "SAMMs delivered by this endpoint don't provide partClassification and partSitesInformationAsPlanned data. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
@@ -78,33 +91,89 @@ public class PartTypeInformationController {
         @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ", content = @Content),
         @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
     })
-    @GetMapping("/{materialnumber}/submodel/{representation}")
-    public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl,
-                                                              @Parameter(description = "The material number that the request receiving party uses for the material in question")
-                                        @PathVariable String materialnumber,
-                                                              @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
-        materialnumber = new String (Base64.getDecoder().decode(materialnumber.getBytes(StandardCharsets.UTF_8)));
-        if (!bpnlPattern.matcher(bpnl).matches() || !materialNumberPattern.matcher(materialnumber).matches()) {
-            return ResponseEntity.badRequest().build();
+    @GetMapping("/" + VERSION_2_0_0 + "/{materialnumber}/submodel/{representation}")
+    public ResponseEntity<PartTypeInformationSAMM> getMapping(@RequestHeader("edc-bpn") String bpnl, 
+                        @Parameter(description = "The material number that the request receiving party uses for the material in question") @PathVariable String materialnumber, 
+                        @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
+        var lookup = resolveProduct(bpnl, materialnumber, representation, VERSION_2_0_0);
+        if (lookup.error != null) {
+            return ResponseEntity.status(lookup.error()).build();
         }
+        return ResponseEntity.ok(sammMapper.productToSamm(lookup.material()));
+    }
 
+    @Operation(description = "Endpoint that delivers PartTypeInformation 1.0.0 of own products to customer partners. " +
+        "'materialnumber' must be set to the ownMaterialNumber of the party, that receives the request. Please note that the " +
+        "SAMMs delivered by this endpoint don't provide partClassification and partSitesInformationAsPlanned data. " +
+        "This endpoint is meant to be accessed by partners via EDC only. ")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ok"),
+        @ApiResponse(responseCode = "400", description = "Invalid request parameters. ", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Access forbidden. ", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found for given parameters. ", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation requested. ", content = @Content)
+    })
+    @GetMapping("/" + VERSION_1_0_0 + "/{materialnumber}/submodel/{representation}")
+    public ResponseEntity<PartTypeInformationLegacySAMM> getLegacyMapping(@RequestHeader("edc-bpn") String bpnl,
+                        @Parameter(description = "The material number that the request receiving party uses for the material in question") @PathVariable String materialnumber,
+                        @Parameter(description = "Must be set to '$value'") @PathVariable String representation) {
+        var lookup = resolveProduct(bpnl, materialnumber, representation, VERSION_1_0_0);
+        if (lookup.error != null) {
+            return ResponseEntity.status(lookup.error()).build();
+        }
+        return ResponseEntity.ok(sammMapper.productToLegacySamm(lookup.material()));
+    }
+
+    /**
+     * Validates the request parameters and looks up the requested product.
+     *
+     * @param bpnl              the bpnl of the requesting partner, taken from the edc-bpn header
+     * @param materialnumber    the base64 encoded ownMaterialNumber of the requested product
+     * @param representation    must be '$value'
+     * @param version           the requested submodel version, for logging purposes only
+     * @return                  the resolved product or the status to be returned to the partner
+     */
+    private ProductLookup resolveProduct(String bpnl, String materialnumber, String representation, String version) {
+        if (!bpnlPattern.matcher(bpnl).matches()) {
+            return ProductLookup.error(HttpStatus.BAD_REQUEST);
+        }
+        String decodedMaterialNumber;
+        try {
+            decodedMaterialNumber = new String(Base64.getDecoder().decode(materialnumber.getBytes(StandardCharsets.UTF_8)),StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            log.warn("Received invalid base64 encoded material number from {}", bpnl);
+            return ProductLookup.error(HttpStatus.BAD_REQUEST);
+        }
+        if (!materialNumberPattern.matcher(decodedMaterialNumber).matches()) {
+            return ProductLookup.error(HttpStatus.BAD_REQUEST);
+        }
         if (!"$value".equals(representation)) {
-            return ResponseEntity.status(501).build();
+            return ProductLookup.error(HttpStatus.NOT_IMPLEMENTED);
         }
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
-            return ResponseEntity.status(401).build();
+            return ProductLookup.error(HttpStatus.UNAUTHORIZED);
         }
-        log.info("{} requests part type information on {}", bpnl, materialnumber);
+        log.info("{} requests part type information {} on {}", bpnl, version, decodedMaterialNumber.replaceAll("[\\r\\n]", "_"));
         Material material = materialService.findByOwnMaterialNumber(materialnumber);
         if (material == null || !material.isProductFlag()) {
-            return ResponseEntity.status(404).build();
+            return ProductLookup.error(HttpStatus.NOT_FOUND);
         }
         var mpr = mprService.find(material, partner);
         if (mpr == null || !mpr.isPartnerBuysMaterial()) {
-            return ResponseEntity.status(404).build();
+            return ProductLookup.error(HttpStatus.NOT_FOUND);
         }
-        var samm = sammMapper.productToSamm(material);
-        return ResponseEntity.ok(samm);
+        return ProductLookup.found(material);
+    }
+
+    private record ProductLookup(Material material, HttpStatus error) {
+ 
+        private static ProductLookup error(HttpStatus status) {
+            return new ProductLookup(null, status);
+        }
+ 
+        private static ProductLookup found(Material material) {
+            return new ProductLookup(material, null);
+        }
     }
 }

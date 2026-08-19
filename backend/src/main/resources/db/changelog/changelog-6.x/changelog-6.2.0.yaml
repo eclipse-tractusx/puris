@@ -335,3 +335,20 @@ databaseChangeLog:
             tableName: reported_demand_and_capacity_notification
             columnName: source_disruption_id
             newDataType: VARCHAR(255)
+      author: OlgaIvkovic
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: part_type_legacy_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: part_type_legacy_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: part_type_legacy_contract_mapping

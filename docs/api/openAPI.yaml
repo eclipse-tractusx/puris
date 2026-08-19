@@ -163,21 +163,21 @@ components:
     Classification:
       additionalProperties: false
       properties:
-        classificationDescription:
+        description:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
-        classificationID:
+        id:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
-        classificationStandard:
+        standard:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       required:
-      - classificationID
-      - classificationStandard
+      - id
+      - standard
       type: object
     DataExchangeApprovalDto:
       additionalProperties: false
@@ -1193,10 +1193,6 @@ components:
     PartSitesInformationAsPlanned:
       additionalProperties: false
       properties:
-        catenaXsiteId:
-          maxItems: 50
-          pattern: ^BPNS[0-9a-zA-Z]{12}$
-          type: string
         function:
           enum:
           - production
@@ -1212,9 +1208,13 @@ components:
           maxItems: 50
           pattern: ^(?:[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?Z|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:[.][0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2}))?)$
           type: string
+        siteId:
+          maxItems: 50
+          pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
       required:
-      - catenaXsiteId
       - function
+      - siteId
       type: object
     PartTypeInformationBody:
       additionalProperties: false
@@ -1234,7 +1234,7 @@ components:
       - manufacturerPartId
       - nameAtManufacturer
       type: object
-    PartTypeInformationSAMM:
+    PartTypeInformationLegacySAMM:
       additionalProperties: false
       properties:
         catenaXId:
@@ -1251,6 +1251,25 @@ components:
           $ref: '#/components/schemas/PartTypeInformationBody'
       required:
       - catenaXId
+      - partTypeInformation
+      type: object
+    PartTypeInformationSAMM:
+      additionalProperties: false
+      properties:
+        globalAssetId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        partSitesInformationAsPlanned:
+          items:
+            $ref: '#/components/schemas/PartSitesInformationAsPlanned'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        partTypeInformation:
+          $ref: '#/components/schemas/PartTypeInformationBody'
+      required:
+      - globalAssetId
       - partTypeInformation
       type: object
     Partner:
@@ -3399,6 +3418,7 @@ paths:
           - DELIVERY_SUBMODEL
           - NOTIFICATION
           - DAYS_OF_SUPPLY
+          - PART_TYPE_INFORMATION_LEGACY_SUBMODEL
           - PART_TYPE_INFORMATION_SUBMODEL
           - DATA_EXCHANGE_REQUEST
           - ITEM_STOCK_ANONYMIZED_SUBMODEL
@@ -4341,10 +4361,61 @@ paths:
       summary: Gets all associated materials for Partner
       tags:
       - partner-controller
-  /parttypeinformation/{materialnumber}/submodel/{representation}:
+  /parttypeinformation/1-0-0/{materialnumber}/submodel/{representation}:
     get:
-      description: 'Endpoint that delivers PartTypeInformation of own products to
-        customer partners. ''materialnumber'' must be set to the ownMaterialNumber
+      description: 'Endpoint that delivers PartTypeInformation 1.0.0 of own products
+        to customer partners. ''materialnumber'' must be set to the ownMaterialNumber
+        of the party, that receives the request. Please note that the SAMMs delivered
+        by this endpoint don''t provide partClassification and partSitesInformationAsPlanned
+        data. This endpoint is meant to be accessed by partners via EDC only. '
+      operationId: getLegacyMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: The material number that the request receiving party uses for
+          the material in question
+        in: path
+        name: materialnumber
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: Must be set to '$value'
+        in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartTypeInformationLegacySAMM'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: 'Invalid request parameters. '
+        '401':
+          description: 'Access forbidden. '
+        '404':
+          description: 'Product not found for given parameters. '
+        '501':
+          description: 'Unsupported representation requested. '
+      tags:
+      - part-type-information-controller
+  /parttypeinformation/2-0-0/{materialnumber}/submodel/{representation}:
+    get:
+      description: 'Endpoint that delivers PartTypeInformation 2.0.0 of own products
+        to customer partners. ''materialnumber'' must be set to the ownMaterialNumber
         of the party, that receives the request. Please note that the SAMMs delivered
         by this endpoint don''t provide partClassification and partSitesInformationAsPlanned
         data. This endpoint is meant to be accessed by partners via EDC only. '
