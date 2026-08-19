@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation;
+package org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.v1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,6 +30,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.parttypeinformation.FunctionEnum;
 
 import java.util.Objects;
 
