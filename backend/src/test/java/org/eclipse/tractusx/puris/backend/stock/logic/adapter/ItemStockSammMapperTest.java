@@ -132,19 +132,6 @@ public class ItemStockSammMapperTest {
         test_deserializationFromJson(CX_MAT_NUMBER);
     }
 
-    /**
-     * Tests following Scenario: Supplier asks the Customer for Stocks of a given material that the customer
-     * has in place and has been supplied by the Supplier earlier. The supplier receives the INBOUND ItemStockSAMM and
-     * maps it to the ReportedProductItemStock.
-     *
-     * In technical terms, this means the following:
-     * <li>Given: Create INBOUND ItemStock to represent the Stock level on Customer side</li>
-     * <li>When: Use mapper to create the ReportedProductItemStock</li>
-     * <li>Then: Validate the Mappings</li>
-     *
-     * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
-     */
-
     @Test
     @Order(5)
     void map_WhenSingleMaterialItemStock_ReturnsItemStockSammTestUrn(){
@@ -169,31 +156,6 @@ public class ItemStockSammMapperTest {
         test_deserializationFromJson(CX_MAT_NUMBER_URN);
     }
 
-    /**
-     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock
-     *
-     * In technical terms, this means the following:
-     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
-     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
-     * <li>Then: Validate that mapping took place</li>
-     */
-
-
-
-
-    /**
-     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock via the
-     * JSON serializationS
-     *
-     * In technical terms, this means the following:
-     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
-     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
-     * <li>Then: Validate that mapping took place</li>
-     */
-
-
-
-    
     void map_WhenSingleMaterialItemStock_ReturnsItemStockSamm(String materialNumber) {
         // Given
         Material semiconductorMaterial = Material.builder()
@@ -258,6 +220,18 @@ public class ItemStockSammMapperTest {
         assertEquals(materialItemStock.getLastUpdatedOnDateTime(), allocatedStock.getLastUpdatedOnDateTime());
     }
 
+    /**
+     * Tests following Scenario: Supplier asks the Customer for Stocks of a given material that the customer
+     * has in place and has been supplied by the Supplier earlier. The supplier receives the INBOUND ItemStockSAMM and
+     * maps it to the ReportedProductItemStock.
+     *
+     * In technical terms, this means the following:
+     * <li>Given: Create INBOUND ItemStock to represent the Stock level on Customer side</li>
+     * <li>When: Use mapper to create the ReportedProductItemStock</li>
+     * <li>Then: Validate the Mappings</li>
+     *
+     * Note: The test brings fills the {@code SAMM_FROM_CUSTOMER_PARTNER}.
+     */
     void map_WhenReportedSammToProductItemStock_ReturnsMultipleReportedProductItemStock(String materialNumber) {
         // If we want to map a Samm to a ProductItemStock entity, then this implies
         // that we are the supplier, who has received a Samm from his customer partner.
@@ -443,6 +417,14 @@ public class ItemStockSammMapperTest {
         SAMM_FROM_CUSTOMER_PARTNER = inboundProductStockSamm;
     }
 
+    /**
+     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock
+     *
+     * In technical terms, this means the following:
+     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
+     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
+     * <li>Then: Validate that mapping took place</li>
+     */
     void test_unmarshalling(String materialNumber) {
         // Setup from the suppliers point of view
         Material material = new Material();
@@ -465,6 +447,15 @@ public class ItemStockSammMapperTest {
         assertEquals(5, list.size());
     }
 
+    /**
+     * Tests following Scenario: Test checks if the SAMM can be transferred into a ReportedProductItemStock via the
+     * JSON serializationS
+     *
+     * In technical terms, this means the following:
+     * <li>Given: Use the {@code SAMM_FROM_CUSTOMER_PARTNER} created in previous test</li>
+     * <li>When: Use objectMapper switch representation from SAMM json to ItemStock class</li>
+     * <li>Then: Validate that mapping took place</li>
+     */
     void test_deserializationFromJson(String materialNumber) throws Exception {
         // Setup from the suppliers point of view
 
