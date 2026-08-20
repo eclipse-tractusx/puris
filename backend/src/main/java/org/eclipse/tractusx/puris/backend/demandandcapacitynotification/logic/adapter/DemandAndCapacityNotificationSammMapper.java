@@ -19,6 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
@@ -126,6 +127,9 @@ public class DemandAndCapacityNotificationSammMapper {
             }
             default -> throw new IllegalStateException("Unexpected value: " + samm.getEffect());
         }
+        if (samm.getRelatedNotificationIds() != null && samm.getRelatedNotificationIds().stream().anyMatch(id -> !PatternStore.URN_OR_UUID_PATTERN.matcher(id).matches())) {
+            throw new IllegalArgumentException("Related Notfications must be URN or UUID format");
+        }
 
         var affectedSitesSender = partner.getSites().stream()
             .filter(site -> samm.getAffectedSitesSender().contains(site.getBpns()))
@@ -134,9 +138,9 @@ public class DemandAndCapacityNotificationSammMapper {
             .filter(site -> samm.getAffectedSitesRecipient().contains(site.getBpns()))
             .collect(Collectors.toList());
         var notification = builder
-                .notificationId(UUID.fromString(samm.getNotificationId()))
-                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds().stream().map(id ->  UUID.fromString(id)).toList() : null)
-                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? UUID.fromString(samm.getSourceDisruptionId()) : null)
+                .notificationId(samm.getNotificationId())
+                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds() : null)
+                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? samm.getSourceDisruptionId() : null)
                 .text(samm.getText())
                 .resolvingMeasureDescription(samm.getResolvingMeasureDescription())
                 .leadingRootCause(samm.getLeadingRootCause())

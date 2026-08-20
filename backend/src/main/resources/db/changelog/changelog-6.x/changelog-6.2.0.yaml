@@ -313,6 +313,30 @@ databaseChangeLog:
             constraintName: fk_reported_data_exchange_approval_data_exchange_request
   - changeSet:
       id: "6"
+      author: ruzicam
+      changes:
+        - modifyDataType:
+            tableName: notification_related_notification_ids
+            columnName: related_notification_id
+            newDataType: VARCHAR(255)
+        - modifyDataType:
+            tableName: own_demand_and_capacity_notification
+            columnName: notification_id
+            newDataType: VARCHAR(255)
+        - modifyDataType:
+            tableName: own_demand_and_capacity_notification
+            columnName: source_disruption_id
+            newDataType: VARCHAR(255)
+        - modifyDataType:
+            tableName: reported_demand_and_capacity_notification
+            columnName: notification_id
+            newDataType: VARCHAR(255)
+        - modifyDataType:
+            tableName: reported_demand_and_capacity_notification
+            columnName: source_disruption_id
+            newDataType: VARCHAR(255)
+  - changeSet:
+      id: "7"
       author: OlgaIvkovic
       preConditions:
         - onFail: MARK_RAN

@@ -102,11 +102,13 @@ public class SupplyServiceTest {
     ReportedSupplierSupplyRepository reportedSupplierSupplyRepository;
 
     private static final String MATERIAL_NUMBER_CX_CUSTOMER = UUID.randomUUID().toString();
+    private static final String MATERIAL_NUMBER_CX_CUSTOMER_URN ="urn:uuid:" + UUID.randomUUID().toString();
     private static final String BPNL_CUSTOMER = "BPNL4444444444XX";
     private static final String BPNS_CUSTOMER = "BPNS4444444444XX";
     private static final String BPNA_CUSTOMER = "BPNA4444444444AA";
     
     private static final String MATERIAL_NUMBER_CX_SUPPLIER = UUID.randomUUID().toString();
+    private static final String MATERIAL_NUMBER_CX_SUPPLIER_URN = "urn:uuid:" + UUID.randomUUID().toString();
     private static final String BPNL_SUPPLIER = "BPNL1234567890ZZ";
     private static final String BPNS_SUPPLIER = "BPNS1234567890ZZ";
     private static final String BPNA_SUPPLIER = "BPNA1234567890AA";
@@ -114,7 +116,7 @@ public class SupplyServiceTest {
     private Partner CUSTOMER_PARTNER;
     private Partner SUPPLIER_PARTNER;
 
-    private static final Material TEST_MATERIAL = new Material(
+    private static final Material TEST_MATERIAL_UUID_CX_NUMBER = new Material(
             true,
             false,
             "Own-Mnr",
@@ -122,11 +124,27 @@ public class SupplyServiceTest {
             "Test Material",
             new Date());
 
-    private static final Material TEST_PRODUCT = new Material(
+    private static final Material TEST_MATERIAL_URN_CX_NUMBER = new Material(
+            true,
+            false,
+            "Own-Mnr",
+            MATERIAL_NUMBER_CX_CUSTOMER_URN,
+            "Test Material",
+            new Date());
+
+    private static final Material TEST_PRODUCT_UUID_CX_NUMBER = new Material(
         false,
         true,
         "Own-Mnr",
         MATERIAL_NUMBER_CX_SUPPLIER,
+        "Test Product",
+        new Date());
+
+    private static final Material TEST_PRODUCT_URN_CX_NUMBER = new Material(
+        false,
+        true,
+        "Own-Mnr",
+        MATERIAL_NUMBER_CX_SUPPLIER_URN,
         "Test Product",
         new Date());
 
@@ -172,6 +190,7 @@ public class SupplyServiceTest {
         Double initialStockValue = 100.0;
 
         testCalculateCustomerDaysOfSupply(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateCustomerDaysOfSupplyWithUrn(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
     }
 
     @Test
@@ -183,6 +202,7 @@ public class SupplyServiceTest {
         Double initialStockValue = 0.0;
 
         testCalculateCustomerDaysOfSupply(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateCustomerDaysOfSupplyWithUrn(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
     }
 
     @Test
@@ -194,6 +214,7 @@ public class SupplyServiceTest {
         Double initialStockValue = 100.0;
 
         testCalculateCustomerDaysOfSupply(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateCustomerDaysOfSupplyWithUrn(6, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);    
     }
 
     @Test
@@ -205,18 +226,20 @@ public class SupplyServiceTest {
         Double initialStockValue = 100.0;
 
         testCalculateCustomerDaysOfSupply(1, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateCustomerDaysOfSupplyWithUrn(1, demandQuantities, inboundDeliveryQuantities, reportedInboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+    
     }
 
     void testCalculateCustomerDaysOfSupply(int numberOfDays, List<Double> demandQuantities, List<Double> inboundDeliveryQuantities, List<Double> reportedInboundDeliveryQuantities, List<Double> expectedDaysOfSupply, Double initialStockValue) {
         when(ownDemandService.getQuantityForDays(
-            TEST_MATERIAL.getOwnMaterialNumber(),
+            TEST_MATERIAL_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
             numberOfDays
         )).thenReturn(demandQuantities);
 
         when(ownDeliveryService.getQuantityForDays(
-            TEST_MATERIAL.getOwnMaterialNumber(),
+            TEST_MATERIAL_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
             DirectionEnum.INBOUND,
@@ -224,7 +247,7 @@ public class SupplyServiceTest {
         )).thenReturn(inboundDeliveryQuantities);
 
         when(reportedDeliveryService.getQuantityForDays(
-            TEST_MATERIAL.getOwnMaterialNumber(),
+            TEST_MATERIAL_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_SUPPLIER),
             Optional.empty(),
             DirectionEnum.INBOUND,
@@ -234,10 +257,47 @@ public class SupplyServiceTest {
         Optional<String> partnerBpnl = Optional.of(BPNL_SUPPLIER);
         when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(SUPPLIER_PARTNER);
 
-        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
-        when(materialService.findByOwnMaterialNumber(TEST_MATERIAL.getOwnMaterialNumber())).thenReturn(TEST_MATERIAL);
+        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL_UUID_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
+        when(materialService.findByOwnMaterialNumber(TEST_MATERIAL_UUID_CX_NUMBER.getOwnMaterialNumber())).thenReturn(TEST_MATERIAL_UUID_CX_NUMBER);
 
-        List<OwnCustomerSupply> customerSupplies = customerSupplyService.calculateCustomerDaysOfSupply(TEST_MATERIAL.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
+        List<OwnCustomerSupply> customerSupplies = customerSupplyService.calculateCustomerDaysOfSupply(TEST_MATERIAL_UUID_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
+
+        assertEquals(numberOfDays - 1, customerSupplies.size());
+        assertEquals(expectedDaysOfSupply, customerSupplies.stream().map(supply -> supply.getDaysOfSupply()).toList());
+        
+    }
+
+    void testCalculateCustomerDaysOfSupplyWithUrn(int numberOfDays, List<Double> demandQuantities, List<Double> inboundDeliveryQuantities, List<Double> reportedInboundDeliveryQuantities, List<Double> expectedDaysOfSupply, Double initialStockValue) {
+        when(ownDemandService.getQuantityForDays(
+            TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(),
+            Optional.of(BPNL_SUPPLIER),
+            Optional.empty(),
+            numberOfDays
+        )).thenReturn(demandQuantities);
+
+        when(ownDeliveryService.getQuantityForDays(
+            TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(),
+            Optional.of(BPNL_SUPPLIER),
+            Optional.empty(),
+            DirectionEnum.INBOUND,
+            numberOfDays
+        )).thenReturn(inboundDeliveryQuantities);
+
+        when(reportedDeliveryService.getQuantityForDays(
+            TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(),
+            Optional.of(BPNL_SUPPLIER),
+            Optional.empty(),
+            DirectionEnum.INBOUND,
+            numberOfDays
+        )).thenReturn(reportedInboundDeliveryQuantities);
+
+        Optional<String> partnerBpnl = Optional.of(BPNL_SUPPLIER);
+        when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(SUPPLIER_PARTNER);
+
+        when(materialItemStockService.getInitialStockQuantity(TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
+        when(materialService.findByOwnMaterialNumber(TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber())).thenReturn(TEST_MATERIAL_URN_CX_NUMBER);
+
+        List<OwnCustomerSupply> customerSupplies = customerSupplyService.calculateCustomerDaysOfSupply(TEST_MATERIAL_URN_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
 
         assertEquals(numberOfDays - 1, customerSupplies.size());
         assertEquals(expectedDaysOfSupply, customerSupplies.stream().map(supply -> supply.getDaysOfSupply()).toList());
@@ -253,6 +313,7 @@ public class SupplyServiceTest {
         Double initialStockValue = 100.0;
 
         testCalculateSupplierDaysOfSupply(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateSupplierDaysOfSupplyWithUrn(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
     }
 
     @Test
@@ -264,6 +325,7 @@ public class SupplyServiceTest {
         Double initialStockValue = 0.0;
 
         testCalculateSupplierDaysOfSupply(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateSupplierDaysOfSupplyWithUrn(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
     }
 
     @Test
@@ -275,6 +337,7 @@ public class SupplyServiceTest {
         Double initialStockValue = 100.0;
 
         testCalculateSupplierDaysOfSupply(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+        testCalculateSupplierDaysOfSupplyWithUrn(6, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
     }
 
     @Test
@@ -286,19 +349,20 @@ public class SupplyServiceTest {
         Double initialStockValue = 100.0;
 
         testCalculateSupplierDaysOfSupply(1, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
-    }
+        testCalculateSupplierDaysOfSupplyWithUrn(1, productionQuantities, outboundDeliveryQuantities, reportedOutboundDeliveryQuantities, expectedDaysOfSupply, initialStockValue);
+}
 
     void testCalculateSupplierDaysOfSupply(int numberOfDays, List<Double> productionQuantities, List<Double> outboundDeliveryQuantities, List<Double> reportedOutboundDeliveryQuantities, List<Double> expectedDaysOfSupply, Double initialStockValue) {
 
         when(ownProductionService.getQuantityForDays(
-            TEST_PRODUCT.getOwnMaterialNumber(),
+            TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
             numberOfDays
         )).thenReturn(productionQuantities);
 
         when(ownDeliveryService.getQuantityForDays(
-            TEST_PRODUCT.getOwnMaterialNumber(),
+            TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
             DirectionEnum.OUTBOUND,
@@ -306,7 +370,7 @@ public class SupplyServiceTest {
         )).thenReturn(outboundDeliveryQuantities);
 
         when(reportedDeliveryService.getQuantityForDays(
-            TEST_PRODUCT.getOwnMaterialNumber(),
+            TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(),
             Optional.of(BPNL_CUSTOMER),
             Optional.empty(),
             DirectionEnum.OUTBOUND,
@@ -316,10 +380,47 @@ public class SupplyServiceTest {
         Optional<String> partnerBpnl = Optional.of(BPNL_CUSTOMER);
         when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(CUSTOMER_PARTNER);
 
-        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
-        when(materialService.findByOwnMaterialNumber(TEST_PRODUCT.getOwnMaterialNumber())).thenReturn(TEST_PRODUCT);
+        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
+        when(materialService.findByOwnMaterialNumber(TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber())).thenReturn(TEST_PRODUCT_UUID_CX_NUMBER);
 
-        List<OwnSupplierSupply> supplierSupplies = supplierSupplyService.calculateSupplierDaysOfSupply(TEST_PRODUCT.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
+        List<OwnSupplierSupply> supplierSupplies = supplierSupplyService.calculateSupplierDaysOfSupply(TEST_PRODUCT_UUID_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
+
+        assertEquals(numberOfDays - 1, supplierSupplies.size());
+        assertEquals(expectedDaysOfSupply, supplierSupplies.stream().map(supply -> supply.getDaysOfSupply()).toList());
+    }
+
+    void testCalculateSupplierDaysOfSupplyWithUrn(int numberOfDays, List<Double> productionQuantities, List<Double> outboundDeliveryQuantities, List<Double> reportedOutboundDeliveryQuantities, List<Double> expectedDaysOfSupply, Double initialStockValue) {
+
+        when(ownProductionService.getQuantityForDays(
+            TEST_PRODUCT_URN_CX_NUMBER.getOwnMaterialNumber(),
+            Optional.of(BPNL_CUSTOMER),
+            Optional.empty(),
+            numberOfDays
+        )).thenReturn(productionQuantities);
+
+        when(ownDeliveryService.getQuantityForDays(
+            TEST_PRODUCT_URN_CX_NUMBER.getOwnMaterialNumber(),
+            Optional.of(BPNL_CUSTOMER),
+            Optional.empty(),
+            DirectionEnum.OUTBOUND,
+            numberOfDays
+        )).thenReturn(outboundDeliveryQuantities);
+
+        when(reportedDeliveryService.getQuantityForDays(
+            TEST_PRODUCT_URN_CX_NUMBER.getOwnMaterialNumber(),
+            Optional.of(BPNL_CUSTOMER),
+            Optional.empty(),
+            DirectionEnum.OUTBOUND,
+            numberOfDays
+        )).thenReturn(reportedOutboundDeliveryQuantities);
+
+        Optional<String> partnerBpnl = Optional.of(BPNL_CUSTOMER);
+        when(partnerService.findByBpnl(partnerBpnl.get())).thenReturn(CUSTOMER_PARTNER);
+
+        when(productItemStockService.getInitialStockQuantity(TEST_PRODUCT_URN_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty())).thenReturn(initialStockValue);
+        when(materialService.findByOwnMaterialNumber(TEST_PRODUCT_URN_CX_NUMBER.getOwnMaterialNumber())).thenReturn(TEST_PRODUCT_URN_CX_NUMBER);
+
+        List<OwnSupplierSupply> supplierSupplies = supplierSupplyService.calculateSupplierDaysOfSupply(TEST_PRODUCT_URN_CX_NUMBER.getOwnMaterialNumber(), partnerBpnl, Optional.empty(), numberOfDays);
 
         assertEquals(numberOfDays - 1, supplierSupplies.size());
         assertEquals(expectedDaysOfSupply, supplierSupplies.stream().map(supply -> supply.getDaysOfSupply()).toList());
