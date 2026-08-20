@@ -131,13 +131,13 @@ public class DataExchangeApprovalApiService {
             return;
         }
 
-        List<OwnDataExchangeRequest> siblings = ownDataExchangeRequestService.findByRelatedDataExchangeRequest(origin);
-        if (siblings.isEmpty()) {
+        List<OwnDataExchangeRequest> forwardedRequests = ownDataExchangeRequestService.findByRelatedDataExchangeRequest(origin);
+        if (forwardedRequests.isEmpty()) {
             log.warn("Origin request {} has an unfinalized approval but no forwarded requests", origin.getRequestId());
             return;
         }
 
-        boolean allApproved = siblings.stream().allMatch(r -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(r.getUuid()) != null);
+        boolean allApproved = forwardedRequests.stream().allMatch(r -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(r.getUuid()) != null);
         if (!allApproved) {
             return;
         }
