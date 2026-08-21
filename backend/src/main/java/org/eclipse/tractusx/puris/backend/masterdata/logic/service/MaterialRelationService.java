@@ -21,7 +21,9 @@ package org.eclipse.tractusx.puris.backend.masterdata.logic.service;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -160,4 +162,28 @@ public class MaterialRelationService {
                 materialRelation.getValidFrom().compareTo(materialRelation.getValidTo()) < 0
             );
     }
+
+    /**
+	 * Determines whether the given material relation is valid at the given point in time.
+	 * A {@code null} validFrom or validTo bound is treated as open-ended.
+	 */
+	public static boolean isRelationValidNow(MaterialRelation relation, Date now) {
+		Date validFrom = relation.getValidFrom();
+		Date validTo = relation.getValidTo();
+		boolean startedOrOpen = validFrom == null || !validFrom.after(now);
+		boolean notEndedOrOpen = validTo == null || !validTo.before(now);
+		return startedOrOpen && notEndedOrOpen;
+	}
+
+	/**
+	 * Resolves the set of currently-valid child own-material-numbers of the given parent
+	 * own-material-number.
+	 */
+	public static Set<String> resolveChildOwnMaterialNumbers(MaterialRelationService materialRelationService,
+			String parentOwnMaterialNumber, Date now) {
+		return materialRelationService.findAllChildren(parentOwnMaterialNumber).stream()
+			.filter(relation -> isRelationValidNow(relation, now))
+			.map(MaterialRelation::getChildOwnMaterialNumber)
+			.collect(Collectors.toSet());
+	}
 }

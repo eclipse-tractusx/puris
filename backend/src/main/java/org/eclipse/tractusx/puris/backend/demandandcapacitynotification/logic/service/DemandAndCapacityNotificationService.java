@@ -20,15 +20,19 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.DemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.DemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 
@@ -111,6 +115,50 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
     protected void afterUpdate(TEntity previous, TEntity updated) {
         // no-op by default
     }
+
+    /**
+	 * Determines whether the notification is active at the given point in time. A resolved
+	 * notification is always considered inactive. A {@code null} expectedEndDateOfEffect is
+	 * treated as open-ended.
+	 */
+	public static boolean isNotificationActiveNow(DemandAndCapacityNotification notification, Date now) {
+		if (notification.getStatus() == StatusEnumeration.RESOLVED) {
+			return false;
+		}
+		Date start = notification.getStartDateOfEffect();
+		Date end = notification.getExpectedEndDateOfEffect();
+		boolean started = start != null && !start.after(now);
+		boolean notEnded = end == null || !end.before(now);
+		return started && notEnded;
+	}
+
+    /**
+	 * Determines whether the requested grant validity range lies within the notification's effect
+	 * window. The requested bounds must be present. A {@code null} expectedEndDateOfEffect is treated
+	 * as open-ended.
+	 */
+	public static boolean isWithinNotificationBounds(DemandAndCapacityNotification notification,
+			Instant validFrom, Instant validUntil) {
+		if (validFrom == null || validUntil == null) {
+			return false;
+		}
+		Date start = notification.getStartDateOfEffect();
+		if (start == null || validFrom.isBefore(start.toInstant())) {
+			return false;
+		}
+		Date end = notification.getExpectedEndDateOfEffect();
+		return end == null || !validUntil.isAfter(end.toInstant());
+	}
+
+    public static boolean affectsMaterialWithMaterialNumberCx(DemandAndCapacityNotification notification, String materialNumberCx) {
+		if (notification.getMaterials() == null || materialNumberCx == null) {
+			return false;
+		}
+		return notification.getMaterials().stream()
+			.filter(Objects::nonNull)
+			.map(Material::getMaterialNumberCx)
+			.anyMatch(materialNumberCx::equals);
+	}
 
     public abstract boolean validate(TEntity notification);
 }

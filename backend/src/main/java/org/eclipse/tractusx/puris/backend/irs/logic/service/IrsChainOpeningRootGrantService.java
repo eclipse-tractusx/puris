@@ -30,6 +30,7 @@ import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
@@ -70,14 +71,15 @@ public class IrsChainOpeningRootGrantService {
 	private final IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
 
 	/**
-	 * Enqueues a Chain Opening Root Grant creation request, to be sent and retried asynchronously
+	 * Enqueues a Chain Opening Root Grant creation or update request, 
+	 * to be sent and retried asynchronously
 	 * by {@link IrsRequestQueueWorker}.
 	 *
 	 * @param grant the Chain Opening Root Grant to create
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 * @throws IllegalArgumentException if the grant is not eligible to be created
 	 */
-	public IrsQueuedRequest createGrant(IrsChainOpeningRootGrant grant) {
+	public IrsQueuedRequest createOrUpdateGrant(IrsChainOpeningRootGrant grant) {
 		if (!irsRequestService.isEnabled()) {
 			log.info("IRS adapter is disabled. Skipping creation of chain opening root grant for sourceDisruptionId {}",
 				grant.getSourceDisruptionId());
@@ -86,7 +88,7 @@ public class IrsChainOpeningRootGrantService {
 
 		assertGrantEligible(grant);
 
-		IrsQueuedRequest queuedRequest = gateway.createOrUpdate(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE);
+		IrsQueuedRequest queuedRequest = gateway.createOrUpdate(grant, true);
 		log.info("Enqueued chain opening root grant creation request for sourceDisruptionId {}", grant.getSourceDisruptionId());
 
 		return queuedRequest;
@@ -140,7 +142,7 @@ public class IrsChainOpeningRootGrantService {
 			if (parentMaterial == null || parentMaterial.getMaterialNumberCx() == null) {
 				continue;
 			}
-			upsertGrant(requesterBpn, parentMaterial.getMaterialNumberCx(), sourceDisruptionId, notification);
+			addNotificationToGrant(requesterBpn, parentMaterial.getMaterialNumberCx(), sourceDisruptionId, notification);
 		}
 	}
 
@@ -157,17 +159,24 @@ public class IrsChainOpeningRootGrantService {
 			.filter(Objects::nonNull)
 			.map(Material::getOwnMaterialNumber)
 			.flatMap(childOwnMaterialNumber -> materialRelationService.findAllParents(childOwnMaterialNumber).stream())
-			.filter(relation -> IrsChainOpeningGrantSyncUtils.isRelationValidNow(relation, now))
+			.filter(relation -> MaterialRelationService.isRelationValidNow(relation, now))
 			.map(MaterialRelation::getParentOwnMaterialNumber)
 			.collect(Collectors.toSet());
 	}
 
 	/**
-	 * Creates or updates the locally persisted grant identified by (requesterBpn, globalAssetId,
-	 * sourceDisruptionId), adding the notification to its reportedNotifications and widening its
-	 * validity window to cover it, then attempts to push it to the IRS.
+	 * Adds the given notification to the locally persisted grant identified by
+	 * (requesterBpn, globalAssetId, sourceDisruptionId), creating it if it 
+	 * does not exist, and attempts to push it to the IRS. 
+	 * The grant's validity window is widened to cover the notification, and its syncStatus is updated based on the outcome of the push attempt.
+	 * 
+	 * @param requesterBpn the BPNL of the grant's requester (our own company)
+	 * @param globalAssetId the globalAssetId of the grant's material
+	 * @param sourceDisruptionId the sourceDisruptionId of the grant's reported notification
+	 * @param notification the reported notification to add to the grant
+	 * @throws IllegalArgumentException if the grant is not eligible to be created or updated
 	 */
-	private void upsertGrant(String requesterBpn, String globalAssetId, String sourceDisruptionId,
+	private void addNotificationToGrant(String requesterBpn, String globalAssetId, String sourceDisruptionId,
 			ReportedDemandAndCapacityNotification notification) {
 		IrsChainOpeningRootGrant grant = irsChainOpeningRootGrantRepository
 			.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(requesterBpn, globalAssetId, sourceDisruptionId)
@@ -209,11 +218,10 @@ public class IrsChainOpeningRootGrantService {
 		IrsChainOpeningRootGrant saved = irsChainOpeningRootGrantRepository.save(grant);
 
 		try {
-			IrsQueuedRequest queuedRequest = createGrant(saved);
+			IrsQueuedRequest queuedRequest = createOrUpdateGrant(saved);
 			if (queuedRequest != null) {
 				saved.setSyncStatus(IrsGrantSyncStatusEnumeration.PENDING);
 			}
-			// else: IRS adapter disabled, leave syncStatus as-is (still pending an actual sync)
 		} catch (IllegalArgumentException e) {
 			log.error("Failed to enqueue chain opening root grant sync for requesterBpn {}, globalAssetId {}, sourceDisruptionId {}",
 				requesterBpn, globalAssetId, sourceDisruptionId, e);
@@ -299,7 +307,7 @@ public class IrsChainOpeningRootGrantService {
 		IrsChainOpeningRootGrant saved = irsChainOpeningRootGrantRepository.save(grant);
 
 		try {
-			IrsQueuedRequest queuedRequest = createGrant(saved);
+			IrsQueuedRequest queuedRequest = createOrUpdateGrant(saved);
 			if (queuedRequest != null) {
 				saved.setSyncStatus(IrsGrantSyncStatusEnumeration.PENDING);
 			}
@@ -332,7 +340,7 @@ public class IrsChainOpeningRootGrantService {
 			log.error("No material found for globalAssetId {} while checking allowed BPNL eligibility", grant.getGlobalAssetId());
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 
 		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
@@ -354,13 +362,13 @@ public class IrsChainOpeningRootGrantService {
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
 
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 
 		UUID sourceDisruptionId = UUID.fromString(grant.getSourceDisruptionId());
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications = reportedNotificationRepository
 			.findAllBySourceDisruptionId(sourceDisruptionId).stream()
-			.filter(notification -> IrsChainOpeningGrantSyncUtils.isNotificationActiveNow(notification, now))
+			.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))
 			.filter(notification -> notification.getMaterials() != null && notification.getMaterials().stream()
 				.filter(Objects::nonNull)
 				.map(Material::getOwnMaterialNumber)

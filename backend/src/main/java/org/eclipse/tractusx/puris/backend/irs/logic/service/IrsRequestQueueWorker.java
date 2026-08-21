@@ -151,32 +151,36 @@ public class IrsRequestQueueWorker {
 		}
 
 		switch (request.getType()) {
-			case CHAIN_OPENING_ROOT_GRANT_CREATE -> irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
-				if (successful) {
-					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
-				} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
-					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-				}
-				// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
-				irsChainOpeningRootGrantRepository.save(grant);
-			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
-				request.getLinkedEntityUuid(), request.getUuid()));
+			case CHAIN_OPENING_ROOT_GRANT_CREATE, CHAIN_OPENING_ROOT_GRANT_UPDATE -> 
+				irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+						if (successful) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+						} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+						}
+						// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
+						irsChainOpeningRootGrantRepository.save(grant);
+					},
+					() -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists", request.getLinkedEntityUuid(), request.getUuid())
+				);
 			case CHAIN_OPENING_ROOT_GRANT_DELETE -> irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
 				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.DELETED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
 				irsChainOpeningRootGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
-			case CHAIN_OPENING_GRANT_CREATE -> irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
-				if (successful) {
-					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
-				} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
-					grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-				}
-				// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
-				irsChainOpeningPartnerGrantRepository.save(grant);
-			}, () -> log.warn("Linked chain opening grant {} for queued request {} no longer exists",
-				request.getLinkedEntityUuid(), request.getUuid()));
-			case CHAIN_OPENING_GRANT_DELETE -> irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+			case CHAIN_OPENING_PARTNER_GRANT_CREATE, CHAIN_OPENING_PARTNER_GRANT_UPDATE -> 
+				irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+						if (successful) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+						} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+						}
+						// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
+						irsChainOpeningPartnerGrantRepository.save(grant);
+					},
+					() -> log.warn("Linked chain opening grant {} for queued request {} no longer exists", request.getLinkedEntityUuid(), request.getUuid())
+				);
+			case CHAIN_OPENING_PARTNER_GRANT_DELETE -> irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
 				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.DELETED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
 				irsChainOpeningPartnerGrantRepository.save(grant);
 			}, () -> log.warn("Linked chain opening grant {} for queued request {} no longer exists",

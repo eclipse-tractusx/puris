@@ -59,11 +59,22 @@ public class IrsChainOpeningGrantGateway {
 	 *              should update once the request reaches a terminal outcome
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 */
-	public IrsQueuedRequest createOrUpdate(IrsChainOpeningGrant grant, IrsQueuedRequestTypeEnumeration type) {
+	public IrsQueuedRequest createOrUpdate(IrsChainOpeningGrant grant, boolean isRootGrant) {
 		String payload = irsRequestBodybuilder.buildGrantCreationRequestBody(grant).toString();
-		IrsQueuedRequestMethodEnumeration method = grant.existsAtIrs()
+		boolean grantExistsAtIrs = grant.existsAtIrs();
+		IrsQueuedRequestMethodEnumeration method = grantExistsAtIrs
 			? IrsQueuedRequestMethodEnumeration.PUT
 			: IrsQueuedRequestMethodEnumeration.POST;
+		IrsQueuedRequestTypeEnumeration type;
+		if (isRootGrant) {
+			type = grantExistsAtIrs 
+				? IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_UPDATE
+				: IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE;
+		} else {
+			type = grantExistsAtIrs 
+				? IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_UPDATE
+				: IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_CREATE;
+		}
 		return irsRequestQueueService.enqueue(method, GRANTS_PATH, payload, null, type, grant.getUuid());
 	}
 

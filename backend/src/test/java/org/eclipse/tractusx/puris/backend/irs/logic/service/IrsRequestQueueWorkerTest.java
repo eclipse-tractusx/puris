@@ -224,7 +224,7 @@ class IrsRequestQueueWorkerTest {
             .uuid(grantUuid)
             .syncStatus(IrsGrantSyncStatusEnumeration.NOT_SYNCED)
             .build();
-        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE, grantUuid);
+        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_CREATE, grantUuid);
         stubDue(request);
         when(irsChainOpeningGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
         when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
@@ -242,7 +242,7 @@ class IrsRequestQueueWorkerTest {
             .uuid(grantUuid)
             .syncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC)
             .build();
-        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE, grantUuid);
+        IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_CREATE, grantUuid);
         stubDue(request);
         when(irsChainOpeningGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
         when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));

@@ -37,6 +37,7 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
@@ -94,14 +95,15 @@ public class IrsChainOpeningPartnerGrantService {
 	private final IrsChainOpeningPartnerGrantRepository irsChainOpeningPartnerGrantRepository;
 
 	/**
-	 * Enqueues a Chain Opening Grant creation request, to be sent and retried asynchronously by
+	 * Enqueues a Chain Opening Grant creation or update request,
+	 * to be sent and retried asynchronously by
 	 * {@link IrsRequestQueueWorker}.
 	 *
 	 * @param grant the Chain Opening Grant to create
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 * @throws IllegalArgumentException if the grant is not eligible to be created
 	 */
-	public IrsQueuedRequest createGrant(IrsChainOpeningPartnerGrant grant) {
+	public IrsQueuedRequest createOrUpdateGrant(IrsChainOpeningPartnerGrant grant) {
 		if (!irsRequestService.isEnabled()) {
 			log.info("IRS adapter is disabled. Skipping creation of chain opening grant for sourceDisruptionId {}",
 				grant.getSourceDisruptionId());
@@ -110,7 +112,7 @@ public class IrsChainOpeningPartnerGrantService {
 
 		assertGrantEligible(grant);
 
-		IrsQueuedRequest queuedRequest = gateway.createOrUpdate(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE);
+		IrsQueuedRequest queuedRequest = gateway.createOrUpdate(grant, false);
 		log.info("Enqueued chain opening grant creation request for sourceDisruptionId {}", grant.getSourceDisruptionId());
 
 		return queuedRequest;
@@ -130,7 +132,7 @@ public class IrsChainOpeningPartnerGrantService {
 			return null;
 		}
 
-		IrsQueuedRequest queuedRequest = gateway.delete(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_DELETE);
+		IrsQueuedRequest queuedRequest = gateway.delete(grant, IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_DELETE);
 		log.info("Enqueued chain opening grant deletion request for sourceDisruptionId {}", grant.getSourceDisruptionId());
 
 		return queuedRequest;
@@ -218,6 +220,7 @@ public class IrsChainOpeningPartnerGrantService {
 		String requesterBpn = updated.getPartner().getBpnl();
 		String sourceDisruptionId = updated.getSourceDisruptionId().toString();
 
+		// remove grants for materials that are not subject to disruption anymore
 		for (String removedCx : previousMaterialCxIds) {
 			if (currentMaterialCxIds.contains(removedCx)) {
 				continue;
@@ -289,17 +292,12 @@ public class IrsChainOpeningPartnerGrantService {
 				.build();
 		}
 
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 		Set<ReportedDemandAndCapacityNotification> candidateNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now);
 
 		boolean changed = IrsChainOpeningGrantSyncUtils.reconcile(grant, candidateNotifications);
-
-		if (grant.getReportedNotifications().isEmpty() && !isNew) {
-			tearDownGrant(grant);
-			return;
-		}
 
 		if (!isNew && changed && grant.getSyncStatus() == IrsGrantSyncStatusEnumeration.SYNCED) {
 			grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
@@ -308,7 +306,7 @@ public class IrsChainOpeningPartnerGrantService {
 		IrsChainOpeningPartnerGrant saved = irsChainOpeningPartnerGrantRepository.save(grant);
 
 		try {
-			IrsQueuedRequest queuedRequest = createGrant(saved);
+			IrsQueuedRequest queuedRequest = createOrUpdateGrant(saved);
 			if (queuedRequest != null) {
 				saved.setSyncStatus(IrsGrantSyncStatusEnumeration.PENDING);
 			}
@@ -347,7 +345,7 @@ public class IrsChainOpeningPartnerGrantService {
 			.map(forwardedRequest -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwardedRequest.getUuid()))
 			.filter(Objects::nonNull)
 			.map(approval -> approval.getDataExchangeRequest().getNotification())
-			.filter(notification -> IrsChainOpeningGrantSyncUtils.isNotificationActiveNow(notification, now))
+			.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))
 			.filter(notification -> notification.getMaterials() != null && notification.getMaterials().stream()
 				.filter(Objects::nonNull)
 				.map(Material::getOwnMaterialNumber)
@@ -371,9 +369,9 @@ public class IrsChainOpeningPartnerGrantService {
 
 		OwnDemandAndCapacityNotification matchingNotification = ownNotificationRepository
 			.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, grant.getRequesterBpn()).stream()
-			.filter(notification -> IrsChainOpeningGrantSyncUtils.isNotificationActiveNow(notification, now))
-			.filter(notification -> IrsChainOpeningGrantSyncUtils.isWithinNotificationBounds(notification, grant.getValidFrom(), grant.getValidUntil()))
-			.filter(notification -> IrsChainOpeningGrantSyncUtils.affectsMaterialWithCx(notification, grant.getGlobalAssetId()))
+			.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))
+			.filter(notification -> DemandAndCapacityNotificationService.isWithinNotificationBounds(notification, grant.getValidFrom(), grant.getValidUntil()))
+			.filter(notification -> DemandAndCapacityNotificationService.affectsMaterialWithMaterialNumberCx(notification, grant.getGlobalAssetId()))
 			.findFirst()
 			.orElse(null);
 
@@ -399,7 +397,7 @@ public class IrsChainOpeningPartnerGrantService {
 			log.error("No material found for globalAssetId {} while checking allowed BPNL eligibility", grant.getGlobalAssetId());
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
-		Set<String> childMaterialNumbers = IrsChainOpeningGrantSyncUtils.resolveChildOwnMaterialNumbers(
+		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
 			materialRelationService, material.getOwnMaterialNumber(), now);
 
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -39,7 +40,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -81,9 +82,11 @@ public abstract class IrsChainOpeningGrant {
 	@JsonIgnore
 	protected UUID uuid;
 
+	@Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
 	protected String globalAssetId;
 
 	@JsonProperty("openingId")
+	@Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
 	protected String sourceDisruptionId;
 
 	protected String requesterBpn;

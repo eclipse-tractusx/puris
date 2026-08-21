@@ -230,7 +230,7 @@ class IrsChainOpeningRootGrantServiceTest {
     void createGrant_WhenDisabled_DoesNotSendAndReturnsNull() {
         when(irsRequestService.isEnabled()).thenReturn(false);
 
-        IrsQueuedRequest result = chainOpeningGrantService.createGrant(grant(Set.of()));
+        IrsQueuedRequest result = chainOpeningGrantService.createOrUpdateGrant(grant(Set.of()));
 
         assertThat(result).isNull();
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
@@ -251,7 +251,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        IrsQueuedRequest result = chainOpeningGrantService.createGrant(grant);
+        IrsQueuedRequest result = chainOpeningGrantService.createOrUpdateGrant(grant);
 
         assertThat(result).isEqualTo(queuedRequest);
         verify(irsRequestBodybuilder, times(1)).buildGrantCreationRequestBody(grant);
@@ -274,10 +274,10 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        chainOpeningGrantService.createGrant(grant);
+        chainOpeningGrantService.createOrUpdateGrant(grant);
 
         verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.PUT, GRANTS_PATH, body.toString(), null,
-            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
+            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_UPDATE, grant.getUuid());
     }
 
     @Test
@@ -295,10 +295,10 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        chainOpeningGrantService.createGrant(grant);
+        chainOpeningGrantService.createOrUpdateGrant(grant);
 
         verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.PUT, GRANTS_PATH, body.toString(), null,
-            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
+            IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_UPDATE, grant.getUuid());
     }
 
     @Test
@@ -316,7 +316,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        chainOpeningGrantService.createGrant(grant);
+        chainOpeningGrantService.createOrUpdateGrant(grant);
 
         verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, GRANTS_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grant.getUuid());
@@ -329,7 +329,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createGrant(grant(Set.of())));
+        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -341,7 +341,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID)).thenReturn(List.of());
 
-        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createGrant(grant(Set.of())));
+        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -360,7 +360,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        IrsQueuedRequest result = chainOpeningGrantService.createGrant(grant);
+        IrsQueuedRequest result = chainOpeningGrantService.createOrUpdateGrant(grant);
 
         assertThat(result).isEqualTo(queuedRequest);
     }
@@ -377,7 +377,7 @@ class IrsChainOpeningRootGrantServiceTest {
             .thenReturn(List.of(fromOtherSupplier));
 
         assertThrows(IllegalArgumentException.class,
-            () -> chainOpeningGrantService.createGrant(grant(Set.of(ALLOWED_BPNL))));
+            () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of(ALLOWED_BPNL))));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -396,7 +396,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        IrsQueuedRequest result = chainOpeningGrantService.createGrant(grant);
+        IrsQueuedRequest result = chainOpeningGrantService.createOrUpdateGrant(grant);
 
         assertThat(result).isEqualTo(queuedRequest);
     }

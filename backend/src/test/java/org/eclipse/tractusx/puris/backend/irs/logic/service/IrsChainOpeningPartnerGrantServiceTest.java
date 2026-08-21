@@ -231,7 +231,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
     void createGrant_WhenDisabled_DoesNotSendAndReturnsNull() {
         when(irsRequestService.isEnabled()).thenReturn(false);
 
-        IrsQueuedRequest result = chainOpeningGrantService.createGrant(grant(Set.of()));
+        IrsQueuedRequest result = chainOpeningGrantService.createOrUpdateGrant(grant(Set.of()));
 
         assertThat(result).isNull();
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
@@ -258,7 +258,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         assertThat(result).isEqualTo(queuedRequest);
         verify(irsRequestQueueService, atLeastOnce()).enqueue(eq(IrsQueuedRequestMethodEnumeration.DELETE), any(), isNull(), any(),
-            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_DELETE), eq(grant.getUuid()));
+            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_DELETE), eq(grant.getUuid()));
     }
 
     // --- createGrant: eligibility ---
@@ -268,7 +268,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of());
 
-        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createGrant(grant(Set.of())));
+        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -281,7 +281,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
         when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createGrant(grant(Set.of())));
+        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -296,7 +296,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
 
-        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createGrant(grant(Set.of())));
+        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -315,7 +315,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class,
-            () -> chainOpeningGrantService.createGrant(grant(new HashSet<>(Set.of(staleNotification)))));
+            () -> chainOpeningGrantService.createOrUpdateGrant(grant(new HashSet<>(Set.of(staleNotification)))));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -344,7 +344,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grantToCreate)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        IrsQueuedRequest result = chainOpeningGrantService.createGrant(grantToCreate);
+        IrsQueuedRequest result = chainOpeningGrantService.createOrUpdateGrant(grantToCreate);
 
         assertThat(result).isEqualTo(queuedRequest);
     }
@@ -374,10 +374,11 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grantToCreate)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        chainOpeningGrantService.createGrant(grantToCreate);
+        chainOpeningGrantService.createOrUpdateGrant(grantToCreate);
 
-        verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.PUT), any(), eq(body.toString()), isNull(),
-            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE), eq(grantToCreate.getUuid()));
+        verify(irsRequestQueueService, times(1)).enqueue(
+            eq(IrsQueuedRequestMethodEnumeration.PUT), any(), eq(body.toString()), isNull(),
+            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_UPDATE), eq(grantToCreate.getUuid()));
     }
 
     @Test
@@ -405,10 +406,10 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grantToCreate)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
-        chainOpeningGrantService.createGrant(grantToCreate);
+        chainOpeningGrantService.createOrUpdateGrant(grantToCreate);
 
         verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.POST), any(), eq(body.toString()), isNull(),
-            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_CREATE), eq(grantToCreate.getUuid()));
+            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_CREATE), eq(grantToCreate.getUuid()));
     }
 
     // --- createGrantsForApproval ---
@@ -519,39 +520,6 @@ class IrsChainOpeningPartnerGrantServiceTest {
         assertThat(saved.getAllowedBpnls()).isEmpty();
     }
 
-    // --- empty->delete / non-empty->re-push transitions ---
-
-    @Test
-    void syncGrant_WhenReconciledSetBecomesEmptyOnExistingGrant_DeletesGrant() {
-        OwnDemandAndCapacityNotification ownNotification = ownNotification(UUID.randomUUID(), List.of(grantMaterial()));
-        ReportedDataExchangeRequest triggering = triggeringRequest(UUID.randomUUID(), ownNotification);
-        OwnDataExchangeApproval approval = sentApproval(triggering);
-
-        ReportedDemandAndCapacityNotification staleNotification = reportedNotification(UUID.randomUUID(), SUPPLIER_BPNL, List.of());
-        IrsChainOpeningPartnerGrant existingGrant = IrsChainOpeningPartnerGrant.builder()
-            .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
-            .requesterBpn(PARTNER_BPNL)
-            .reportedNotifications(new HashSet<>(Set.of(staleNotification)))
-            .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
-            .build();
-
-        when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(existingGrant));
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
-        when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of());
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
-        when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
-
-        chainOpeningGrantService.createGrantsForApproval(approval);
-
-        assertThat(existingGrant.getReportedNotifications()).isEmpty();
-        assertThat(existingGrant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.PENDING);
-        verify(irsRequestQueueService).enqueue(eq(IrsQueuedRequestMethodEnumeration.DELETE), any(), isNull(), any(),
-            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_GRANT_DELETE), eq(existingGrant.getUuid()));
-    }
-
     @Test
     void syncGrant_WhenReconciledSetNonEmptyAndChanged_MarksOutOfSyncThenRePushes() {
         OwnDemandAndCapacityNotification ownNotification = ownNotification(UUID.randomUUID(), List.of(grantMaterial()));
@@ -649,6 +617,8 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(receivedApproval(forwarded));
+        // Disabled during the re-push attempt so this test doesn't need full eligibility stubs - createGrant
+        // short-circuits before assertGrantEligible, matching the existing "sync fails without throwing" pattern.
         when(irsRequestService.isEnabled()).thenReturn(false);
 
         chainOpeningGrantService.onReportedNotificationUpdated(updated);
