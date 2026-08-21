@@ -330,3 +330,19 @@ databaseChangeLog:
                   name: partner_bpnl
                   type: VARCHAR(255)
             tableName: part_type_legacy_contract_mapping
+  - changeSet:
+      id: "7"
+      author: OlgaIvkovic
+      changes:
+        - delete:
+            tableName: notification_related_notification_ids
+            where: notification_uuid IN (SELECT uuid FROM reported_demand_and_capacity_notification)
+        - renameTable:
+            oldTableName: notification_related_notification_ids
+            newTableName: own_notification_related_notification_ids
+        - addForeignKeyConstraint:
+            constraintName: fk_own_notification_related
+            baseTableName: own_notification_related_notification_ids
+            baseColumnNames: notification_uuid
+            referencedTableName: own_demand_and_capacity_notification
+            referencedColumnNames: uuid

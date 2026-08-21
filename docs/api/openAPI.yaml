@@ -232,6 +232,9 @@ components:
           format: uuid
           maxItems: 50
           type: string
+        relatedDataExchangeRequestId:
+          maxItems: 50
+          type: string
         requestId:
           maxItems: 50
           type: string
@@ -2150,6 +2153,13 @@ paths:
           format: uuid
           maxItems: 50
           type: string
+      - in: query
+        name: forward
+        required: false
+        schema:
+          additionalProperties: false
+          default: false
+          type: boolean
       requestBody:
         content:
           application/json:
