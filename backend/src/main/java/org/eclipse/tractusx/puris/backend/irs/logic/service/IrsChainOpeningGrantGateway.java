@@ -55,8 +55,8 @@ public class IrsChainOpeningGrantGateway {
 	 * already-existing grant does not work.
 	 *
 	 * @param grant the Chain Opening Grant to create or update
-	 * @param type  the queued request type identifying which grant flavor/repository the worker
-	 *              should update once the request reaches a terminal outcome
+	 * @param isRootGrant  whether the grant is a root grant (true) or a partner grant (false),
+	 * 	which determines the queued request type to use
 	 * @return the queued request, or {@code null} if the IRS adapter is disabled
 	 */
 	public IrsQueuedRequest createOrUpdate(IrsChainOpeningGrant grant, boolean isRootGrant) {
