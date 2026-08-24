@@ -1,0 +1,108 @@
+# Copyright (c) 2022 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+# Copyright (c) 2021 Contributors to the Eclipse Foundatio
+# Copyright (c) 2026 Volkswagen AG
+# Copyright (c) 2026 Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V. (represented by Fraunhofer ISST)
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0. *
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+#####################
+# IRS Configuration #
+#####################
+# TODO: check all vault values
+irsUrl: "https://<path:item-relationship-service/data/companies/customer/irs#base-url>"  # https://irs-customer.cxn.isst.fraunhofer.de
+
+bpn: "<path:item-relationship-service/data/companies/customer/identity#bpnl>"
+recursive:
+  localBpnl: "<path:item-relationship-service/data/companies/customer/identity#bpnl>"
+apiKeyAdmin: "<path:item-relationship-service/data/companies/customer/irs/api#api-key-admin>"  # <api-key-admin> Admin auth key, Should be changed!
+apiKeyRegular: "<path:item-relationship-service/data/companies/customer/irs/api#api-key-regular>"  # <api-key-regular> View auth key, Should be changed!
+ingress:
+  # -- Enable the Ingress
+  enabled: true
+  # -- Class name for the Ingress controller
+  className: "nginx"
+  # -- Annotations for the Ingress controller
+  annotations:
+    # cert manager for ingress on CX int
+    cert-manager.io/cluster-issuer: "letsencrypt"
+  # -- Hosts for the Ingress controller
+  hosts:
+    - host: "<path:item-relationship-service/data/companies/customer/irs#base-url>"
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- TLS certificates for the Ingress controller
+  tls:
+    - secretName: tls-secret-irs-customer
+      hosts:
+        - "<path:item-relationship-service/data/companies/customer/irs#base-url>"
+
+digitalTwinRegistry:
+  type: decentral  # The type of DTR. This can be either "central" or "decentral". If "decentral", descriptorEndpoint, shellLookupEndpoint and oAuthClientId is not required.
+  url: "https://<path:item-relationship-service/data/companies/customer/irs/dtr#base-url>" #no api/v3 suffix
+  # descriptorEndpoint: >-
+  #   {{ tpl (.Values.digitalTwinRegistry.url | default "") . }}/shell-descriptors/{aasIdentifier}
+  # shellLookupEndpoint: >-
+  #   {{ tpl (.Values.digitalTwinRegistry.url | default "") . }}/lookup/shells?assetIds={assetIds}
+  shellDescriptorTemplate: /shell-descriptors/{aasIdentifier}  # The path to retrieve AAS descriptors from the decentral DTR, must contain the placeholder {aasIdentifier}
+  lookupShellsTemplate: /lookup/shells?assetIds={assetIds}  # The path to lookup shells from the decentral DTR, must contain the placeholder {assetIds}
+  # oAuthClientId: discovery
+
+blobstore:
+  persistence:
+    minio:
+      accessKey: "<path:item-relationship-service/data/companies/customer/irs/minio/root#user>"
+      secretKey: "<path:item-relationship-service/data/companies/customer/irs/minio/root#password>"
+  chainOpeningGrants:
+    containerName: irs-chain-opening-grants
+    daysToLive: -1
+
+oauth2:
+  clientTokenUri: "https://<path:item-relationship-service/data/environment/central-idp#base-url>/auth/realms/<path:item-relationship-service/data/environment/central-idp#realm>/protocol/openid-connect/token"  # https://centralidp.cxn.isst.fraunhofer.de/auth/realms/CX-Central/protocol/openid-connect/token
+  # TODO: add to vault
+  semantics:
+    clientId: "<path:item-relationship-service/data/companies/customer/irs/client-secret/semantics#id>"
+    clientSecret: "<path:item-relationship-service/data/companies/customer/irs/client-secret/semantics#secret>"
+  discovery:
+    clientId: "<path:item-relationship-service/data/companies/customer/irs/client-secret/discovery#id>"
+    clientSecret: "<path:item-relationship-service/data/companies/customer/irs/client-secret/discovery#secret>"
+edc:
+  controlplane:
+    endpoint:
+      data: "https://<path:item-relationship-service/data/companies/customer/irs/edc#base-url>/management"  # <edc-controlplane-endpoint-data>
+    apikey:
+      secret: "<path:item-relationship-service/data/companies/customer/irs/edc/api#api-key>"
+
+# enable auto-configuration
+ess:
+  edc:
+    host: https://<path:item-relationship-service/data/companies/customer/irs/edc#base-url>
+
+redisConfig:
+  password: "<path:item-relationship-service/data/companies/customer/irs/redis#password>"
+
+minio:
+  rootUser: "<path:item-relationship-service/data/companies/customer/irs/minio/root#user>"  # <minio-username>
+  rootPassword: "<path:item-relationship-service/data/companies/customer/irs/minio/root#password>"  # <minio-password>
+
+#######################
+# Redis configuration #
+#######################
+redis:
+  architecture: standalone
+  auth:
+    enabled: true
+    password: "<path:item-relationship-service/data/companies/customer/irs/redis#password>"
