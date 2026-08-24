@@ -52,7 +52,7 @@ public class DemandAndCapacityNotificationRequestApiController {
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
-    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 2.0.0 requests. " +
+    @Operation(summary = "This endpoint receives the DemandAndCapacityNotification 3.0.0 requests. " +
         "This endpoint is meant to be accessed by partners via EDC only. ")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok", content = @Content),
@@ -68,18 +68,18 @@ public class DemandAndCapacityNotificationRequestApiController {
         @RequestBody JsonNode body)
     {
         if (!bpnlPattern.matcher(bpnl).matches()) {
-            log.warn("Rejecting request at DemandAndCapacityNotification request 2.0.0 endpoint. Invalid BPNL");
+            log.warn("Rejecting request at DemandAndCapacityNotification request 3.0.0 endpoint. Invalid BPNL");
             return ResponseEntity.badRequest().build();
         }
         try {
-            log.info("Received POST request for DemandAndCapacityNotification 2.0.0 with BPNL: " + bpnl);
+            log.info("Received POST request for DemandAndCapacityNotification 3.0.0 with BPNL: " + bpnl);
             DemandAndCapacityNotificationSamm notification = messageService.validateAndParse(body, IndustryCoreMessageContext.DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT, bpnl, DemandAndCapacityNotificationSamm.class);
             demandAndCapacityNotificationRequestApiService.handleIncomingNotification(bpnl, notification);
         } catch (IllegalArgumentException e) {
             log.warn("Rejecting DemandAndCapacityNotification: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            log.warn("Rejecting invalid request body at DemandAndCapacityNotification request 2.0.0 endpoint");
+            log.warn("Rejecting invalid request body at DemandAndCapacityNotification request 3.0.0 endpoint");
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(null);
@@ -88,31 +88,29 @@ public class DemandAndCapacityNotificationRequestApiController {
     final static String sample = "{\n" +
         "  \"header\": {\n" +
         "    \"senderBpn\": \"BPNL7588787849VQ\",\n" +
-        "    \"context\": \"CX-DemandAndCapacityNotificationAPI-Receive:2.0\",\n" +
+        "    \"context\": \"CX-DemandAndCapacityNotificationAPI-Receive:3.0\",\n" +
         "    \"messageId\": \"3b4edc05-e214-47a1-b0c2-1d831cdd9ba9\",\n" +
         "    \"receiverBpn\": \"BPNL6666787765VQ\",\n" +
         "    \"sentDateTime\": \"2023-06-19T21:24:00+07:00\",\n" +
         "    \"version\": \"3.0.0\"\n" +
         "  },\n" +
         "  \"content\": {\n" +
-        "    \"demandAndCapacityNotification\": {\n" +
-        "      \"affectedSitesSender\": [],\n" +
-        "      \"affectedSitesRecipient\": [],\n" +
-        "      \"materialsAffected\": [],\n" +
-        "      \"contentChangedAt\": \"2023-12-13T15:00:00+01:00\",\n" +
-        "      \"startDateOfEffect\": \"2023-12-13T15:00:00+01:00\",\n" +
-        "      \"relatedNotificationIds\": [\n" +
-        "        \"urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04\"\n" +
-        "      ],\n" +
-        "      \"leadingRootCause\": \"strike\",\n" +
-        "      \"effect\": \"demand-reduction\",\n" +
-        "      \"notificationId\": \"urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362\",\n" +
-        "      \"text\": \"Capacity reduction due to ongoing strike.\",\n" +
-        "      \"expectedEndDateOfEffect\": \"2023-12-17T08:00:00+01:00\",\n" +
-        "      \"sourceDisruptionId\": \"urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e\",\n" +
-        "      \"status\": \"resolved\",\n" +
-        "      \"resolvingMeasureDescription\": \"An agreement was found and the strike was ended.\"\n" +
-        "    }\n" +
+        "    \"affectedSitesSender\": [],\n" +
+        "    \"affectedSitesRecipient\": [],\n" +
+        "    \"materialsAffected\": [],\n" +
+        "    \"contentChangedAt\": \"2023-12-13T15:00:00+01:00\",\n" +
+        "    \"startDateOfEffect\": \"2023-12-13T15:00:00+01:00\",\n" +
+        "    \"relatedNotificationIds\": [\n" +
+        "     \"urn:uuid:d05cef4a-b692-45bf-87cc-eda2d84e4c04\"\n" +
+        "    ],\n" +
+        "    \"leadingRootCause\": \"strike\",\n" +
+        "    \"effect\": \"demand-reduction\",\n" +
+        "    \"notificationId\": \"urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362\",\n" +
+        "    \"text\": \"Capacity reduction due to ongoing strike.\",\n" +
+        "    \"expectedEndDateOfEffect\": \"2023-12-17T08:00:00+01:00\",\n" +
+        "    \"sourceDisruptionId\": \"urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e\",\n" +
+        "    \"status\": \"resolved\",\n" +
+        "    \"resolvingMeasureDescription\": \"An agreement was found and the strike was ended.\"\n" +
         "  }\n" +
         "}";
 }

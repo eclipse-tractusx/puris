@@ -20,24 +20,18 @@ package org.eclipse.tractusx.puris.backend.common.industrycore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum IndustryCoreMessageContext {
-    DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT("CX-DemandAndCapacityNotificationAPI-Receive:2.0.0", "demandAndCapacityNotification"),
-    DATA_EXCHANGE_REQUEST_CONTEXT("CX-DataExchangeRequestAPI-RequestReceive:1.0.0", null),
-    DATA_EXCHANGE_APPROVAL_CONTEXT("CX-DataExchangeRequestAPI-ApprovalReceive:1.0.0", null);
+    DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT("CX-DemandAndCapacityNotificationAPI-Receive:3.0.0"),
+    DATA_EXCHANGE_REQUEST_CONTEXT("CX-DataExchangeRequestAPI-RequestReceive:1.0.0"),
+    DATA_EXCHANGE_APPROVAL_CONTEXT("CX-DataExchangeRequestAPI-ApprovalReceive:1.0.0");
 
     private final String value;
-    private final String contentKey;
 
-    IndustryCoreMessageContext(String value, String contentKey) {
+    IndustryCoreMessageContext(String value) {
         this.value = value;
-        this.contentKey = contentKey;
     }
 
     @JsonValue
     public String getValue() {
         return value;
-    }
-
-    public String getContentKey() {
-        return contentKey;
     }
 }

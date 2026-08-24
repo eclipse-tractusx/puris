@@ -27,6 +27,7 @@ The **need for configuration updates** is **marked bold**.
 - Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
 - Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
 - Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
+- Updated demand and capacity notifications to version 3.0.0 ([#1197](https://github.com/eclipse-tractusx/puris/pull/1197))
 
 ### Fixes
 
