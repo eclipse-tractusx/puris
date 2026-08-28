@@ -37,6 +37,10 @@ controlplane:
   env:
     EDC_CATALOG_CACHE_EXECUTION_ENABLED: false
     EDC_DCP_V08_FORCED: true
+    # configure vault token auto-renewal
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+    EDC_VAULT_HASHICORP_TOKEN_TTL: "86400"
+    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
 
 dataplane:
   # -- Scale to 0 for scaledown
@@ -62,6 +66,12 @@ dataplane:
     java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
     java.util.logging.ConsoleHandler.level=ALL
     java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
+
+  env:
+    # configure token autorenewal
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+    EDC_VAULT_HASHICORP_TOKEN_TTL: "86400"
+    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
 
 postgresql:
   # not needed anymore since 0.10.2
