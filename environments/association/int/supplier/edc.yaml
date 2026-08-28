@@ -1,6 +1,3 @@
-install:
-  postgresql: true
-  vault: false
 
 participant:
   # TODO edc 0.13.x
@@ -12,32 +9,10 @@ participant:
   contextId: <path:puris/data/supplier#context-id>
 
 controlplane:
-  # -- Scale to 0 for scaledown
-  # autoscaling:
-  #     enabled: false
-  # replicaCount: 0
-  # -- endpoints of the control plane
   endpoints:
     management:
       authKey: <path:puris/data/supplier/edc#api-key>
-  bdrs:
-    # time that a cached BPN/DID resolution map is valid in seconds, default is 10 min
-    cache_validity_seconds: 0
-    server:
-      # URL of the BPN/DID Resolution Service - required:
-      url: <path:puris/data/environment#bdrs-url>
-  
-  # 0.9.0: disable policy validation first
-  policy:
-    validation:
-      enabled: false
-  resources:
-    requests:
-      cpu: "20m"
-      memory: "256Mi"
-    limits:
-      cpu: "500m"
-      memory: "256Mi"
+
   ## Ingress declaration to expose the network service.
   ingresses:
     ## Public / Internet facing Ingress
@@ -73,18 +48,7 @@ controlplane:
       tls:
         # -- Enables TLS on the ingress resource
         enabled: false
-  # -- declare where to mount [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) into the container
-  # -- configuration of the [Java Util Logging Facade](https://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html)
-  logging: |-
-    .level=DEBUG
-    org.eclipse.edc.level=ALL
-    handlers=java.util.logging.ConsoleHandler
-    java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
-    java.util.logging.ConsoleHandler.level=ALL
-    java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
-  env:
-    EDC_CATALOG_CACHE_EXECUTION_ENABLED: false
-    EDC_DCP_V08_FORCED: true
+
 
 # TODO edc 0.13.x
 # dcp:
@@ -122,27 +86,9 @@ iatp:
       id: <path:puris/data/supplier#did-url>
 
 dataplane:
-  # -- Scale to 0 for scaledown
-  # autoscaling:
-  #     enabled: false
-  # replicaCount: 0
   endpoints:
     proxy:
       authKey: <path:puris/data/supplier/edc#api-key>
-
-  token:
-    signer:
-      privatekey_alias: DATAPLANE_PROXY_PRIVATE_KEY
-    verifier:
-      publickey_alias: DATAPLANE_PROXY_PUBLIC_KEY
-  
-  resources:
-    requests:
-      cpu: "20m"
-      memory: "256Mi"
-    limits:
-      cpu: "500m"
-      memory: "256Mi"
 
   # "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
   # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
@@ -168,31 +114,14 @@ dataplane:
         # -- If present overwrites the default secret name
         secretName: tls-secret-edc-supplier-dataplane
       ## Adds [cert-manager](https://cert-manager.io/docs/) annotations to the ingress resource
-  logging: |-
-    .level=DEBUG
-    org.eclipse.edc.level=ALL
-    handlers=java.util.logging.ConsoleHandler
-    java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
-    java.util.logging.ConsoleHandler.level=ALL
-    java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
+
 postgresql:
   # not needed anymore since 0.10.2
   # image:
   #   repository: bitnamilegacy/postgresql
   #   tag: 16.2.0-debian-12-r10
   jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:puris/data/supplier/edc/postgres#database>"
-  primary: 
-    persistence:
-      enabled: true
-      size: 2Gi
-      storageClass: "default"
-  # primary:
-  #   resources:
-  #     requests:
-  #       cpu: "5m"
-  #       memory: "128Mi"
-  #     limits:
-  #       cpu: "200m"
+
   # auth:
   #   database: "postgres"
   #   username: "postgres"
@@ -213,22 +142,7 @@ postgresql:
     username: <path:puris/data/supplier/edc/postgres#user>
     password: <path:puris/data/supplier/edc/postgres#password>
     postgresPassword: <path:puris/data/supplier/edc/postgres#postgresPassword>
-  resources:
-    requests:
-      cpu: "20m"
-      memory: "128Mi"
-    limits:
-      cpu: "200m"
-      memory: "128Mi"
+
 vault:
   hashicorp:
-    enabled: true
-    url: <path:puris/data/environment#vault-url>
     token: <path:puris/data/environment#vault-token>
-    timeout: 30
-    healthCheck:
-      enabled: true
-      standbyOk: true
-    paths:
-      secret: /v1/puris
-      health: /v1/sys/health
