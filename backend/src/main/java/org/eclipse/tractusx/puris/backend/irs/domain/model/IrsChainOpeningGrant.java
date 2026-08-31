@@ -89,6 +89,7 @@ public abstract class IrsChainOpeningGrant {
 	@Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
 	protected String sourceDisruptionId;
 
+	@Pattern(regexp = PatternStore.BPNL_STRING)
 	protected String requesterBpn;
 
 	protected Instant validFrom;
