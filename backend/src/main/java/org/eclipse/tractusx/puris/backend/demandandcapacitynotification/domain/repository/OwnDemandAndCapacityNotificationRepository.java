@@ -19,10 +19,16 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository;
+
+import java.util.List;
+import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OwnDemandAndCapacityNotificationRepository extends DemandAndCapacityNotificationRepository<OwnDemandAndCapacityNotification>{
+
+	List<OwnDemandAndCapacityNotification> findBySourceDisruptionIdAndPartnerBpnl(UUID sourceDisruptionId, String bpnl);
 
 }

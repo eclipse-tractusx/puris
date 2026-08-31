@@ -24,8 +24,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningPartnerGrantRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService.IrsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +52,12 @@ public class IrsRequestQueueWorker {
 
 	@Autowired
 	private IrsQueuedRequestRepository irsQueuedRequestRepository;
+
+	@Autowired
+	private IrsChainOpeningPartnerGrantRepository irsChainOpeningPartnerGrantRepository;
+
+	@Autowired
+	private IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
 
 	@Autowired
 	private IrsRequestService irsRequestService;
@@ -109,14 +119,14 @@ public class IrsRequestQueueWorker {
 
 		if (successful) {
 			request.setStatus(IrsQueuedRequestStatusEnumeration.SUCCEEDED);
-			updateLinkedEntity(request);
+			updateLinkedEntity(request, true);
 		} else {
 			if (response != null) {
 				request.setLastErrorMessage(sanitizeForStorage("HTTP " + response.getStatusCode() + ": " + response.getResponseBody()));
 			}
 			if (request.getAttemptCount() >= request.getMaxAttempts()) {
 				request.setStatus(IrsQueuedRequestStatusEnumeration.FAILED);
-				updateLinkedEntity(request);
+				updateLinkedEntity(request, false);
 			} else {
 				request.setNextAttemptAt(Instant.now().plusSeconds(computeBackoffSeconds(request.getAttemptCount())));
 			}
@@ -135,13 +145,47 @@ public class IrsRequestQueueWorker {
 		}
 	}
 
-	private void updateLinkedEntity(IrsQueuedRequest request) {
+	private void updateLinkedEntity(IrsQueuedRequest request, boolean successful) {
 		if (request.getLinkedEntityUuid() == null) {
 			return;
 		}
 
 		switch (request.getType()) {
-			case POLICY_CREATE -> 
+			case CHAIN_OPENING_ROOT_GRANT_CREATE, CHAIN_OPENING_ROOT_GRANT_UPDATE -> 
+				irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+						if (successful) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+						} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+						}
+						// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
+						irsChainOpeningRootGrantRepository.save(grant);
+					},
+					() -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists", request.getLinkedEntityUuid(), request.getUuid())
+				);
+			case CHAIN_OPENING_ROOT_GRANT_DELETE -> irsChainOpeningRootGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.DELETED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				irsChainOpeningRootGrantRepository.save(grant);
+			}, () -> log.warn("Linked chain opening root grant {} for queued request {} no longer exists",
+				request.getLinkedEntityUuid(), request.getUuid()));
+			case CHAIN_OPENING_PARTNER_GRANT_CREATE, CHAIN_OPENING_PARTNER_GRANT_UPDATE -> 
+				irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+						if (successful) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+						} else if (grant.getSyncStatus() != IrsGrantSyncStatusEnumeration.NOT_SYNCED) {
+							grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+						}
+						// else: leave as NOT_SYNCED - this create never reached IRS, so the next attempt should still POST
+						irsChainOpeningPartnerGrantRepository.save(grant);
+					},
+					() -> log.warn("Linked chain opening grant {} for queued request {} no longer exists", request.getLinkedEntityUuid(), request.getUuid())
+				);
+			case CHAIN_OPENING_PARTNER_GRANT_DELETE -> irsChainOpeningPartnerGrantRepository.findById(request.getLinkedEntityUuid()).ifPresentOrElse(grant -> {
+				grant.setSyncStatus(successful ? IrsGrantSyncStatusEnumeration.DELETED : IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+				irsChainOpeningPartnerGrantRepository.save(grant);
+			}, () -> log.warn("Linked chain opening grant {} for queued request {} no longer exists",
+				request.getLinkedEntityUuid(), request.getUuid()));
+			case POLICY_CREATE ->
 				log.warn("Policy requests should have no Linked entity. No update is required. Please check why the policy request {} has a linked entity.", request.getUuid());
 		}
 	}

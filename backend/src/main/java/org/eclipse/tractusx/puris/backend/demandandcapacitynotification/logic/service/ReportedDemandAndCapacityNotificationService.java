@@ -25,6 +25,8 @@ import java.util.List;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
@@ -32,9 +34,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportedDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<ReportedDemandAndCapacityNotification, ReportedDemandAndCapacityNotificationRepository> {
 
+    private final IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
+
+    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+
     public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
-            PartnerService partnerService, MaterialPartnerRelationService mpr) {
+            PartnerService partnerService, MaterialPartnerRelationService mpr, IrsChainOpeningRootGrantService irsChainOpeningRootGrantService,
+            IrsChainOpeningPartnerGrantService irsChainOpeningGrantService) {
         super(reportedNotificationRepository, partnerService, mpr);
+        this.irsChainOpeningRootGrantService = irsChainOpeningRootGrantService;
+        this.irsChainOpeningGrantService = irsChainOpeningGrantService;
+    }
+
+    @Override
+    protected void afterUpdate(ReportedDemandAndCapacityNotification previous, ReportedDemandAndCapacityNotification updated) {
+        irsChainOpeningRootGrantService.onReportedNotificationUpdated(previous, updated);
+        irsChainOpeningGrantService.onReportedNotificationUpdated(updated);
     }
 
     public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {

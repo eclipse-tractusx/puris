@@ -19,15 +19,23 @@
 package org.eclipse.tractusx.puris.backend.irs.domain.model;
 
 /**
- * Identifies the kind of entity an {@link IrsQueuedRequest} originated from and whose status is
- * updated once the request reaches a terminal outcome.
+ * Represents whether the locally persisted state of an {@link IrsChainOpeningGrant}
+ * has been successfully reflected at the IRS.
  */
-public enum IrsQueuedRequestTypeEnumeration {
-    POLICY_CREATE,
-    CHAIN_OPENING_ROOT_GRANT_CREATE,
-    CHAIN_OPENING_ROOT_GRANT_UPDATE,
-    CHAIN_OPENING_ROOT_GRANT_DELETE,
-    CHAIN_OPENING_PARTNER_GRANT_CREATE,
-    CHAIN_OPENING_PARTNER_GRANT_UPDATE,
-    CHAIN_OPENING_PARTNER_GRANT_DELETE
+public enum IrsGrantSyncStatusEnumeration {
+    NOT_SYNCED("NOT_SYNCED"),
+    PENDING("PENDING"),
+    SYNCED("SYNCED"),
+    DELETED("DELETED"),
+    OUT_OF_SYNC("OUT_OF_SYNC");
+
+    private final String value;
+
+    IrsGrantSyncStatusEnumeration(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

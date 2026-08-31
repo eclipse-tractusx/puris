@@ -390,3 +390,167 @@ databaseChangeLog:
                   type: UUID
                   constraints:
                     nullable: true
+  - changeSet:
+      id: "7"
+      author: ReneSchroederLJ
+      changes:
+        - createTable:
+            tableName: chain_opening_grant
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: chain_opening_grant_pkey
+              - column:
+                  name: global_asset_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_disruption_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: requester_bpn
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valid_from
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: valid_until
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: use_case
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sync_status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: chain_opening_grant
+            columnNames: requester_bpn, global_asset_id, source_disruption_id
+            constraintName: uc_chain_opening_grant_key
+        - createTable:
+            tableName: chain_opening_grant_notification
+            columns:
+              - column:
+                  name: chain_opening_grant_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reported_notification_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: chain_opening_grant_notification
+            columnNames: chain_opening_grant_uuid, reported_notification_uuid
+            constraintName: uc_chain_opening_grant_notification_key
+        - addForeignKeyConstraint:
+            baseColumnNames: chain_opening_grant_uuid
+            baseTableName: chain_opening_grant_notification
+            constraintName: fk_chain_opening_grant_notification_grant
+            referencedColumnNames: uuid
+            referencedTableName: chain_opening_grant
+        - addForeignKeyConstraint:
+            baseColumnNames: reported_notification_uuid
+            baseTableName: chain_opening_grant_notification
+            constraintName: fk_chain_opening_grant_notification_notification
+            referencedColumnNames: uuid
+            referencedTableName: reported_demand_and_capacity_notification
+  - changeSet:
+      id: "8"
+      author: ReneSchroederLJ
+      changes:
+        - createTable:
+            tableName: chain_opening_root_grant
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: chain_opening_root_grant_pkey
+              - column:
+                  name: global_asset_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_disruption_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: requester_bpn
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: valid_from
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: valid_until
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: use_case
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sync_status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: chain_opening_root_grant
+            columnNames: requester_bpn, global_asset_id, source_disruption_id
+            constraintName: uc_chain_opening_root_grant_key
+        - createTable:
+            tableName: chain_opening_root_grant_notification
+            columns:
+              - column:
+                  name: chain_opening_root_grant_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reported_notification_uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: chain_opening_root_grant_notification
+            columnNames: chain_opening_root_grant_uuid, reported_notification_uuid
+            constraintName: uc_chain_opening_root_grant_notification_key
+        - addForeignKeyConstraint:
+            baseColumnNames: chain_opening_root_grant_uuid
+            baseTableName: chain_opening_root_grant_notification
+            constraintName: fk_chain_opening_root_grant_notification_grant
+            referencedColumnNames: uuid
+            referencedTableName: chain_opening_root_grant
+        - addForeignKeyConstraint:
+            baseColumnNames: reported_notification_uuid
+            baseTableName: chain_opening_root_grant_notification
+            constraintName: fk_chain_opening_root_grant_notification_notification
+            referencedColumnNames: uuid
+            referencedTableName: reported_demand_and_capacity_notification

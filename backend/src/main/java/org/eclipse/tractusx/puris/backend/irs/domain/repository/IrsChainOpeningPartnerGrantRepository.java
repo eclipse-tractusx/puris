@@ -16,18 +16,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.irs.domain.model;
+package org.eclipse.tractusx.puris.backend.irs.domain.repository;
 
-/**
- * Identifies the kind of entity an {@link IrsQueuedRequest} originated from and whose status is
- * updated once the request reaches a terminal outcome.
- */
-public enum IrsQueuedRequestTypeEnumeration {
-    POLICY_CREATE,
-    CHAIN_OPENING_ROOT_GRANT_CREATE,
-    CHAIN_OPENING_ROOT_GRANT_UPDATE,
-    CHAIN_OPENING_ROOT_GRANT_DELETE,
-    CHAIN_OPENING_PARTNER_GRANT_CREATE,
-    CHAIN_OPENING_PARTNER_GRANT_UPDATE,
-    CHAIN_OPENING_PARTNER_GRANT_DELETE
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IrsChainOpeningPartnerGrantRepository extends JpaRepository<IrsChainOpeningPartnerGrant, UUID> {
+
+	Optional<IrsChainOpeningPartnerGrant> findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
+		String requesterBpn, String globalAssetId, String sourceDisruptionId);
+
+	List<IrsChainOpeningPartnerGrant> findAllByReportedNotifications_Uuid(UUID notificationUuid);
+
 }

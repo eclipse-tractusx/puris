@@ -27,6 +27,8 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnD
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.adapter.DataExchangeApprovalSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.dataexchangeapprovalsamm.DataExchangeApprovalSamm;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,10 @@ public class DataExchangeApprovalApiService {
     private EdcAdapterService edcAdapterService;
     @Autowired
     private DataExchangeApprovalSammMapper sammMapper;
+    @Autowired
+    private IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
+    @Autowired
+    private IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
 
     public ReportedDataExchangeApproval handleIncomingDataExchangeApproval(String bpnl, DataExchangeApprovalSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -71,11 +77,22 @@ public class DataExchangeApprovalApiService {
                 log.error("Error updating Approval");
                 return null;
             }
+            if (approval.getDataExchangeRequest().getRelatedDataExchangeRequest() != null) {
+                irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
+            }
             return approval;
         }
         try {
             log.info("Creating new Approval");
-            return reportedDataExchangeApprovalService.create(approval);
+            ReportedDataExchangeApproval created = reportedDataExchangeApprovalService.create(approval);
+            if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
+                // create root grants for the notification if the approval is for a root request
+                irsChainOpeningRootGrantService.syncGrantsForNotification(created.getDataExchangeRequest().getNotification());
+            } else {
+                // add the notification to the affected materials' parent materials' grants if the approval is for a related request
+                irsChainOpeningGrantService.onRelatedApprovalReceived(created);
+            }
+            return created;
         } catch (KeyAlreadyExistsException e) {
             log.error("Approval already exists", e);
             return null;
@@ -89,10 +106,12 @@ public class DataExchangeApprovalApiService {
         var body = createDataExchangeApprovalBody(approval);
         try {
             edcAdapterService.doDataExchangeApprovalPostRequest(partner, body);
-            log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl()); 
+            irsChainOpeningGrantService.createGrantsForApproval(approval);
+            log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl());
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeApproval for partner " + partner.getBpnl(), e);
         }
+        
     }
 
     private JsonNode createDataExchangeApprovalBody(OwnDataExchangeApproval approval) {
