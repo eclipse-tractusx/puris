@@ -41,6 +41,7 @@ controlplane:
     EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
     EDC_VAULT_HASHICORP_TOKEN_TTL: "86400"
     EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
 
 dataplane:
   # -- Scale to 0 for scaledown
@@ -72,6 +73,7 @@ dataplane:
     EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
     EDC_VAULT_HASHICORP_TOKEN_TTL: "86400"
     EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
 
 postgresql:
   # not needed anymore since 0.10.2
