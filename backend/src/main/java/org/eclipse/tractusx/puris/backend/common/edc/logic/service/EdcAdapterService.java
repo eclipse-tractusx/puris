@@ -1424,12 +1424,13 @@ public class EdcAdapterService {
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
         String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL);
-        if (cxId != null) {
-            return cxId;
+        if (cxId != null) return cxId;
+        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0", mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
+        cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
+        if (cxId == null) {
+            log.error("Could not obtain partner CX id for {} from {} via either PartTypeInformation version", mpr.getMaterial().getOwnMaterialNumber(), mpr.getPartner().getBpnl());
         }
-        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0",
-            mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
-        return fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
+        return cxId;
     }
 
     private String fetchCxId(MaterialPartnerRelation mpr, AssetType type) {
