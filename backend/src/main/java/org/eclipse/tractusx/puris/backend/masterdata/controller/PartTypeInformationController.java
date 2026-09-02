@@ -155,7 +155,7 @@ public class PartTypeInformationController {
             return ProductLookup.error(HttpStatus.UNAUTHORIZED);
         }
         log.info("{} requests part type information {} on {}", bpnl, version, decodedMaterialNumber.replaceAll("[\\r\\n]", "_"));
-        Material material = materialService.findByOwnMaterialNumber(materialnumber);
+        Material material = materialService.findByOwnMaterialNumber(decodedMaterialNumber);
         if (material == null || !material.isProductFlag()) {
             return ProductLookup.error(HttpStatus.NOT_FOUND);
         }

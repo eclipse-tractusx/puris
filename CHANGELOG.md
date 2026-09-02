@@ -30,7 +30,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
 
 ### Version Bumps
 
