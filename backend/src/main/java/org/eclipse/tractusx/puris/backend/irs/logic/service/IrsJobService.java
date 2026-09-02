@@ -19,23 +19,27 @@
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +62,10 @@ public class IrsJobService {
 	private final ReportedDemandAndCapacityNotificationService reportedNotificationService;
 
 	private final IrsAdapterConfiguration irsAdapterConfiguration;
+
+	private final IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
+
+	private final MaterialService materialService;
 
 	/**
 	 * Persists the given IRS job locally and sends a
@@ -124,6 +132,41 @@ public class IrsJobService {
 
 		return irsJobRepository.save(irsJob);
 	}
+
+	/**
+     * Creates and sends a new IRS job for every root grant that has the given notification among
+     * its reportedNotifications. A grant whose globalAssetId does not resolve to a known material,
+     * or whose material is not eligible for an IRS job, is skipped and logged — it does not prevent
+     * jobs from being created for the other grants.
+     *
+     * @param notification the notification whose root grants should each get a new IRS job
+     */
+    public void createJobsForNotification(ReportedDemandAndCapacityNotification notification) {
+        List<IrsChainOpeningRootGrant> grants = irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notification.getUuid());
+        createJobsForRootGrants(grants);
+    }
+
+    private void createJobsForRootGrants(List<IrsChainOpeningRootGrant> grants) {
+        for (IrsChainOpeningRootGrant grant : grants) {
+            Material material = materialService.findByMaterialNumberCx(grant.getGlobalAssetId());
+            if (material == null) {
+                log.error("No material found for globalAssetId {} while creating IRS job for sourceDisruptionId {}",
+                    grant.getGlobalAssetId(), grant.getSourceDisruptionId());
+                continue;
+            }
+
+            IrsJob irsJob = new IrsJob();
+            irsJob.setMaterial(material);
+            irsJob.setSourceDisruptionId(grant.getSourceDisruptionId());
+
+            try {
+                createAndSend(irsJob);
+            } catch (IllegalArgumentException e) {
+                log.error("Failed to create IRS job for globalAssetId {}, sourceDisruptionId {}",
+                    grant.getGlobalAssetId(), grant.getSourceDisruptionId(), e);
+            }
+        }
+    }
 
 	/**
 	 * Ensures that the given material is eligible to be used for an IRS job.
