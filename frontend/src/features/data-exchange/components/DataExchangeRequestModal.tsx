@@ -20,7 +20,7 @@ import { DialogActions, DialogContent, Textarea } from '@catena-x/portal-shared-
 import { DateTime } from '@components/ui/DateTime';
 import { Send, ReportProblem, Info, Close } from '@mui/icons-material';
 import { Box, Button, Checkbox, Dialog, DialogTitle, Divider, FormLabel, Grid, InputLabel, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { DemandCapacityNotification } from '@models/types/data/demand-capacity-notification';
@@ -103,7 +103,7 @@ const isDesiredEndDateTimeValid = (
     return true;
 };
 
-const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification, dataExchangeApproval: DataExchangeApproval | null): { label: string; explanation: string } => {
+export const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification, dataExchangeApproval: DataExchangeApproval | null): { label: string; explanation: string } => {
     if (demandCapacityNotification.status === 'resolved') {
         return { label: 'Terminated', explanation: 'The notification has been resolved' };
     }
@@ -111,6 +111,11 @@ const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, demandC
         return { label: 'Expired', explanation: `The request has ended on ${new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString()}`};
     }
     if (dataExchangeApproval) {
+        if (dataExchangeApproval.isFinalized === true) {
+            return { label: 'Approved, finalized', explanation: 'The request has been approved and finalized' };
+        } else if (dataExchangeApproval.isFinalized === false) {
+            return { label: 'Approved, not finalized', explanation: 'The request has been approved, but not finalized' };    
+        }
         return { label: 'Approved', explanation: 'The request has been approved' };
     }
     return { label: 'Pending', explanation: 'Data exchange request created, waiting for approval' };
@@ -126,6 +131,33 @@ const isValidDataExchangeRequest = (request: Partial<DataExchangeRequest>, deman
     isDesiredStartDateTimeValid(request, demandCapacityNotification) &&
     isDesiredEndDateTimeValid(request, demandCapacityNotification);
 
+export type ForwardTarget = {
+    notification: DemandCapacityNotification;
+    start: Date;
+    end: Date;
+};
+
+const maxDate = (a: Date, b: Date) => (a < b ? b : a);
+const minDate = (a: Date, b: Date) => (a < b ? a : b);
+
+export const resolveForwardTargets = (dataExchangeRequest: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification, candidates: DemandCapacityNotification[]): ForwardTarget[] => {
+    const relatedIds = demandCapacityNotification.relatedNotificationIds;
+    if (!relatedIds?.length || !dataExchangeRequest.desiredStartDateTime || !dataExchangeRequest.desiredEndDateTime) {
+        return [];
+    }
+    const requesterBpnl = demandCapacityNotification.partnerBpnl;
+    const requestedStart = new Date(dataExchangeRequest.desiredStartDateTime);
+    const requestedEnd = new Date(dataExchangeRequest.desiredEndDateTime);
+ 
+    return candidates.filter((candidate) => candidate.reported && relatedIds.includes(candidate.notificationId) && candidate.partnerBpnl !== requesterBpnl)
+        .map((notification) => ({
+            notification,
+            start: maxDate(requestedStart, new Date(notification.startDateOfEffect)),
+            end: notification.expectedEndDateOfEffect ? minDate(requestedEnd, new Date(notification.expectedEndDateOfEffect)) : requestedEnd,
+        }))
+        .filter(({ start, end }) => start < end);
+};
+
 type DataExchangeRequestModalProps = {
     open: boolean;
     demandCapacityNotification: DemandCapacityNotification;
@@ -133,6 +165,7 @@ type DataExchangeRequestModalProps = {
     partners: Partner[] | null;
     dataApprovalMode: boolean;
     dataExchangeApproval: DataExchangeApproval | null;
+    relatedNotificationsIds?: DemandCapacityNotification[];
     onClose: () => void;
     onSave: () => void;
 };
@@ -146,6 +179,9 @@ type DataExchangeRequestViewProps = {
     partners: Partner[] | null;
     partnerMaterials: PartnerMaterials;
     dataApprovalMode: boolean;
+    forwardTargets: ForwardTarget[];
+    forward: boolean;
+    onForwardChange: (forward: boolean) => void;
 };
 
 const AffectedMaterialsSection = ({ materialNumbers, partnerMaterials }: { materialNumbers?: string[]; partnerMaterials: PartnerMaterials; }) => (
@@ -182,6 +218,9 @@ const DataExchangeRequestView = ({
     partnerMaterials,
     dataExchangeApproval,
     dataApprovalMode,
+    forwardTargets,
+    forward,
+    onForwardChange
 }: DataExchangeRequestViewProps) => {
     const isCreatingApproval = dataApprovalMode && !dataExchangeApproval;
     const status = getDataExchangeStatus(dataExchangeRequest, demandCapacityNotification, dataExchangeApproval);
@@ -235,6 +274,18 @@ const DataExchangeRequestView = ({
                     <InputLabel htmlFor="requested-types-n-tier"> Exchange anonymous data with relevant participants across multiple tiers </InputLabel>
                 </Stack>
             </Grid>
+            {isCreatingApproval && forwardTargets.length > 0 && (
+                <>
+                    <Grid display="grid" item xs={12}><Divider flexItem /></Grid>
+                    <Grid display="grid" item xs={12}>
+                        <FormLabel>Forward</FormLabel>
+                        <Stack direction="row" alignItems="center">
+                            <Checkbox id="forward-request" checked={forward} onChange={(_, checked) => onForwardChange(checked)} data-testid="forward-request" />
+                            <InputLabel htmlFor="forward-request"> Forward this request to {forwardTargets.length} partner{forwardTargets.length > 1 ? 's' : ''}</InputLabel>
+                        </Stack>
+                    </Grid>
+                </>
+            )}
         </Grid>
     );
 };
@@ -246,19 +297,31 @@ export const DataExchangeRequestInformationModal = ({
     partners,
     dataApprovalMode,
     dataExchangeApproval,
+    relatedNotificationsIds = [],
     onClose,
     onSave,
 }: DataExchangeRequestModalProps) => {
     const [temporaryDataExchangeRequest, setTemporaryDataExchangeRequest] = useState<Partial<DataExchangeRequest>>({});
     const [isConfirmApproveOpen, setIsConfirmApproveOpen] = useState(false);
+    const [forwardRequest, setForwardRequest] = useState(false);
     const { partnerMaterials } = usePartnerMaterials(demandCapacityNotification.partnerBpnl);
 
     const theme = useTheme();
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
 
+        const forwardTargets = useMemo(() => {
+        if (!dataApprovalMode || !dataExchangeRequest || dataExchangeApproval) {
+            return [];
+        }
+        return resolveForwardTargets(dataExchangeRequest, demandCapacityNotification, relatedNotificationsIds);
+    }, [dataApprovalMode, dataExchangeRequest, dataExchangeApproval, demandCapacityNotification, relatedNotificationsIds]);
+ 
+    const willForward = forwardRequest && forwardTargets.length > 0;
+
     useEffect(() => {
         if (open) {
+            setForwardRequest(false);
             if (dataExchangeRequest) {
                 setTemporaryDataExchangeRequest(dataExchangeRequest);
             } else {
@@ -269,7 +332,7 @@ export const DataExchangeRequestInformationModal = ({
                     desiredStartDateTime: getDefaultDesiredStartDateTime(demandCapacityNotification),
                     desiredEndDateTime: demandCapacityNotification.expectedEndDateOfEffect ? new Date(demandCapacityNotification?.expectedEndDateOfEffect) : new Date(),
                 };
-
+ 
                 setTemporaryDataExchangeRequest(initialData);
             }
         }
@@ -300,7 +363,7 @@ export const DataExchangeRequestInformationModal = ({
             })
             .finally(handleClose);
     };
-
+ 
     const handleApproveClick = () => {
         if (!dataExchangeRequest) {
             return;
@@ -308,14 +371,16 @@ export const DataExchangeRequestInformationModal = ({
         const approvalToSave: Partial<DataExchangeApproval> = {
             approvedTypes: [RequestedType.N_TIER],
             dataExchangeRequestId: dataExchangeRequest.requestId,
-            isFinalized: true
+            isFinalized: !willForward,
         };
-        postDataExchangeApproval(dataExchangeRequest.uuid, approvalToSave)
+        postDataExchangeApproval(dataExchangeRequest.uuid, approvalToSave, willForward)
             .then(() => {
                 onSave();
                 notify({
-                    title: 'Data Exchange approved',
-                    description: 'The requested data exchange approval has been approved',
+                    title: willForward ? 'Data Exchange approved and forwarded' : 'Data Exchange approved',
+                    description: willForward
+                        ? `The request has been approved and forwarded to partner${forwardTargets.length > 1 ? 's' : ''}.`
+                        : 'The requested data exchange approval has been approved',
                     severity: 'success',
                 });
             })
@@ -337,6 +402,7 @@ export const DataExchangeRequestInformationModal = ({
     const handleClose = () => {
         setFormError(false);
         setIsConfirmApproveOpen(false);
+        setForwardRequest(false);
         setTemporaryDataExchangeRequest({});
         onClose();
     };
@@ -441,6 +507,9 @@ export const DataExchangeRequestInformationModal = ({
                             partners={partners}
                             partnerMaterials={partnerMaterials}
                             dataApprovalMode={dataApprovalMode}
+                            forwardTargets={forwardTargets}
+                            forward={forwardRequest}
+                            onForwardChange={setForwardRequest}
                         ></DataExchangeRequestView>
                     ) : null}
                     <Box display="flex" gap="1rem" width="100%" justifyContent="end" marginTop="1rem">
@@ -450,11 +519,11 @@ export const DataExchangeRequestInformationModal = ({
                         {dataApprovalMode ? (
                             dataExchangeApproval ? (
                                 <Button variant="contained" sx={{ display: 'flex', gap: '.25rem' }} disabled>
-                                    Approved
+                                    {dataExchangeApproval.isFinalized === false ? 'Approved, not finalized' : 'Approved'}
                                 </Button>
                             ) : (
                                 <Button variant="contained" sx={{ display: 'flex', gap: '.25rem' }} onClick={() => setIsConfirmApproveOpen(true)}>
-                                    <Send /> Approve and close
+                                    <Send /> {willForward ? 'Approve, forward and close' : 'Approve and close'}
                                 </Button>
                             )
                         ) : !dataExchangeRequest ? (
@@ -468,13 +537,18 @@ export const DataExchangeRequestInformationModal = ({
             </Dialog >
             <Dialog open={isConfirmApproveOpen} onClose={() => setIsConfirmApproveOpen(false)}>
                 <DialogTitle variant="h3" textAlign="center">Confirm Approval</DialogTitle>
-                <DialogContent sx={{ display: 'flex', padding: "0.1rem 1rem" }}>
+                <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1, padding: "0.1rem 1rem" }}>
                     <Typography variant="body2">Do you really want to approve the data exchange request?</Typography>
+                    {willForward && (
+                        <Typography variant="body2">
+                            The request is also forwarded to {forwardTargets.length} partner{forwardTargets.length > 1 ? 's' : ''}.
+                        </Typography>
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ padding: 0 }}>
                     <Stack direction="row" justifyContent="center" width="100%" gap={1}> 
                         <Button variant="outlined" color="primary" onClick={() => setIsConfirmApproveOpen(false)}>Cancel</Button>
-                        <Button variant="contained" onClick={handleApproveConfirm} autoFocus><Send sx={{ mr: 0.5 }} /> Approve</Button>
+                        <Button variant="contained" onClick={handleApproveConfirm} autoFocus><Send sx={{ mr: 0.5 }} /> {willForward ? 'Approve and forward' : 'Approve'}</Button>
                     </Stack>
                 </DialogActions>
             </Dialog>

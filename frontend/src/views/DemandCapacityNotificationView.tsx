@@ -34,6 +34,7 @@ import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
 import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
 import { DataExchangeRequestInformationModal } from '@features/data-exchange/components/DataExchangeRequestModal';
 import { getDataExchangeApproval, getDataExchangeRequest } from '@services/data-exchange-service';
+import { DataExchangeRequestListModal } from '@features/data-exchange/components/DataExchangeRequestListModal';
 
 
 export const DemandCapacityNotificationView = () => {
@@ -48,6 +49,7 @@ export const DemandCapacityNotificationView = () => {
     const [selectedRequest, setSelectedRequest] = useState<DataExchangeRequest | null>(null);
     const [selectedApproval, setSelectedApproval] = useState<DataExchangeApproval | null>(null);
     const [filterPartners, setFilterPartners] = useState<Partner[] | null>(null);
+    const [requestListContext, setRequestListContext] = useState<{ notification: DemandCapacityNotification; requests: DataExchangeRequest[]; } | null>(null);
     const [forwardData, setForwardData] = useState<{
         relatedNotificationIds?: string[];
         sourceDisruptionId: string;
@@ -58,6 +60,40 @@ export const DemandCapacityNotificationView = () => {
 
     const { setTitle } = useTitle();
     const activeRequestNotification = selectedNotification ?? demandCapacityNotification.find(n => n.notificationId === selectedRequest?.notificationId) ?? null;
+
+    const findNotification = (notificationId: string) => demandCapacityNotification.find((n) => n.notificationId === notificationId) ?? null;
+
+    const openRequest = (request: DataExchangeRequest) => {
+        setSelectedRequest(request);
+        setSelectedNotification(findNotification(request.notificationId));
+        setDataApprovalMode(false);
+        setSelectedApproval(null);
+        setDataRequestModalOpen(true);
+    };
+
+    const openApproval = (request: DataExchangeRequest) => {
+        setSelectedRequest(request);
+        setSelectedNotification(findNotification(request.notificationId));
+        setDataApprovalMode(true);
+        setSelectedApproval(request.dataExchangeApproval);
+        setDataRequestModalOpen(true);
+    };
+
+    const openCreateApproval = (request: DataExchangeRequest) => {
+        setSelectedRequest(request);
+        setSelectedNotification(findNotification(request.notificationId));
+        setDataApprovalMode(true);
+        setSelectedApproval(null);
+        setDataRequestModalOpen(true);
+    };
+
+    const openCreateRequest = (notification: DemandCapacityNotification) => {
+        setSelectedNotification(notification);
+        setSelectedRequest(null);
+        setDataApprovalMode(false);
+        setSelectedApproval(null);
+        setDataRequestModalOpen(true);
+    };
 
     useEffect(() => {
         setTitle('Notifications');
@@ -184,32 +220,11 @@ export const DemandCapacityNotificationView = () => {
                                     setSelectedNotification(notification);
                                     setConfirmModalOpen(true);
                                 }}
-                                onViewRequestClicked={(request) => {
-                                    setSelectedRequest(request);
-                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setDataApprovalMode(false);
-                                    setDataRequestModalOpen(true);
-                                }}
-                                onViewApprovalClicked={(request) => {
-                                    setSelectedRequest(request);
-                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setDataApprovalMode(true);
-                                    setSelectedApproval(request.dataExchangeApproval);
-                                    setDataRequestModalOpen(true);
-                                }}
-                                onCreateRequestClicked={(notification) => {
-                                    setSelectedNotification(notification);
-                                    setSelectedRequest(null);
-                                    setDataApprovalMode(false);
-                                    setDataRequestModalOpen(true);
-                                }}
-                                onCreateApprovalClicked={(request) => {
-                                    setSelectedRequest(request);
-                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setDataApprovalMode(true);
-                                    setSelectedApproval(null);
-                                    setDataRequestModalOpen(true);
-                                }}
+                                onViewRequestClicked={openRequest}
+                                onViewApprovalClicked={openApproval}
+                                onCreateApprovalClicked={openCreateApproval}
+                                onCreateRequestClicked={openCreateRequest}
+                                onViewRequestListClicked={(notification, requests) => setRequestListContext({ notification, requests })}
                             />
                         </Box>
                     ))
@@ -246,19 +261,9 @@ export const DemandCapacityNotificationView = () => {
                                     setSelectedNotification(notification);
                                     setConfirmModalOpen(true);
                                 }}
-                                onViewRequestClicked={(request) => {
-                                    setSelectedRequest(request);
-                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setDataApprovalMode(false);
-                                    setDataRequestModalOpen(true);
-                                }}
-                                onViewApprovalClicked={(request) => {
-                                    setSelectedRequest(request);
-                                    setSelectedNotification(notifications.find(n => n.notificationId === request.notificationId) ?? null);
-                                    setDataApprovalMode(true);
-                                    setSelectedApproval(request.dataExchangeApproval);
-                                    setDataRequestModalOpen(true);
-                                }}
+                                onViewRequestClicked={openRequest}
+                                onViewApprovalClicked={openApproval}
+                                onViewRequestListClicked={(notification, requests) => setRequestListContext({ notification, requests })}
                             />
                         </Box>
                     ))
@@ -290,6 +295,7 @@ export const DemandCapacityNotificationView = () => {
                     dataExchangeApproval={selectedApproval}
                     demandCapacityNotification={activeRequestNotification}
                     dataExchangeRequest={selectedRequest}
+                    relatedNotificationsIds={demandCapacityNotification}
                     partners={filterPartners ?? partners}
                     onClose={() => {
                         setDataRequestModalOpen(false);
@@ -301,6 +307,17 @@ export const DemandCapacityNotificationView = () => {
                     onSave={fetchNotificationsAndRequests}
                 />
             )}
+            <DataExchangeRequestListModal
+                open={!!requestListContext}
+                demandCapacityNotification={requestListContext?.notification ?? null}
+                dataExchangeRequests={requestListContext?.requests ?? []}
+                partners={partners}
+                onClose={() => setRequestListContext(null)}
+                onViewRequestClicked={openRequest}
+                onCreateApprovalClicked={openCreateApproval}
+                onViewApprovalClicked={openApproval}
+                onCreateRequestClicked={openCreateRequest}
+            />
 
             <DemandCapacityNotificationResolutionModal
                 open={confirmModalOpen}
