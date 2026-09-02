@@ -23,6 +23,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService.IrsResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,28 +84,28 @@ class IrsRequestServiceTest {
     void get_WhenAdapterDisabled_ThrowsIllegalStateException() {
         when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
         assertThrows(IllegalStateException.class,
-            () -> irsRequestService.get("/test", null));
+            () -> irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/test", null, null, false));
     }
 
     @Test
     void post_WhenAdapterDisabled_ThrowsIllegalStateException() {
         when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
         assertThrows(IllegalStateException.class,
-            () -> irsRequestService.post("/test", "{}"));
+            () -> irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "/test", null, "{}", false));
     }
 
     @Test
     void put_WhenAdapterDisabled_ThrowsIllegalStateException() {
         when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
         assertThrows(IllegalStateException.class,
-            () -> irsRequestService.put("/test", "{}"));
+            () -> irsRequestService.execute(IrsQueuedRequestMethodEnumeration.PUT, "/test", null, "{}", false));
     }
 
     @Test
     void delete_WhenAdapterDisabled_ThrowsIllegalStateException() {
         when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
         assertThrows(IllegalStateException.class,
-            () -> irsRequestService.delete("/test", null));
+            () -> irsRequestService.execute(IrsQueuedRequestMethodEnumeration.DELETE, "/test", null, null, false));
     }
 
     // --- GET ---
@@ -114,7 +115,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        IrsResponse response = irsRequestService.get("/irs/policies", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/irs/policies", null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getMethod()).isEqualTo("GET");
@@ -128,7 +129,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.get("/irs/policies", Map.of("state", "COMPLETED", "limit", "10"));
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/irs/policies", Map.of("state", "COMPLETED", "limit", "10"), null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getPath()).contains("state=COMPLETED");
@@ -143,7 +144,7 @@ class IrsRequestServiceTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(201).setBody("{\"id\":\"abc\"}"));
 
         String jsonBody = "{\"globalAssetId\":\"urn:uuid:test\"}";
-        IrsResponse response = irsRequestService.post("/irs/policies", jsonBody);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "/irs/policies", null, jsonBody, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getMethod()).isEqualTo("POST");
@@ -158,7 +159,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.post("/irs/policies", null);
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "/irs/policies", null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getBody().readUtf8()).isEqualTo("{}");
@@ -172,7 +173,7 @@ class IrsRequestServiceTest {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
         String jsonBody = "{\"state\":\"CANCELED\"}";
-        IrsResponse response = irsRequestService.put("/irs/policies", jsonBody);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.PUT, "/irs/policies", null, jsonBody, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getMethod()).isEqualTo("PUT");
@@ -187,7 +188,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
-        IrsResponse response = irsRequestService.delete("/irs/policies/abc", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.DELETE, "/irs/policies/abc", null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getMethod()).isEqualTo("DELETE");
@@ -199,7 +200,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.delete("/irs/policies", Map.of("id", "policy-id-123"));
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.DELETE, "/irs/policies", Map.of("id", "policy-id-123"), null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getPath()).contains("id=policy-id-123");
@@ -212,7 +213,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody("success-body"));
 
-        IrsResponse response = irsRequestService.get("/test", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/test", null, null, false);
 
         assertThat(response.isSuccessful()).isTrue();
         assertThat(response.getStatusCode()).isEqualTo(200);
@@ -224,7 +225,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody("internal server error"));
 
-        IrsResponse response = irsRequestService.get("/test", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/test", null, null, false);
 
         assertThat(response.isSuccessful()).isFalse();
         assertThat(response.getStatusCode()).isEqualTo(500);
@@ -236,7 +237,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(404).setBody("not found"));
 
-        IrsResponse response = irsRequestService.get("/irs/policiess/nonexistent", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/irs/policiess/nonexistent", null, null, false);
 
         assertThat(response.isSuccessful()).isFalse();
         assertThat(response.getStatusCode()).isEqualTo(404);
@@ -247,7 +248,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));
 
-        IrsResponse response = irsRequestService.delete("/irs/policies/abc", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.DELETE, "/irs/policies/abc", null, null, false);
 
         assertThat(response.getResponseBody()).isEmpty();
     }
@@ -260,7 +261,7 @@ class IrsRequestServiceTest {
         // Shut down the server so the connection is refused
         mockWebServer.shutdown();
 
-        IrsResponse response = irsRequestService.get("/test", null);
+        IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/test", null, null, false);
 
         assertThat(response.isSuccessful()).isFalse();
         assertThat(response.getStatusCode()).isEqualTo(500);
@@ -280,7 +281,7 @@ class IrsRequestServiceTest {
             // Reconfigure service to point at the fast server
             when(irsAdapterConfiguration.getIrsAdapterUrl()).thenReturn(fastMockServer.url("/").toString());
 
-            IrsResponse response = irsRequestService.get("/test", null);
+            IrsResponse response = irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/test", null, null, false);
 
             assertThat(response.isSuccessful()).isFalse();
             assertThat(response.getStatusCode()).isEqualTo(500);
@@ -296,7 +297,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.get(null, null);
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, null, null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         // Path should be just the root '/'
@@ -308,7 +309,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.get("/irs/jobs", null);
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/irs/jobs", null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getPath()).isEqualTo("/irs/jobs");
@@ -319,7 +320,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.get("irs/jobs", null);
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "irs/jobs", null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getPath()).isEqualTo("/irs/jobs");
@@ -330,7 +331,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.get("/irs/jobs", null);
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.GET, "/irs/jobs", null, null, false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getPath()).doesNotContain("?");
@@ -343,7 +344,7 @@ class IrsRequestServiceTest {
         stubEnabled();
         mockWebServer.enqueue(new MockResponse().setResponseCode(200));
 
-        irsRequestService.post("/test", "{}");
+        irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "/test", null, "{}", false);
 
         RecordedRequest request = mockWebServer.takeRequest(2, TimeUnit.SECONDS);
         assertThat(request.getHeader(AUTH_KEY)).isEqualTo(AUTH_SECRET);

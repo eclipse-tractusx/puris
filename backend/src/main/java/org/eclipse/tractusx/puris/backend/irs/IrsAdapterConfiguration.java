@@ -59,6 +59,12 @@ public class IrsAdapterConfiguration {
      * Header value used for IRS API authentication.
      */
     @Value("${puris.irsadapter.adminauthsecret}")
+    private String irsAdapterAdminAuthSecret;
+
+    /**
+     * Header value used for IRS API authentication.
+     */
+    @Value("${puris.irsadapter.authsecret}")
     private String irsAdapterAuthSecret;
 
     /**
@@ -91,4 +97,11 @@ public class IrsAdapterConfiguration {
      */
     @Value("${puris.irsadapter.queue.max-retry-delay-seconds}")
     private long queueMaxRetryDelaySeconds;
+
+    /**
+     * Delay (in seconds) before polling an IRS job's status, both for the first poll after job
+     * creation succeeds and for every subsequent poll while the job is still in progress.
+     */
+    @Value("${puris.irsadapter.job.poll-delay-seconds}")
+    private long jobPollDelaySeconds;
 }

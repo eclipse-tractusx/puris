@@ -198,6 +198,8 @@ components:
           type: string
         finalized:
           type: boolean
+        isFinalized:
+          type: boolean
         timestamp:
           format: date-time
           maxItems: 50
@@ -209,6 +211,7 @@ components:
       required:
       - approvedTypes
       - dataExchangeRequestId
+      - isFinalized
       type: object
     DataExchangeRequestDto:
       additionalProperties: false

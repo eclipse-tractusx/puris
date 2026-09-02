@@ -585,6 +585,8 @@ backend:
       authkey: x-api-key
       # -- The auth secret to be used on your IRS adapter's request api. The secret requires admin permissions. Reused from existing secret. Secret key "puris-irsadapter-adminauthsecret".
       adminauthsecret: "my-irs-admin-secret"
+      # -- The auth secret to be used on your IRS adapter's request api for non-admin requests. Optional - if omitted, the adminauthsecret is used instead. Reused from existing secret. Secret key "puris-irsadapter-authsecret".
+      authsecret: ""
       queue:
         # -- How often (in seconds) the IRS request queue worker checks for due requests.
         pollintervalseconds: 30
@@ -596,6 +598,9 @@ backend:
         backoffmultiplier: 2
         # -- Upper bound (in seconds) on the delay between two attempts of a queued IRS request.
         maxretrydelayseconds: 3600
+      job:
+        # -- Delay (in seconds) before polling an IRS job's status, both for the first poll after job creation succeeds and for every subsequent poll while the job is still in progress.
+        polldelayseconds: 300
     batch:
       partnerdataupdate:
         # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.

@@ -21,9 +21,12 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.stereotype.Service;
 
@@ -121,6 +124,18 @@ public class IrsRequestBodybuilder {
         payload.set("policy", policy);
 
         requestBody.set("payload", payload);
+        return requestBody;
+    }
+
+    public JsonNode buildJobCreationRequestBody(IrsJob irsJob) {
+        ObjectNode requestBody = objectMapper.createObjectNode();
+        requestBody.put("openingId", irsJob.getSourceDisruptionId());
+        // Due to the current limitation of the use case to the "asPlanned" life cycle
+        // we can assume that we are in the supplier role for the material.
+        // Thus the globalAssetId is the materialNumberCx of the material
+        requestBody.put("globalAssetId", irsJob.getMaterial().getMaterialNumberCx());
+        requestBody.put("bomLifecycle", "asPlanned");
+        requestBody.put("useCase", IrsAdapterConfiguration.PURIS_USE_CASE);
         return requestBody;
     }
 

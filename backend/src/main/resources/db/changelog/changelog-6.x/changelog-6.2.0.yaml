@@ -554,3 +554,48 @@ databaseChangeLog:
             constraintName: fk_chain_opening_root_grant_notification_notification
             referencedColumnNames: uuid
             referencedTableName: reported_demand_and_capacity_notification
+  - changeSet:
+      id: "9"
+      author: ReneSchroederLJ
+      changes:
+        - createTable:
+            tableName: irs_job
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: irs_job_pkey
+              - column:
+                  name: job_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+              - column:
+                  name: source_disruption_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: state
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: request_status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseColumnNames: material_own_material_number
+            baseTableName: irs_job
+            constraintName: fk_irs_job_material
+            referencedColumnNames: own_material_number
+            referencedTableName: material

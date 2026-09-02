@@ -18,6 +18,7 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,17 @@ public class IrsRequestQueueService {
 	 */
 	public IrsQueuedRequest enqueue(IrsQueuedRequestMethodEnumeration method, String path, String jsonBody, Map<String, String> queryParams,
 			IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid) {
+		return enqueue(method, path, jsonBody, queryParams, type, linkedEntityUuid, Duration.ZERO);
+	}
+
+	/**
+	 * Enqueues a new IRS request the same way as {@link #enqueue(IrsQueuedRequestMethodEnumeration, String, String, Map, IrsQueuedRequestTypeEnumeration, UUID)},
+	 * but only makes it due for dispatch after the given delay has elapsed.
+	 *
+	 * @param delay how long to wait before the request becomes due
+	 */
+	public IrsQueuedRequest enqueue(IrsQueuedRequestMethodEnumeration method, String path, String jsonBody, Map<String, String> queryParams,
+			IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid, Duration delay) {
 		if (!irsRequestService.isEnabled()) {
 			log.info("IRS adapter is disabled. Skipping enqueue of {} {}", method, path);
 			return null;
@@ -84,7 +96,7 @@ public class IrsRequestQueueService {
 			.status(IrsQueuedRequestStatusEnumeration.PENDING)
 			.attemptCount(0)
 			.maxAttempts(irsAdapterConfiguration.getQueueMaxAttempts())
-			.nextAttemptAt(now)
+			.nextAttemptAt(now.plus(delay))
 			.createdAt(now)
 			.type(type)
 			.linkedEntityUuid(linkedEntityUuid)

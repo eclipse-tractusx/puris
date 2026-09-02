@@ -23,11 +23,29 @@ package org.eclipse.tractusx.puris.backend.irs.domain.model;
  * updated once the request reaches a terminal outcome.
  */
 public enum IrsQueuedRequestTypeEnumeration {
-    POLICY_CREATE,
-    CHAIN_OPENING_ROOT_GRANT_CREATE,
-    CHAIN_OPENING_ROOT_GRANT_UPDATE,
-    CHAIN_OPENING_ROOT_GRANT_DELETE,
-    CHAIN_OPENING_PARTNER_GRANT_CREATE,
-    CHAIN_OPENING_PARTNER_GRANT_UPDATE,
-    CHAIN_OPENING_PARTNER_GRANT_DELETE
+    POLICY_CREATE("POLICY_CREATE", true),
+    CHAIN_OPENING_ROOT_GRANT_CREATE("CHAIN_OPENING_ROOT_GRANT_CREATE", true),
+    CHAIN_OPENING_ROOT_GRANT_UPDATE("CHAIN_OPENING_ROOT_GRANT_UPDATE", true),
+    CHAIN_OPENING_ROOT_GRANT_DELETE("CHAIN_OPENING_ROOT_GRANT_DELETE", true),
+    CHAIN_OPENING_PARTNER_GRANT_CREATE("CHAIN_OPENING_PARTNER_GRANT_CREATE", true),
+    CHAIN_OPENING_PARTNER_GRANT_UPDATE("CHAIN_OPENING_PARTNER_GRANT_UPDATE", true),
+    CHAIN_OPENING_PARTNER_GRANT_DELETE("CHAIN_OPENING_PARTNER_GRANT_DELETE", true),
+    JOB_CREATE("JOB_CREATE", false),
+    JOB_GET("JOB_GET", false);
+
+    private final String value;
+    private final boolean isAdminRequest;
+
+    IrsQueuedRequestTypeEnumeration(String value, boolean isAdminRequest) {
+        this.value = value;
+        this.isAdminRequest = isAdminRequest;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public boolean isAdminRequest() {
+        return isAdminRequest;
+    }
 }
