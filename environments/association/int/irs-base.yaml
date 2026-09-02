@@ -178,7 +178,7 @@ edc:
     edrManagementEnabled: false  # Flag whether IRS uses classic EDC negotiation or EDR negotiation
     datareference:
       storage:
-        useRedis: false
+        useRedis: true
   callbackMapping:  # The EDR token callback endpoint path mapping - used to expose EDR callback endpoint
   negotiationCallbackMapping:  # The EDR negotiation callback endpoint mapping - used to expose negotiation callback endpoint
   callbackurl:  # The URL where the EDR token callback will be sent to.
@@ -233,7 +233,7 @@ edc:
 
 redisConfig:
   enabled: false
-  host: localhost
+  host: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local"
   port: 6379
 
 redis:
