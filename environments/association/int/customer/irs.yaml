@@ -92,6 +92,7 @@ ess:
     host: https://<path:item-relationship-service/data/companies/customer/irs/edc#base-url>
 
 redisConfig:
+  # TODO: update if application name changes
   password: "<path:item-relationship-service/data/companies/customer/irs/redis#password>"
 
 minio:

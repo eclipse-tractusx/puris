@@ -178,7 +178,7 @@ edc:
     edrManagementEnabled: false  # Flag whether IRS uses classic EDC negotiation or EDR negotiation
     datareference:
       storage:
-        useRedis: true
+        useRedis: false
   callbackMapping:  # The EDR token callback endpoint path mapping - used to expose EDR callback endpoint
   negotiationCallbackMapping:  # The EDR negotiation callback endpoint mapping - used to expose negotiation callback endpoint
   callbackurl:  # The URL where the EDR token callback will be sent to.
