@@ -25,7 +25,7 @@ image:
   # ensures that we notice changes in dev images
   pullPolicy: Always
   # TODO: build image
-  tag: "ce838f916a0eff3441e0a3e33dfdb4d6503d2c4a"
+  tag: "main"
 
 # imagePullSecrets:
 #   - name: "irs-registry"
