@@ -73,6 +73,9 @@ class IrsRequestQueueWorkerTest {
     @Mock
     private IrsChainOpeningPartnerGrantRepository irsChainOpeningGrantRepository;
 
+    @Mock
+    private IrsRequestQueueService irsRequestQueueService;
+
     @InjectMocks
     private IrsRequestQueueWorker worker;
 
@@ -125,7 +128,7 @@ class IrsRequestQueueWorkerTest {
 
         worker.processDueRequests();
 
-        verify(irsRequestService, never()).execute(any(), any(), any(), any());
+        verify(irsRequestService, never()).execute(any(IrsQueuedRequest.class));
         verify(irsQueuedRequestRepository, never()).save(any());
     }
 
@@ -134,7 +137,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueRequest(0, 5);
         stubDue(request);
 
-        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+        when(irsRequestService.execute(request))
             .thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
@@ -149,7 +152,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueRequest(0, 5);
         stubDue(request);
 
-        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+        when(irsRequestService.execute(request))
             .thenThrow(new IllegalStateException("line one\nline two"));
 
         assertThatCode(worker::processDueRequests).doesNotThrowAnyException();
@@ -168,7 +171,7 @@ class IrsRequestQueueWorkerTest {
             .responseBody("line one\nline two")
             .successful(false)
             .build();
-        when(irsRequestService.execute(IrsQueuedRequestMethodEnumeration.POST, "irs/policies", null, "{}"))
+        when(irsRequestService.execute(request))
             .thenReturn(response);
 
         assertThatCode(worker::processDueRequests).doesNotThrowAnyException();
@@ -189,7 +192,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grantUuid);
         stubDue(request);
         when(irsChainOpeningRootGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
-        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+        when(irsRequestService.execute(any(IrsQueuedRequest.class))).thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
 
@@ -207,7 +210,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE, grantUuid);
         stubDue(request);
         when(irsChainOpeningRootGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
-        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+        when(irsRequestService.execute(any(IrsQueuedRequest.class))).thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
 
@@ -227,7 +230,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_CREATE, grantUuid);
         stubDue(request);
         when(irsChainOpeningGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
-        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+        when(irsRequestService.execute(any(IrsQueuedRequest.class))).thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
 
@@ -245,7 +248,7 @@ class IrsRequestQueueWorkerTest {
         IrsQueuedRequest request = dueGrantCreateRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_PARTNER_GRANT_CREATE, grantUuid);
         stubDue(request);
         when(irsChainOpeningGrantRepository.findById(grantUuid)).thenReturn(Optional.of(grant));
-        when(irsRequestService.execute(any(), any(), any(), any())).thenThrow(new IllegalStateException("adapter disabled"));
+        when(irsRequestService.execute(any(IrsQueuedRequest.class))).thenThrow(new IllegalStateException("adapter disabled"));
 
         worker.processDueRequests();
 

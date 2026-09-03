@@ -29,6 +29,7 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.adapter.Dat
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.dataexchangeapprovalsamm.DataExchangeApprovalSamm;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,8 @@ public class DataExchangeApprovalApiService {
     private IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
     @Autowired
     private IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+    @Autowired
+    private IrsJobService irsJobService;
 
     public ReportedDataExchangeApproval handleIncomingDataExchangeApproval(String bpnl, DataExchangeApprovalSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -79,6 +82,8 @@ public class DataExchangeApprovalApiService {
             }
             if (approval.getDataExchangeRequest().getRelatedDataExchangeRequest() != null) {
                 irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
+            } else if (approval.isFinalized()) {
+                irsJobService.createJobsForNotification(approval.getDataExchangeRequest().getNotification());
             }
             return approval;
         }
@@ -88,6 +93,9 @@ public class DataExchangeApprovalApiService {
             if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
                 // create root grants for the notification if the approval is for a root request
                 irsChainOpeningRootGrantService.syncGrantsForNotification(created.getDataExchangeRequest().getNotification());
+                if (created.isFinalized()) {
+                    irsJobService.createJobsForNotification(created.getDataExchangeRequest().getNotification());
+                }
             } else {
                 // add the notification to the affected materials' parent materials' grants if the approval is for a related request
                 irsChainOpeningGrantService.onRelatedApprovalReceived(created);

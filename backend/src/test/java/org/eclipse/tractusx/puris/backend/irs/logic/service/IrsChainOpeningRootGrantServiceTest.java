@@ -245,7 +245,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
@@ -268,7 +268,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
@@ -289,7 +289,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
@@ -310,7 +310,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
@@ -338,7 +338,7 @@ class IrsChainOpeningRootGrantServiceTest {
     void createGrant_WhenNoMatchingActiveReportedNotification_Throws() {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID)).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
@@ -354,7 +354,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
@@ -372,7 +372,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(fromOtherSupplier));
 
@@ -390,7 +390,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
-        when(materialRelationService.findAllChildren(PARENT_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
             .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);

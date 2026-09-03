@@ -340,8 +340,7 @@ public class IrsChainOpeningRootGrantService {
 			log.error("No material found for globalAssetId {} while checking allowed BPNL eligibility", grant.getGlobalAssetId());
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
-		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
-			materialRelationService, material.getOwnMaterialNumber(), now);
+		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
 		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
@@ -362,8 +361,7 @@ public class IrsChainOpeningRootGrantService {
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
 
-		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
-			materialRelationService, material.getOwnMaterialNumber(), now);
+		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
 		UUID sourceDisruptionId = UUID.fromString(grant.getSourceDisruptionId());
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications = reportedNotificationRepository

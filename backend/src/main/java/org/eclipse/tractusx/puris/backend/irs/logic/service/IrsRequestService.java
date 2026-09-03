@@ -28,8 +28,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Map;
@@ -45,38 +49,33 @@ public class IrsRequestService {
 
 	private final IrsAdapterConfiguration irsAdapterConfiguration;
 
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	public boolean isEnabled() {
 		return irsAdapterConfiguration.isIrsAdapterEnabled();
 	}
 
-	public IrsResponse get(String path, Map<String, String> queryParams) {
-		return execute(IrsQueuedRequestMethodEnumeration.GET, path, queryParams, null);
-	}
-
-	public IrsResponse post(String path, String jsonBody) {
-		return execute(IrsQueuedRequestMethodEnumeration.POST, path, null, jsonBody);
-	}
-
-	public IrsResponse put(String path, String jsonBody) {
-		return execute(IrsQueuedRequestMethodEnumeration.PUT, path, null, jsonBody);
-	}
-
-	public IrsResponse delete(String path, Map<String, String> queryParams) {
-		return execute(IrsQueuedRequestMethodEnumeration.DELETE, path, queryParams, null);
+	protected IrsResponse execute(IrsQueuedRequest request) {
+		return execute(request.getMethod(), request.getPath(), deserializeQueryParams(request.getQueryParams()), request.getBody(), request.getType().isAdminRequest());
 	}
 
 	protected IrsResponse execute(
 		IrsQueuedRequestMethodEnumeration method,
 		String path,
 		Map<String, String> queryParams,
-		String jsonBody
+		String jsonBody,
+		boolean isAdminRequest
 	) {
 		ensureIrsAdapterEnabled(method, path);
 
 		HttpUrl url = buildUrl(path, queryParams);
 		Request.Builder requestBuilder = new Request.Builder().url(url);
 
-		requestBuilder.header(irsAdapterConfiguration.getIrsAdapterAuthKey(), irsAdapterConfiguration.getIrsAdapterAuthSecret());
+		if (isAdminRequest) {
+			requestBuilder.header(irsAdapterConfiguration.getIrsAdapterAuthKey(), irsAdapterConfiguration.getIrsAdapterAdminAuthSecret());
+		} else {
+			requestBuilder.header(irsAdapterConfiguration.getIrsAdapterAuthKey(), irsAdapterConfiguration.getIrsAdapterAuthSecret());
+		}
 
 		switch (method) {
 			case GET -> requestBuilder.get();
@@ -142,6 +141,19 @@ public class IrsRequestService {
 		}
 
 		return urlBuilder.build();
+	}
+
+	private Map<String, String> deserializeQueryParams(String queryParams) {
+		if (queryParams == null || queryParams.isBlank()) {
+			return null;
+		}
+		try {
+			return objectMapper.readValue(queryParams, new TypeReference<Map<String, String>>() {
+			});
+		} catch (Exception e) {
+			log.error("Failed to deserialize query params {}", queryParams, e);
+			return null;
+		}
 	}
 
 	@Getter
