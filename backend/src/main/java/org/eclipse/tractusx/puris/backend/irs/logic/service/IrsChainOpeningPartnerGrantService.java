@@ -292,8 +292,7 @@ public class IrsChainOpeningPartnerGrantService {
 				.build();
 		}
 
-		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
-			materialRelationService, material.getOwnMaterialNumber(), now);
+		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 		Set<ReportedDemandAndCapacityNotification> candidateNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now);
 
@@ -397,8 +396,7 @@ public class IrsChainOpeningPartnerGrantService {
 			log.error("No material found for globalAssetId {} while checking allowed BPNL eligibility", grant.getGlobalAssetId());
 			throw new IllegalArgumentException("A chain opening grant requires the globalAssetId to reference a known material.");
 		}
-		Set<String> childMaterialNumbers = MaterialRelationService.resolveChildOwnMaterialNumbers(
-			materialRelationService, material.getOwnMaterialNumber(), now);
+		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();

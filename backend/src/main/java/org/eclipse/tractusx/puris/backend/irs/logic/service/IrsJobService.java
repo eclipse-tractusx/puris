@@ -18,13 +18,10 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
@@ -37,8 +34,6 @@ import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeE
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -56,8 +51,6 @@ public class IrsJobService {
 	private final IrsRequestBodybuilder irsRequestBodybuilder;
 
 	private final IrsRequestQueueService irsRequestQueueService;
-
-	private final MaterialRelationService materialRelationService;
 
 	private final ReportedDemandAndCapacityNotificationService reportedNotificationService;
 
@@ -196,31 +189,7 @@ public class IrsJobService {
 			throw new IllegalArgumentException("Material must be a product to be used for an IRS job.");
 		}
 
-		Date now = new Date();
-
-		Set<String> validChildMaterialNumbers = materialRelationService
-				.findAllChildren(material.getOwnMaterialNumber()).stream()
-				.filter(relation -> MaterialRelationService.isRelationValidNow(relation, now))
-				.map(MaterialRelation::getChildOwnMaterialNumber)
-				.collect(Collectors.toSet());
-
-		if (validChildMaterialNumbers.isEmpty()) {
-			log.error("Material {} is not a parent in any currently-valid material relation",
-					material.getOwnMaterialNumber());
-			throw new IllegalArgumentException(
-					"Material must be a parent in a currently-valid material relation to be used for an IRS job.");
-		}
-
-		boolean anyChildAffected = reportedNotificationService.findAll().stream()
-				.filter(notification -> ReportedDemandAndCapacityNotificationService
-						.isNotificationActiveNow(notification, now))
-				.filter(notification -> notification.getMaterials() != null)
-				.flatMap(notification -> notification.getMaterials().stream())
-				.filter(Objects::nonNull)
-				.map(Material::getOwnMaterialNumber)
-				.anyMatch(validChildMaterialNumbers::contains);
-
-		if (!anyChildAffected) {
+		if (!reportedNotificationService.isAnyChildAffectedByActiveNotifications(material)) {
 			log.error("No child material of material {} is affected by a currently-active notification",
 					material.getOwnMaterialNumber());
 			throw new IllegalArgumentException(

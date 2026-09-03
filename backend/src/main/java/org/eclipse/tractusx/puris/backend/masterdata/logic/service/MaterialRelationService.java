@@ -179,9 +179,8 @@ public class MaterialRelationService {
 	 * Resolves the set of currently-valid child own-material-numbers of the given parent
 	 * own-material-number.
 	 */
-	public static Set<String> resolveChildOwnMaterialNumbers(MaterialRelationService materialRelationService,
-			String parentOwnMaterialNumber, Date now) {
-		return materialRelationService.findAllChildren(parentOwnMaterialNumber).stream()
+	public Set<String> resolveChildOwnMaterialNumbers(String parentOwnMaterialNumber, Date now) {
+		return findAllChildren(parentOwnMaterialNumber).stream()
 			.filter(relation -> isRelationValidNow(relation, now))
 			.map(MaterialRelation::getChildOwnMaterialNumber)
 			.collect(Collectors.toSet());

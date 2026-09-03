@@ -37,7 +37,6 @@ import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMetho
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningPartnerGrantRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
@@ -147,13 +146,6 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
     private Material grantMaterial() {
         return material(OWN_MATERIAL_NUMBER, GLOBAL_ASSET_ID);
-    }
-
-    private MaterialRelation childRelation() {
-        MaterialRelation relation = new MaterialRelation();
-        relation.setParentOwnMaterialNumber(OWN_MATERIAL_NUMBER);
-        relation.setChildOwnMaterialNumber(CHILD_MATERIAL_NUMBER);
-        return relation;
     }
 
     /** An OwnDemandAndCapacityNotification we sent to PARTNER_BPNL, affecting the given materials. */
@@ -311,7 +303,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
         when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class,
@@ -334,7 +326,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
         when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
 
@@ -363,7 +355,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
         when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
 
@@ -395,7 +387,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
         when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
 
@@ -426,8 +418,8 @@ class IrsChainOpeningPartnerGrantServiceTest {
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, OTHER_GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of());
-        when(materialRelationService.findAllChildren(OTHER_MATERIAL_NUMBER)).thenReturn(List.of());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OTHER_MATERIAL_NUMBER), any())).thenReturn(Set.of());
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of());
         when(irsRequestService.isEnabled()).thenReturn(false);
 
@@ -454,7 +446,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
         when(irsRequestService.isEnabled()).thenReturn(false);
@@ -480,7 +472,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
         when(irsRequestService.isEnabled()).thenReturn(false);
@@ -507,7 +499,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
         when(irsRequestService.isEnabled()).thenReturn(false);
@@ -542,7 +534,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(existingGrant));
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(upstreamApproval);
         // Disabled during the re-push attempt so this test doesn't need full eligibility stubs - createGrant
@@ -571,7 +563,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(sentApproval);
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of());
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(receivedApproval);
         when(irsRequestService.isEnabled()).thenReturn(false);
@@ -614,7 +606,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(sentApproval);
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
         when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwarded.getUuid())).thenReturn(receivedApproval(forwarded));
         // Disabled during the re-push attempt so this test doesn't need full eligibility stubs - createGrant
@@ -711,7 +703,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(materialRelationService.findAllChildren(OWN_MATERIAL_NUMBER)).thenReturn(List.of());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of());
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of());
         when(irsRequestService.isEnabled()).thenReturn(false);
 
