@@ -37,7 +37,7 @@ ingress:
   # -- Annotations for the Ingress controller
   annotations:
     # cert manager for ingress on CX int
-    cert-manager.io/cluster-issuer: "letsencrypt"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
   # -- Hosts for the Ingress controller
   hosts:
     - host: "<path:item-relationship-service/data/companies/customer/irs#base-url>"
