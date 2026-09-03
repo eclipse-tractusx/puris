@@ -181,8 +181,8 @@ edc:
         useRedis: false
   callbackMapping:  # The EDR token callback endpoint path mapping - used to expose EDR callback endpoint
   negotiationCallbackMapping:  # The EDR negotiation callback endpoint mapping - used to expose negotiation callback endpoint
-  callbackurl:  # The URL where the EDR token callback will be sent to.
-  negotiationCallbackurl:  # The URL where the negotiation callback will be sent to.
+  callbackurl: http://{{ .Release.Name }}-item-relationship-service.{{ .Release.Namespace }}.svc.cluster.local:8181/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
+  negotiationCallbackurl: http://{{ .Release.Name }}-item-relationship-service.{{ .Release.Namespace }}.svc.cluster.local:8181/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
   asyncTimeout: PT10M  # Timout for future.get requests as ISO 8601 Duration
   submodel:
     request:
