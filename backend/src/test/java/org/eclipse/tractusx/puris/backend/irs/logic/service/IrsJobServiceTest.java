@@ -100,7 +100,7 @@ class IrsJobServiceTest {
 
     // --- createAndSend ---
 
-    private IrsJob savedCopyWithUuid() {
+    private IrsJob savedJobWithUuid() {
         IrsJob saved = new IrsJob();
         saved.setUuid(UUID.randomUUID());
         saved.setRequestStatus(IrsQueuedRequestStatusEnumeration.PENDING);
