@@ -121,7 +121,7 @@ class IrsJobServiceTest {
 
     @Test
     void createAndSend_WhenEnqueueSucceeds_SetsRequestStatusPendingAndUpdates() {
-        IrsJob saved = savedCopyWithUuid();
+        IrsJob saved = savedJobWithUuid();
         ObjectNode body = new ObjectMapper().createObjectNode();
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
