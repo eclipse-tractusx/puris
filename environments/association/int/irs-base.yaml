@@ -175,7 +175,7 @@ edc:
       pagesize: 50  # Number of catalog items to retrieve on one page for pagination
     apikey:
       header: "X-Api-Key"  # Name of the EDC api key header field
-    edrManagementEnabled: false  # Flag whether IRS uses classic EDC negotiation or EDR negotiation
+    edrManagementEnabled: true  # Flag whether IRS uses classic EDC negotiation or EDR negotiation
     datareference:
       storage:
         useRedis: false
