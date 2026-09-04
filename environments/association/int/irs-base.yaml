@@ -167,7 +167,7 @@ edc:
       statesuffix: /state  # Path of the state suffix for contract negotiation and transfer process
       contractAgreements: /v3/contractagreements  # EDC consumer controlplane contract agreements path
     request:
-      ttl: P30S  # Requests to controlplane will time out after this duration (see https://en.wikipedia.org/wiki/ISO_8601#Durations)
+      ttl: PT30S  # Requests to controlplane will time out after this duration (see https://en.wikipedia.org/wiki/ISO_8601#Durations)
     provider:
       suffix: /api/v1/dsp
     catalog:
@@ -183,10 +183,10 @@ edc:
   negotiationCallbackMapping:  # The EDR negotiation callback endpoint mapping - used to expose negotiation callback endpoint
   callbackurl: http://{{ .Release.Name }}-item-relationship-service.{{ .Release.Namespace }}.svc.cluster.local:8181/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
   negotiationCallbackurl: http://{{ .Release.Name }}-item-relationship-service.{{ .Release.Namespace }}.svc.cluster.local:8181/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
-  asyncTimeout: P30S  # Timout for future.get requests as ISO 8601 Duration
+  asyncTimeout: PT30S  # Timout for future.get requests as ISO 8601 Duration
   submodel:
     request:
-      ttl: P30S  # Requests to dataplane will time out after this duration (see https://en.wikipedia.org/wiki/ISO_8601#Durations)
+      ttl: PT30S  # Requests to dataplane will time out after this duration (see https://en.wikipedia.org/wiki/ISO_8601#Durations)
     urnprefix: /urn
     suffix: /$value
   catalog:
