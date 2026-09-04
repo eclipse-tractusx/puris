@@ -161,7 +161,7 @@ edc:
   controlplane:
     endpoint:
       catalog: /v3/catalog/request  # EDC consumer controlplane catalog path
-      edrManagement: /v2/edrs  # EDC consumer controlplane EDR management path
+      edrManagement: /v3/edrs  # EDC consumer controlplane EDR management path
       contractnegotiation: /v3/contractnegotiations  # EDC consumer controlplane contract negotiation path
       transferprocess: /v3/transferprocesses  # EDC consumer controlplane transfer process path
       statesuffix: /state  # Path of the state suffix for contract negotiation and transfer process
