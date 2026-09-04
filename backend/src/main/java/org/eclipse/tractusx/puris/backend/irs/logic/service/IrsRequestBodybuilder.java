@@ -99,9 +99,10 @@ public class IrsRequestBodybuilder {
 
         ObjectNode payload = objectMapper.createObjectNode();
         ObjectNode context = objectMapper.createObjectNode();
+        String policyNamespace = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE;
         context.put("odrl", JsonLdConstants.ODRL_NAMESPACE);
         context.put("edc", JsonLdConstants.EDC_NAMESPACE);
-        context.put("cx-policy", PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_CONTEXT);
+        context.put("cx-policy", policyNamespace);
         payload.set("@context", context);
         payload.put("@type", "PolicyDefinitionRequestDto");
         payload.put("@id", policyId);
@@ -113,7 +114,6 @@ public class IrsRequestBodybuilder {
         ObjectNode permission = objectMapper.createObjectNode();
         permission.put("odrl:action", "use");
 
-        String policyNamespace = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE;
         ObjectNode constraint = objectMapper.createObjectNode();
         constraint.put("@type", "LogicalConstraint");
         ArrayNode andArray = objectMapper.createArrayNode();
