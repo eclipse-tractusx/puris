@@ -18,6 +18,7 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -28,12 +29,15 @@ import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJobStateEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningPartnerGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -72,6 +77,9 @@ class IrsRequestQueueWorkerTest {
 
     @Mock
     private IrsChainOpeningPartnerGrantRepository irsChainOpeningGrantRepository;
+
+    @Mock
+    private IrsJobRepository irsJobRepository;
 
     @Mock
     private IrsRequestQueueService irsRequestQueueService;
@@ -119,6 +127,39 @@ class IrsRequestQueueWorkerTest {
         request.setCreatedAt(Instant.now().minusSeconds(100));
         request.setType(type);
         request.setLinkedEntityUuid(linkedEntityUuid);
+        return request;
+    }
+
+    /** A due, terminal-on-first-failure (maxAttempts=1) queued job creation request. */
+    private IrsQueuedRequest dueJobCreateRequest(UUID jobUuid) {
+        IrsQueuedRequest request = new IrsQueuedRequest();
+        request.setUuid(UUID.randomUUID());
+        request.setMethod(IrsQueuedRequestMethodEnumeration.POST);
+        request.setPath("irs/recursive/jobs");
+        request.setBody("{}");
+        request.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
+        request.setAttemptCount(0);
+        request.setMaxAttempts(1);
+        request.setNextAttemptAt(Instant.now().minusSeconds(10));
+        request.setCreatedAt(Instant.now().minusSeconds(100));
+        request.setType(IrsQueuedRequestTypeEnumeration.JOB_CREATE);
+        request.setLinkedEntityUuid(jobUuid);
+        return request;
+    }
+
+    /** A due, terminal-on-first-failure (maxAttempts=1) queued job status GET request. */
+    private IrsQueuedRequest dueJobGetRequest(UUID jobUuid) {
+        IrsQueuedRequest request = new IrsQueuedRequest();
+        request.setUuid(UUID.randomUUID());
+        request.setMethod(IrsQueuedRequestMethodEnumeration.GET);
+        request.setPath("irs/recursive/jobs/" + jobUuid);
+        request.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
+        request.setAttemptCount(0);
+        request.setMaxAttempts(1);
+        request.setNextAttemptAt(Instant.now().minusSeconds(10));
+        request.setCreatedAt(Instant.now().minusSeconds(100));
+        request.setType(IrsQueuedRequestTypeEnumeration.JOB_GET);
+        request.setLinkedEntityUuid(jobUuid);
         return request;
     }
 
@@ -254,5 +295,132 @@ class IrsRequestQueueWorkerTest {
 
         assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
         verify(irsChainOpeningGrantRepository).save(grant);
+    }
+
+    // --- updateLinkedEntity: JOB_CREATE success enqueues a status poll ---
+
+    @Test
+    void processDueRequests_WhenJobCreateSucceeds_EnqueuesJobStatusPoll() {
+        UUID jobUuid = UUID.randomUUID();
+        UUID irsJobId = UUID.randomUUID();
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        IrsQueuedRequest request = dueJobCreateRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        when(irsAdapterConfiguration.getJobPollDelaySeconds()).thenReturn(300L);
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(201)
+            .responseBody("{\"jobId\":\"" + irsJobId + "\"}")
+            .successful(true)
+            .build();
+        when(irsRequestService.execute(request)).thenReturn(response);
+
+        worker.processDueRequests();
+
+        assertThat(irsJob.getJobId()).isEqualTo(irsJobId);
+        verify(irsRequestQueueService).enqueue(eq(IrsQueuedRequestMethodEnumeration.GET), eq("irs/recursive/jobs/" + irsJobId), isNull(), isNull(),
+            eq(IrsQueuedRequestTypeEnumeration.JOB_GET), eq(jobUuid), eq(Duration.ofSeconds(300L)));
+    }
+
+    @Test
+    void processDueRequests_WhenJobCreateFails_DoesNotEnqueueJobStatusPoll() {
+        UUID jobUuid = UUID.randomUUID();
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        IrsQueuedRequest request = dueJobCreateRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        when(irsRequestService.execute(request)).thenThrow(new IllegalStateException("adapter disabled"));
+
+        worker.processDueRequests();
+
+        assertThat(irsJob.getJobId()).isNull();
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    // --- updateLinkedEntity: JOB_GET stores the raw IRS job state and reschedules only while non-terminal ---
+
+    @Test
+    void processDueRequests_WhenJobGetReturnsCompleted_SetsCompletedStateWithoutRescheduling() {
+        UUID jobUuid = UUID.randomUUID();
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        IrsQueuedRequest request = dueJobGetRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(200)
+            .responseBody("{\"job\":{\"state\":\"COMPLETED\"}}")
+            .successful(true)
+            .build();
+        when(irsRequestService.execute(request)).thenReturn(response);
+
+        worker.processDueRequests();
+
+        assertThat(irsJob.getState()).isEqualTo(IrsJobStateEnumeration.COMPLETED);
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void processDueRequests_WhenJobGetReturnsError_SetsErrorStateWithoutRescheduling() {
+        UUID jobUuid = UUID.randomUUID();
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        IrsQueuedRequest request = dueJobGetRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(200)
+            .responseBody("{\"job\":{\"state\":\"ERROR\"}}")
+            .successful(true)
+            .build();
+        when(irsRequestService.execute(request)).thenReturn(response);
+
+        worker.processDueRequests();
+
+        assertThat(irsJob.getState()).isEqualTo(IrsJobStateEnumeration.ERROR);
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void processDueRequests_WhenJobGetReturnsRunning_SetsRunningStateAndReschedules() {
+        UUID jobUuid = UUID.randomUUID();
+        UUID irsJobId = UUID.randomUUID();
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        irsJob.setJobId(irsJobId);
+        IrsQueuedRequest request = dueJobGetRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        when(irsAdapterConfiguration.getJobPollDelaySeconds()).thenReturn(300L);
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(200)
+            .responseBody("{\"job\":{\"state\":\"RUNNING\"}}")
+            .successful(true)
+            .build();
+        when(irsRequestService.execute(request)).thenReturn(response);
+
+        worker.processDueRequests();
+
+        assertThat(irsJob.getState()).isEqualTo(IrsJobStateEnumeration.RUNNING);
+        verify(irsRequestQueueService).enqueue(eq(IrsQueuedRequestMethodEnumeration.GET), eq("irs/recursive/jobs/" + irsJobId), isNull(), isNull(),
+            eq(IrsQueuedRequestTypeEnumeration.JOB_GET), eq(jobUuid), eq(Duration.ofSeconds(300L)));
+    }
+
+    @Test
+    void processDueRequests_WhenJobGetRequestFails_LogsWithoutUpdatingStateOrRescheduling() {
+        UUID jobUuid = UUID.randomUUID();
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        IrsQueuedRequest request = dueJobGetRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        when(irsRequestService.execute(request)).thenThrow(new IllegalStateException("adapter disabled"));
+
+        worker.processDueRequests();
+
+        assertThat(irsJob.getState()).isNull();
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
     }
 }

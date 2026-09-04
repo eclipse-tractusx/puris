@@ -18,6 +18,8 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -145,5 +147,27 @@ class IrsRequestQueueServiceTest {
 
         assertThat(existingPending.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.CANCELLED);
         verify(irsQueuedRequestRepository, times(1)).saveAll(List.of(existingPending));
+    }
+
+    @Test
+    void enqueue_WithDelay_SetsNextAttemptAtInTheFuture() {
+        UUID jobUuid = UUID.randomUUID();
+
+        IrsQueuedRequest result = irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.GET, "irs/recursive/jobs/" + jobUuid, null, null,
+                IrsQueuedRequestTypeEnumeration.JOB_GET, jobUuid, Duration.ofSeconds(300));
+
+        assertThat(result).isNotNull();
+        assertThat(result.getNextAttemptAt()).isAfter(Instant.now().plusSeconds(295));
+    }
+
+    @Test
+    void enqueue_WithZeroDelay_BehavesLikeNoDelayOverload() {
+        UUID jobUuid = UUID.randomUUID();
+
+        IrsQueuedRequest result = irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.GET, "irs/recursive/jobs/" + jobUuid, null, null,
+                IrsQueuedRequestTypeEnumeration.JOB_GET, jobUuid, Duration.ZERO);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getNextAttemptAt()).isBeforeOrEqualTo(Instant.now());
     }
 }
