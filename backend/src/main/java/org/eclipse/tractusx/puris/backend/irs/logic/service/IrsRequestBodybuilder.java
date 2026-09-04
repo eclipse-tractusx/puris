@@ -21,7 +21,6 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
@@ -90,7 +89,7 @@ public class IrsRequestBodybuilder {
      * EDC negotiation. No {@code businessPartnerNumber} is set, so the policy applies to every BPN.
      *
      * @param policyId the ID of the policy to be created
-     * @param purpose the usage purpose to be set in the policy
+     * @param purpose  the usage purpose to be set in the policy
      * @return the request body as a JsonNode
      */
     public JsonNode buildFrameworkPolicyCreationRequestBody(String policyId, String purpose) {
@@ -104,18 +103,22 @@ public class IrsRequestBodybuilder {
         context.put("edc", JsonLdConstants.EDC_NAMESPACE);
         context.put("cx-policy", PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_CONTEXT);
         payload.set("@context", context);
+        payload.put("@type", "PolicyDefinitionRequestDto");
         payload.put("@id", policyId);
 
         ObjectNode policy = objectMapper.createObjectNode();
+        policy.put("@type", "Set");
+        policy.put("profile", "cx-policy:" + PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.getValue());
         ArrayNode permissions = objectMapper.createArrayNode();
         ObjectNode permission = objectMapper.createObjectNode();
         permission.put("odrl:action", "use");
-        permission.put("@type", "Set");
 
+        String policyNamespace = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE;
         ObjectNode constraint = objectMapper.createObjectNode();
+        constraint.put("@type", "LogicalConstraint");
         ArrayNode andArray = objectMapper.createArrayNode();
-        andArray.add(buildEqConstraint("cx-policy:FrameworkAgreement", variablesService.getPurisFrameworkAgreementWithVersion()));
-        andArray.add(buildEqConstraint("cx-policy:UsagePurpose", purpose));
+        andArray.add(buildEqConstraint(policyNamespace + "FrameworkAgreement", variablesService.getPurisFrameworkAgreementWithVersion()));
+        andArray.add(buildEqConstraint(policyNamespace + "UsagePurpose", purpose));
         constraint.set("odrl:and", andArray);
         permission.set("odrl:constraint", constraint);
 
@@ -141,6 +144,7 @@ public class IrsRequestBodybuilder {
 
     private ObjectNode buildEqConstraint(String leftOperand, String rightOperand) {
         ObjectNode constraint = objectMapper.createObjectNode();
+        constraint.put("@type", "LogicalConstraint");
         constraint.put("odrl:leftOperand", leftOperand);
         ObjectNode operator = objectMapper.createObjectNode();
         operator.put("@id", "odrl:eq");
