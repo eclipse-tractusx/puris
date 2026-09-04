@@ -21,7 +21,7 @@ The **need for configuration updates** is **marked bold**.
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
 - Added IRS Adapter to exchange data with an external Item Relationship Service
-  - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195))
+  - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195), [#1208](https://github.com/eclipse-tractusx/puris/pull/1208))
   - Added Logic to manage Irs Grants and keep them in sync with application state ([#1203](https://github.com/eclipse-tractusx/puris/pull/1203))
   - Added Job Management logic to create jobs and automatically poll for results ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
 

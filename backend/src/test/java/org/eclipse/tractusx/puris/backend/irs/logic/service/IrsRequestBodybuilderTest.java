@@ -70,7 +70,7 @@ class IrsRequestBodybuilderTest {
 
         assertThat(payload.get("@context").get("odrl").asText()).isEqualTo(JsonLdConstants.ODRL_NAMESPACE);
         assertThat(payload.get("@context").get("edc").asText()).isEqualTo(JsonLdConstants.EDC_NAMESPACE);
-        assertThat(payload.get("@context").get("cx-policy").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_CONTEXT);
+        assertThat(payload.get("@context").get("cx-policy").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE);
         assertThat(payload.get("@id").asText()).isEqualTo("some-policy-id");
     }
 
@@ -90,12 +90,14 @@ class IrsRequestBodybuilderTest {
         assertThat(andArray).hasSize(2);
 
         JsonNode frameworkAgreementConstraint = andArray.get(0);
-        assertThat(frameworkAgreementConstraint.get("odrl:leftOperand").asText()).isEqualTo("cx-policy:FrameworkAgreement");
+        String frameworkAgreementLeftOperand = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE + "FrameworkAgreement";
+        assertThat(frameworkAgreementConstraint.get("odrl:leftOperand").asText()).isEqualTo(frameworkAgreementLeftOperand);
         assertThat(frameworkAgreementConstraint.get("odrl:operator").get("@id").asText()).isEqualTo("odrl:eq");
         assertThat(frameworkAgreementConstraint.get("odrl:rightOperand").asText()).isEqualTo(FRAMEWORK_AGREEMENT_WITH_VERSION);
 
         JsonNode usagePurposeConstraint = andArray.get(1);
-        assertThat(usagePurposeConstraint.get("odrl:leftOperand").asText()).isEqualTo("cx-policy:UsagePurpose");
+        String usagePurposeLeftOperand = PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE + "UsagePurpose";
+        assertThat(usagePurposeConstraint.get("odrl:leftOperand").asText()).isEqualTo(usagePurposeLeftOperand);
         assertThat(usagePurposeConstraint.get("odrl:operator").get("@id").asText()).isEqualTo("odrl:eq");
         assertThat(usagePurposeConstraint.get("odrl:rightOperand").asText()).isEqualTo("some-purpose");
     }
