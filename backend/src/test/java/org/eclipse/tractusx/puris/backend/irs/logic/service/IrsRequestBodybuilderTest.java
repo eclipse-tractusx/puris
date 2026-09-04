@@ -70,7 +70,7 @@ class IrsRequestBodybuilderTest {
 
         assertThat(payload.get("@context").get("odrl").asText()).isEqualTo(JsonLdConstants.ODRL_NAMESPACE);
         assertThat(payload.get("@context").get("edc").asText()).isEqualTo(JsonLdConstants.EDC_NAMESPACE);
-        assertThat(payload.get("@context").get("cx-policy").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_CONTEXT);
+        assertThat(payload.get("@context").get("cx-policy").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE);
         assertThat(payload.get("@id").asText()).isEqualTo("some-policy-id");
     }
 
