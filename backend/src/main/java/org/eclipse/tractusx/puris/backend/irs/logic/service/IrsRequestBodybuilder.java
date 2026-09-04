@@ -89,7 +89,7 @@ public class IrsRequestBodybuilder {
      * EDC negotiation. No {@code businessPartnerNumber} is set, so the policy applies to every BPN.
      *
      * @param policyId the ID of the policy to be created
-     * @param purpose  the usage purpose to be set in the policy
+     * @param purpose the usage purpose to be set in the policy
      * @return the request body as a JsonNode
      */
     public JsonNode buildFrameworkPolicyCreationRequestBody(String policyId, String purpose) {
