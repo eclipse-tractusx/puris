@@ -85,8 +85,8 @@ edc:
       data: "https://<path:item-relationship-service/data/companies/supplier/irs/edc#base-url>/management"  # <edc-controlplane-endpoint-data>
     apikey:
       secret: "<path:item-relationship-service/data/companies/supplier/irs/edc/api#api-key>"
-  callbackurl: http://<path:item-relationship-service/data/companies/supplier/irs#base-url>/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
-  negotiationCallbackurl: http://<path:item-relationship-service/data/companies/supplier/irs#base-url>/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
+  callbackurl: https://<path:item-relationship-service/data/companies/supplier/irs#base-url>/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
+  negotiationCallbackurl: https://<path:item-relationship-service/data/companies/supplier/irs#base-url>/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
 
 # enable auto-configuration
 ess:
