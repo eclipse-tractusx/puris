@@ -31,7 +31,7 @@ import { DEMAND_CATEGORY } from '@models/constants/demand-category';
 import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Material, Stock, StockType } from '@models/types/data/stock';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { DemandCategoryCreationModal } from '@features/material-details/components/DemandCategoryCreationModal';
 import { StockCreationModal } from '@features/material-details/components/StockCreationModal';
 import { DeliveryCreationModal } from '@features/material-details/components/DeliveryInformationCreationModal';

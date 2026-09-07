@@ -28,7 +28,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { INCOTERMS } from '@models/constants/incoterms';
 import { Site } from '@models/types/edc/site';
 import { useNotifications } from '@contexts/notificationContext';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { useDataModal } from '@contexts/dataModalContext';
 

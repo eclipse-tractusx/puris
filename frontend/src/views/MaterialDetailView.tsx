@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { useParams } from 'react-router-dom';
 import { NotFoundView } from './errors/NotFoundView';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { DataModalProvider } from '@contexts/dataModalContext';
 import { MaterialDetails } from '@features/material-details/components/MaterialDetails';
 import { useMaterial } from '@hooks/useMaterial';

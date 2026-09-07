@@ -48,7 +48,7 @@ import { getPartnerType } from '@features/material-details/util/helpers';
 import { DemandCategoryModal } from '@features/material-details/components/DemandCategoryModal';
 import { PlannedProductionModal } from '@features/material-details/components/PlannedProductionModal';
 import { DeliveryInformationModal } from '@features/material-details/components/DeliveryInformationModal';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { useNotifications } from '@contexts/notificationContext';
 
 const NUMBER_OF_DAYS = 28;
