@@ -27,7 +27,7 @@ The **need for configuration updates** is **marked bold**.
 - Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
 - Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
 - Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
-- Removed all files and references connected to ERP Adapter ([])
+- Removed all files and references connected to ERP Adapter ([#1209](https://github.com/eclipse-tractusx/puris/pull/1209))
 ### Fixes
 
 - Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
