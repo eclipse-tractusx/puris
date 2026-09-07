@@ -22,7 +22,7 @@
 # IRS Configuration #
 #####################
 # TODO: check all vault values
-irsUrl: "https://<path:item-relationship-service/data/companies/ceres/irs#base-url>"  # https://irs-customer.cxn.isst.fraunhofer.de
+irsUrl: "https://<path:item-relationship-service/data/companies/ceres/irs#base-url>"  # https://irs-ceres.cxn.isst.fraunhofer.de
 
 bpn: "<path:item-relationship-service/data/companies/ceres/identity#bpnl>"
 recursive:
@@ -46,7 +46,7 @@ ingress:
           pathType: ImplementationSpecific
   # -- TLS certificates for the Ingress controller
   tls:
-    - secretName: tls-secret-irs-customer
+    - secretName: tls-secret-irs-ceres
       hosts:
         - "<path:item-relationship-service/data/companies/ceres/irs#base-url>"
 

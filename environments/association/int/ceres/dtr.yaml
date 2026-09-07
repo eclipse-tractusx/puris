@@ -1,5 +1,5 @@
 nameOverride: 
-# fullnameOverride: dtr-customer
+# fullnameOverride: dtr-ceres
 # enables the default postgres database
 enablePostgres: true
 # enables the default keycloak identity provider
@@ -47,7 +47,7 @@ registry:
     enabled: true
     tls: 
       enabled: true
-      secretName: tls-secret-dtr-customer
+      secretName: tls-secret-dtr-ceres
     urlPrefix: ""
     className: nginx
     rules:
@@ -98,7 +98,7 @@ postgresql:
     password: <path:puris/data/companies/ceres/dtr/postgres#password>
     database: <path:puris/data/companies/ceres/dtr/postgres#database>
     # -- Secret contains passwords for username postgres.
-    existingSecret: secret-dtr-postgres-init-customer
+    existingSecret: secret-dtr-postgres-init-ceres
 keycloak:
   # not needed anymore since 0.9.0
   # image:
@@ -145,7 +145,7 @@ keycloak:
     path: /
     tls: 
       enabled: true
-      secretName: tls-secret-customer-dtr-keycloak
+      secretName: tls-secret-ceres-dtr-keycloak
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
       external-dns.alpha.kubernetes.io/hostname: <path:puris/data/companies/ceres/dtr/keycloak#hostname>
@@ -156,16 +156,16 @@ keycloak:
   # extraVolumes:
   #   - name: init-script-vol
   #     configMap:
-  #       name: registry-keycloak-customer-configmap # = dtr.fullname + "-keycloak-configmap"
+  #       name: registry-keycloak-ceres-configmap # = dtr.fullname + "-keycloak-configmap"
   # Mounting a keycloak realm configuration file
   # new versions for proxyHeaders
   # proxyHeaders: xforwarded
   # forward https to http (enable reverse proxy via ingress)
   proxy: edge
-  fullnameOverride: customer-dtr-keycloak
+  fullnameOverride: ceres-dtr-keycloak
   # remove as we won't use the init script as this hinders the startup (non-empty startup command does not lead to finding the postgres)
   # database-credentials:
-  #   fullnameOverride: database-credentials-customer
+  #   fullnameOverride: database-credentials-ceres
   
   # override to empty as default client is inserted manually for now
   extraVolumes: []

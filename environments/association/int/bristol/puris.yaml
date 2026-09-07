@@ -6,7 +6,7 @@ global:
       ingress: &frontendDomain <path:puris/data/companies/bristol/puris#frontend-hostname>
 # FRONTEND -----------
 frontend:
-  # fullnameOverride: "customer-frontend"
+  # fullnameOverride: "bristol-frontend"
   image:
     # tag: "main"
     # pullPolicy: Always
@@ -28,12 +28,12 @@ frontend:
                 pathType: ImplementationSpecific
     # -- TLS certificates for the Ingress controller
     tls:
-      -   secretName: tls-secret-puris-customer-frontend
+      -   secretName: tls-secret-puris-bristol-frontend
           hosts:
             - *frontendDomain
   puris:
     # -- The name of the app displayed in the frontend
-    appName: PURIS customer
+    appName: PURIS bristol
     # # -- The base URL for the backend base URL without further endpoints
     baseUrl: *domain
     # endpointPartner: partners
@@ -47,7 +47,7 @@ frontend:
 
 # BACKEND -----------
 backend:
-  # fullnameOverride: "customer-backend"
+  # fullnameOverride: "bristol-backend"
   image:
     # tag: "main"
     # pullPolicy: Always
@@ -81,15 +81,15 @@ backend:
                 pathType: ImplementationSpecific
     # -- TLS certificates for the Ingress controller
     tls:
-      -   secretName: tls-secret-puris-customer-backend
+      -   secretName: tls-secret-puris-bristol-backend
           hosts:
             - *domain
   puris:
-    existingSecret: "customer-secret-backend-puris"
+    existingSecret: "bristol-secret-backend-puris"
     baseurl: *domain
     allowedOrigins: 
       - *frontendDomain
-#    baseurl: puris-backend-customer.int.catena-x.net/
+#    baseurl: puris-backend-bristol.int.catena-x.net/
     api:
       # -- The API key of the PURIS application
       key: "<path:puris/data/companies/bristol/puris#backend-api-key>"
@@ -152,7 +152,7 @@ backend:
             secret:
               # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
               # backend.puris.dtr.idp.enabled = true.
-              #alias: "customer/dtr/keycloak/client-secret-edc"
+              #alias: "bristol/dtr/keycloak/client-secret-edc"
               alias: ""
           puris:
             # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
@@ -216,7 +216,7 @@ postgresql:
   # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
   # backend).
   enabled: true
-  fullnameOverride: "customer-backend-postgresql"
+  fullnameOverride: "bristol-backend-postgresql"
   service:
     ports:
       # -- Port of postgres database.
