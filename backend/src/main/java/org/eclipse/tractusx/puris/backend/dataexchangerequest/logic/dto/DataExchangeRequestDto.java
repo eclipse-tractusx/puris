@@ -60,4 +60,6 @@ public class DataExchangeRequestDto implements Serializable {
     private String text;
 
     private Date timestamp;
+
+    private String relatedDataExchangeRequestId;
 }

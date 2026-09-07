@@ -16,14 +16,13 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository;
-import java.util.List;
-import java.util.UUID;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
-import org.springframework.stereotype.Repository;
+import jakarta.persistence.Entity;
+import lombok.ToString;
 
-@Repository
-public interface OwnDataExchangeRequestRepository extends DataExchangeRequestRepository<OwnDataExchangeRequest> {
-    List<OwnDataExchangeRequest> findByRelatedDataExchangeRequest_Uuid(UUID uuid);
+@Entity
+@ToString(callSuper = true)
+public class PartTypeLegacyContractMapping extends ContractMapping {
+    
 }

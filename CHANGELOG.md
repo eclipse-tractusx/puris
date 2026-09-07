@@ -19,6 +19,8 @@ The **need for configuration updates** is **marked bold**.
   - Added Data exchange approval edc integration ([#1173](https://github.com/eclipse-tractusx/puris/pull/1173))
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
+  - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
+- Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
 
 ### Changed
 
@@ -28,7 +30,7 @@ The **need for configuration updates** is **marked bold**.
 - Removed all files and references connected to ERP Adapter ([])
 ### Fixes
 
-- /
+- Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
 
 ### Version Bumps
 
