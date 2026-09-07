@@ -481,6 +481,9 @@ backend:
     demandsubmodel:
       # -- Asset ID for DemandSubmodel API
       apiassetid: demandsubmodel-api-asset
+    demandanonymizedsubmodel:
+      # -- Asset ID for DemandAnonymizedSubmodel API
+      apiassetid: demandanonymizedsubmodel-api-asset
     deliverysubmodel:
       # -- Asset ID for DeliverySubmodel API
       apiassetid: deliverysubmodel-api-asset

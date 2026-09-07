@@ -346,3 +346,17 @@ databaseChangeLog:
             baseColumnNames: notification_uuid
             referencedTableName: own_demand_and_capacity_notification
             referencedColumnNames: uuid
+  - changeSet:
+        id: "8"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+              columns:
+                - column:
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: demand_anonymized_contract_mapping_pkey
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+              tableName: demand_anonymized_contract_mapping

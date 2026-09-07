@@ -20,9 +20,12 @@
 package org.eclipse.tractusx.puris.backend.demand.logic.adapter;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
+import org.eclipse.tractusx.puris.backend.common.security.logic.AnonymizationService;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.DemandCategoryEnumeration;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.domain.model.ReportedDemand;
+import org.eclipse.tractusx.puris.backend.demand.logic.dto.anonymizeddamandsamm.DemandSeriesAnonymized;
+import org.eclipse.tractusx.puris.backend.demand.logic.dto.anonymizeddamandsamm.ShortTermMaterialDemandAnonymized;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.Demand;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.DemandCategoryCharacteristic;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.DemandSeries;
@@ -46,16 +49,19 @@ import java.util.stream.Collectors;
 public class ShortTermMaterialDemandSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
-
+ 
     @Autowired
     private MaterialService materialService;
-
+ 
+    @Autowired
+    private AnonymizationService anonymizationService;
+ 
     public ShortTermMaterialDemand ownDemandToSamm(List<OwnDemand> demandList,Partner partner, Material material) {
         if (demandList.stream().anyMatch(dem -> !dem.getPartner().equals(partner))) {
             log.warn("Can't map demand list with different partners");
             return null;
         }
-
+ 
         if (demandList.stream().anyMatch(prod -> !prod.getMaterial().equals(material))) {
             log.warn("Can't map demand list with different materials");
             return null;
@@ -64,7 +70,7 @@ public class ShortTermMaterialDemandSammMapper {
                 .stream()
                 .collect(Collectors.groupingBy(demand -> new DemandGroupingHelper(demand.getDemandCategoryCode(), demand.getDemandLocationBpns(), demand.getSupplierLocationBpns())));
         ShortTermMaterialDemand samm = new ShortTermMaterialDemand();
-
+ 
         var mpr = mprService.findAll().stream().filter(mr -> mr.getMaterial().equals(material) && mr.getPartner().equals(partner)).findFirst().orElse(null);
         if (mpr == null) {
             log.warn("Could not identify materialPartnerRelation with ownMaterialNumber " + material.getOwnMaterialNumber()
@@ -72,7 +78,7 @@ public class ShortTermMaterialDemandSammMapper {
             return null;
         }
         samm.setMaterialGlobalAssetId(mpr.getPartnerCXNumber());
-
+ 
         var demandSeriesList = new HashSet<DemandSeries>();
         samm.setDemandSeries(demandSeriesList);
         for (var mappingHelperListEntry : groupedByCategory.entrySet()) {
@@ -98,17 +104,62 @@ public class ShortTermMaterialDemandSammMapper {
         }
         return samm;
     }
-
+ 
+    public ShortTermMaterialDemandAnonymized ownDemandToAnonymizedSamm(List<OwnDemand> demandList, Partner partner, Material material, String salt) {
+        if (demandList.stream().anyMatch(dem -> !dem.getPartner().equals(partner))) {
+            log.warn("Can't map demand list with different partners");
+            return null;
+        }
+ 
+        if (demandList.stream().anyMatch(dem -> !dem.getMaterial().equals(material))) {
+            log.warn("Can't map demand list with different materials");
+            return null;
+        }
+ 
+        var mpr = mprService.find(material, partner);
+        if (mpr == null) {
+            log.warn("Could not identify materialPartnerRelation with ownMaterialNumber " + material.getOwnMaterialNumber() + " and partner bpnl " + partner.getBpnl());
+            return null;
+        }
+ 
+        ShortTermMaterialDemandAnonymized samm = new ShortTermMaterialDemandAnonymized();
+        samm.setMaterialGlobalAssetIdAnonymized(anonymizationService.anonymize(mpr.getPartnerCXNumber(), salt));
+        var groupedByLocation = demandList.stream()
+            .collect(Collectors.groupingBy(demand -> new AnonymizedDemandGroupingHelper(demand.getDemandLocationBpns(), demand.getSupplierLocationBpns())));
+ 
+        var demandSeriesList = new HashSet<DemandSeriesAnonymized>();
+        samm.setDemandSeries(demandSeriesList);
+        for (var mappingHelperListEntry : groupedByLocation.entrySet()) {
+            var key = mappingHelperListEntry.getKey();
+            List<OwnDemand> demandsByLocation = mappingHelperListEntry.getValue();
+            DemandSeriesAnonymized demandSeries = new DemandSeriesAnonymized();
+            demandSeriesList.add(demandSeries);
+            var latestUpdate = demandsByLocation.stream().map(OwnDemand::getLastUpdatedOnDateTime).max(Date::compareTo).orElse(new Date());
+            demandSeries.setLastUpdatedOnDateTime(latestUpdate);
+            demandSeries.setCustomerLocationBpnsAnonymized(anonymizationService.anonymize(key.customerLocationBpns(), salt));
+            
+            demandSeries.setExpectedSupplierLocationBpnsAnonymized(key.expectedSupplierLocationBpns() == null ? null : anonymizationService.anonymize(key.expectedSupplierLocationBpns(), salt));
+            var demands = new HashSet<Demand>();
+            demandSeries.setDemands(demands);
+            for (var v : demandsByLocation) {
+                ItemQuantityEntity itemQuantityEntity = new ItemQuantityEntity(v.getQuantity(), v.getMeasurementUnit());
+                Demand dailyDemand = new Demand(itemQuantityEntity, v.getDay());
+                demands.add(dailyDemand);
+            }
+        }
+        return samm;
+    }
+ 
     public List<ReportedDemand> sammToReportedDemand(ShortTermMaterialDemand samm, Partner partner) {
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedDemand> outputList = new ArrayList<>();
-
+ 
         var material = materialService.findByMaterialNumberCx(matNbrCatenaX);
         if (material == null) {
             log.warn("Could not identify material with given CatenaXNbr ");
             return outputList;
         }
-
+ 
         for (var demandSeries : samm.getDemandSeries()) {
             for (var demand : demandSeries.getDemands()) {
                 var builder = ReportedDemand.builder();
@@ -128,9 +179,11 @@ public class ShortTermMaterialDemandSammMapper {
         }
         return outputList;
     }
-
+ 
     private record DemandGroupingHelper(DemandCategoryEnumeration category, String customerLocationBpns, String expectedSupplierLocationBpns) {}
-
+ 
+    private record AnonymizedDemandGroupingHelper(String customerLocationBpns, String expectedSupplierLocationBpns) {}
+ 
     private DemandCategoryCharacteristic mapDemandCategory(DemandCategoryEnumeration category) {
         return switch (category) {
             case DEMAND_DEFAULT -> DemandCategoryCharacteristic.DEMAND_CATEGORY;
@@ -143,7 +196,7 @@ public class ShortTermMaterialDemandSammMapper {
             case DEMAND_EXTRAORDINARY_DEMAND -> DemandCategoryCharacteristic.DEMAND_CATEGORY_EXTRAORDINARY_DEMAND;
         };
     }
-
+ 
     private DemandCategoryEnumeration mapDemandCategory(DemandCategoryCharacteristic category) {
         return switch (category) {
             case DEMAND_CATEGORY -> DemandCategoryEnumeration.DEMAND_DEFAULT;

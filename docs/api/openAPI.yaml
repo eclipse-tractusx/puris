@@ -749,6 +749,30 @@ components:
       - demands
       - lastUpdatedOnDateTime
       type: object
+    DemandSeriesAnonymized:
+      additionalProperties: false
+      properties:
+        customerLocationBpnsAnonymized:
+          maxItems: 50
+          type: string
+        demands:
+          items:
+            $ref: '#/components/schemas/Demand'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        expectedSupplierLocationBpnsAnonymized:
+          maxItems: 50
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+      required:
+      - customerLocationBpnsAnonymized
+      - demands
+      - lastUpdatedOnDateTime
+      type: object
     FrontendMaterialDto:
       additionalProperties: false
       properties:
@@ -1846,6 +1870,22 @@ components:
         materialGlobalAssetId:
           maxItems: 50
           pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+      required:
+      - demandSeries
+      type: object
+    ShortTermMaterialDemandAnonymized:
+      additionalProperties: false
+      properties:
+        demandSeries:
+          items:
+            $ref: '#/components/schemas/DemandSeriesAnonymized'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        materialGlobalAssetIdAnonymized:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       required:
       - demandSeries
@@ -3434,6 +3474,7 @@ paths:
           - ITEM_STOCK_ANONYMIZED_SUBMODEL
           - DELIVERY_ANONYMIZED_SUBMODEL
           - PRODUCTION_ANONYMIZED_SUBMODEL
+          - DEMAND_ANONYMIZED_SUBMODEL
           - SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL
           maxItems: 50
           type: string
@@ -3649,6 +3690,65 @@ paths:
         endpoint is meant to be accessed by partners via EDC only. '
       tags:
       - item-stock-request-api-controller
+  /material-demand/anonymized/request/{materialnumbercx}/{partnerBpnl}/submodel/{representation}:
+    get:
+      operationId: getAnonymizedDemandMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: header
+        name: edc-contract-agreement-id
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: materialnumbercx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: partnerBpnl
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ShortTermMaterialDemandAnonymized'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: Bad Request
+        '403':
+          description: Access forbidden - self-access only
+        '500':
+          description: Internal Server Error
+        '501':
+          description: Unsupported representation
+      summary: 'This endpoint receives the ShortTermMaterialDemandAnonymized Submodel
+        1.0.0 requests. This endpoint is meant to be accessed by our own EDC only. '
+      tags:
+      - demand-request-api-controller
   /material-demand/request/{materialnumbercx}/submodel/{representation}:
     get:
       operationId: getDemandMapping

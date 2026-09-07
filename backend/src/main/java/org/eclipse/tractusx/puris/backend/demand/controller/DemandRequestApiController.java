@@ -28,6 +28,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.demand.logic.dto.anonymizeddamandsamm.ShortTermMaterialDemandAnonymized;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.ShortTermMaterialDemand;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,9 @@ public class DemandRequestApiController {
 
     @Autowired
     private DemandRequestApiService demandRequestApiService;
+
+    @Autowired
+    private VariablesService variablesService;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
@@ -81,6 +86,43 @@ public class DemandRequestApiController {
             return ResponseEntity.status(501).build();
         }
         var samm = demandRequestApiService.handleDemandSubmodelRequest(bpnl, materialnumbercx);
+        if (samm == null) {
+            return ResponseEntity.status(500).build();
+        }
+        return ResponseEntity.ok(samm);
+    }
+
+    @Operation(summary = "This endpoint receives the ShortTermMaterialDemandAnonymized Submodel 1.0.0 requests. " +
+        "This endpoint is meant to be accessed by our own EDC only. ")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ok"),
+        @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Access forbidden - self-access only", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Unsupported representation", content = @Content)
+    })
+    @GetMapping("anonymized/request/{materialnumbercx}/{partnerBpnl}/submodel/{representation}")
+    public ResponseEntity<ShortTermMaterialDemandAnonymized> getAnonymizedDemandMapping(
+        @RequestHeader("edc-bpn") String edcBpnl,
+        @RequestHeader("edc-contract-agreement-id") String contractAgreementId,
+        @PathVariable String materialnumbercx,
+        @PathVariable String partnerBpnl,
+        @PathVariable String representation
+    ) {
+        if (!bpnlPattern.matcher(partnerBpnl).matches() || !urnPattern.matcher(materialnumbercx).matches()) {
+            log.warn("Rejecting request at ShortTermMaterialDemandAnonymized Submodel request 1.0.0 endpoint");
+            return ResponseEntity.badRequest().build();
+        }
+        if (!variablesService.getOwnBpnl().equals(edcBpnl)) {
+            log.warn("Rejecting request at ShortTermMaterialDemandAnonymized Submodel request 1.0.0 endpoint, edc-bpn header did not match own BPNL");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (!"$value".equals(representation)) {
+            log.warn("Rejecting request at ShortTermMaterialDemandAnonymized Submodel request 1.0.0 endpoint, missing '$value' in request");
+            return ResponseEntity.status(501).build();
+        }
+        log.info("Received anonymized demand request for {} from {}", materialnumbercx, partnerBpnl);
+        var samm = demandRequestApiService.handleDemandAnonymizedSubmodelRequest(partnerBpnl, materialnumbercx, contractAgreementId);
         if (samm == null) {
             return ResponseEntity.status(500).build();
         }

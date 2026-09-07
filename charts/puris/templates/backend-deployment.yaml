@@ -169,6 +169,8 @@ spec:
               value: "{{ .Values.backend.puris.productionsubmodel.apiassetid }}"
             - name: PURIS_DEMANDSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.demandsubmodel.apiassetid }}"
+            -name: PURIS_DEMANDANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.demandanonymizedsubmodel.apiassetid }}"
             - name: PURIS_DELIVERYSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.deliverysubmodel.apiassetid }}"
             - name: PURIS_DAYSOFSUPPLYSUBMODEL_APIASSETID
