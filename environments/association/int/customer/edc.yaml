@@ -95,9 +95,9 @@ dataplane:
 
   token:
     signer:
-      privatekey_alias: <path:puris/data/companies/customer/edc/dataplane-proxy/private-key>
+      privatekey_alias: companies/supplier/edc/dataplane-proxy/private-key
     verifier:
-      publickey_alias: <path:puris/data/companies/customer/edc/dataplane-proxy/public-key>
+      publickey_alias: companies/customer/edc/dataplane-proxy/public-key
 
   # "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
   # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
