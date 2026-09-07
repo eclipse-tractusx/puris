@@ -33,10 +33,10 @@ type DataExchangeRequestListModalProps = {
     dataExchangeRequests: DataExchangeRequest[];
     partners: Partner[] | null;
     onClose: () => void;
-    onViewRequestClicked?: (request: DataExchangeRequest) => void;
-    onCreateApprovalClicked?: (request: DataExchangeRequest) => void;
-    onViewApprovalClicked?: (request: DataExchangeRequest) => void;
-    onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
+    onViewRequestClicked: (request: DataExchangeRequest) => void;
+    onCreateApprovalClicked: (request: DataExchangeRequest) => void;
+    onViewApprovalClicked: (request: DataExchangeRequest) => void;
+    onCreateRequestClicked: (notification: DemandCapacityNotification) => void;
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -73,11 +73,11 @@ export const DataExchangeRequestListModal = ({
     const handleRowClick = (request: DataExchangeRequest) => {
         onClose();
         if (needsApproval(request)) {
-            onCreateApprovalClicked?.(request);
+            onCreateApprovalClicked(request);
         } else if (!request.dataExchangeApproval && isOutgoing) {
-            onViewRequestClicked?.(request);
+            onViewRequestClicked(request);
         } else {
-            onViewApprovalClicked?.(request);
+            onViewApprovalClicked(request);
         }
     };
 
@@ -85,7 +85,7 @@ export const DataExchangeRequestListModal = ({
         <Dialog open={open} onClose={onClose}>
             <DialogTitle variant="h3" textAlign="center">Data Exchange Requests</DialogTitle>
             <Stack padding="0 2rem 2rem" gap={1.5} sx={{ width: '60rem' }}>
-                <Box width="100%" className="hide-title">
+                <Box width="100%">
                     <Table
                         onRowClick={(value) => handleRowClick(value.row)}
                         noRowsMsg="No data exchange requests found"
@@ -106,18 +106,20 @@ export const DataExchangeRequestListModal = ({
                                 ),
                             },
                             { headerName: 'Start date', field: 'desiredStartDateTime',
-                                renderCell: (params: { row: DataExchangeRequest }) => {
-                                    <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                                renderCell: (params: { row: DataExchangeRequest }) => (
+                                    <Stack display="flex" textAlign="left" alignItems="start" justifyContent="center" width="100%" height="100%">
                                         <Box>{new Date(params.row.desiredStartDateTime).toLocaleDateString('en-GB')}</Box>
+                                        <Box>{new Date(params.row.desiredStartDateTime).toLocaleTimeString('en-GB')}</Box>
                                     </Stack>
-                                },
+                                ),
                             },
                             { headerName: 'End date', field: 'desiredEndDateTime',
-                                renderCell: (params: { row: DataExchangeRequest }) => {
-                                    <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
+                                renderCell: (params: { row: DataExchangeRequest }) => (
+                                    <Stack display="flex" textAlign="left" alignItems="start" justifyContent="center" width="100%" height="100%">
                                         <Box>{new Date(params.row.desiredEndDateTime).toLocaleDateString('en-GB')}</Box>
+                                        <Box>{new Date(params.row.desiredEndDateTime).toLocaleTimeString('en-GB')}</Box>
                                     </Stack>
-                                },
+                                ),
                             },
                             { headerName: 'Status', field: 'status', flex: 1,
                                 renderCell: (params: { row: DataExchangeRequest }) => {
@@ -131,15 +133,18 @@ export const DataExchangeRequestListModal = ({
                                 },
                             },
                             { headerName: 'Action', field: 'actions',
-                                renderCell: (params: { row: DataExchangeRequest }) => (
-                                    <Box display="flex" justifyContent="end" width="100%">
-                                        <Tooltip title={needsApproval(params.row) ? 'Approve request' : 'View request'} arrow>
-                                            <Box component="span" sx={{ display: 'inline-flex', color: needsApproval(params.row) ? 'primary.main' : 'text.secondary' }}>
-                                                {needsApproval(params.row) ? <FactCheck /> : <Visibility />}
+                                renderCell: (params: { row: DataExchangeRequest }) => {
+                                const approval = needsApproval(params.row);
+                                return (
+                                    <Box display="flex" justifyContent="start" alignItems="center" width="100%" gap={0.5}>
+                                        <Tooltip title={approval ? 'Approve request' : 'View request'} arrow>
+                                            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: approval ? 'primary.main' : 'text.secondary'}}>
+                                                {approval ? <FactCheck fontSize="small" /> : <Visibility fontSize="small" />}
+                                                <Typography variant="body2" component="span" color="inherit"> {approval ? 'Approve' : 'View'} </Typography>
                                             </Box>
                                         </Tooltip>
                                     </Box>
-                                ),
+                                );},
                             },
                         ]}
                         rows={rows}

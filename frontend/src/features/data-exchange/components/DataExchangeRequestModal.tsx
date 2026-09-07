@@ -33,6 +33,7 @@ import { CRITICALITY, RequestedType } from '@models/constants/criticality';
 import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
 import { EFFECTS } from '@models/constants/effects';
 import { InfoButton } from '@components/ui/InfoButton';
+import { maxDate, minDate } from '@util/date-helpers';
 
 type ReferencedNotificationCardProps = {
     notification: DemandCapacityNotification;
@@ -114,7 +115,7 @@ export const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, 
         if (dataExchangeApproval.isFinalized === true) {
             return { label: 'Approved, finalized', explanation: 'The request has been approved and finalized' };
         } else if (dataExchangeApproval.isFinalized === false) {
-            return { label: 'Approved, not finalized', explanation: 'The request has been approved, but not finalized' };    
+           return { label: 'Approved, not finalized', explanation: 'The request has been approved, but one or more forwarded requests are pending approval.' };
         }
         return { label: 'Approved', explanation: 'The request has been approved' };
     }
@@ -136,9 +137,6 @@ export type ForwardTarget = {
     start: Date;
     end: Date;
 };
-
-const maxDate = (a: Date, b: Date) => (a < b ? b : a);
-const minDate = (a: Date, b: Date) => (a < b ? a : b);
 
 export const resolveForwardTargets = (dataExchangeRequest: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification, candidates: DemandCapacityNotification[]): ForwardTarget[] => {
     const relatedIds = demandCapacityNotification.relatedNotificationIds;
@@ -165,7 +163,7 @@ type DataExchangeRequestModalProps = {
     partners: Partner[] | null;
     dataApprovalMode: boolean;
     dataExchangeApproval: DataExchangeApproval | null;
-    relatedNotificationsIds?: DemandCapacityNotification[];
+    candidateNotifications?: DemandCapacityNotification[];
     onClose: () => void;
     onSave: () => void;
 };
@@ -281,7 +279,7 @@ const DataExchangeRequestView = ({
                         <FormLabel>Forward</FormLabel>
                         <Stack direction="row" alignItems="center">
                             <Checkbox id="forward-request" checked={forward} onChange={(_, checked) => onForwardChange(checked)} data-testid="forward-request" />
-                            <InputLabel htmlFor="forward-request"> Forward this request to {forwardTargets.length} partner{forwardTargets.length > 1 ? 's' : ''}</InputLabel>
+                            <InputLabel htmlFor="forward-request"> Forward this request to {forwardTargets.length} partner{forwardTargets.length > 1 && 's'}</InputLabel>
                         </Stack>
                     </Grid>
                 </>
@@ -297,7 +295,7 @@ export const DataExchangeRequestInformationModal = ({
     partners,
     dataApprovalMode,
     dataExchangeApproval,
-    relatedNotificationsIds = [],
+    candidateNotifications = [],
     onClose,
     onSave,
 }: DataExchangeRequestModalProps) => {
@@ -310,12 +308,12 @@ export const DataExchangeRequestInformationModal = ({
     const { notify } = useNotifications();
     const [formError, setFormError] = useState(false);
 
-        const forwardTargets = useMemo(() => {
+    const forwardTargets = useMemo(() => {
         if (!dataApprovalMode || !dataExchangeRequest || dataExchangeApproval) {
             return [];
         }
-        return resolveForwardTargets(dataExchangeRequest, demandCapacityNotification, relatedNotificationsIds);
-    }, [dataApprovalMode, dataExchangeRequest, dataExchangeApproval, demandCapacityNotification, relatedNotificationsIds]);
+        return resolveForwardTargets(dataExchangeRequest, demandCapacityNotification, candidateNotifications);
+    }, [dataApprovalMode, dataExchangeRequest, dataExchangeApproval, demandCapacityNotification, candidateNotifications]);
  
     const willForward = forwardRequest && forwardTargets.length > 0;
 
@@ -379,7 +377,7 @@ export const DataExchangeRequestInformationModal = ({
                 notify({
                     title: willForward ? 'Data Exchange approved and forwarded' : 'Data Exchange approved',
                     description: willForward
-                        ? `The request has been approved and forwarded to partner${forwardTargets.length > 1 ? 's' : ''}.`
+                        ? `The request has been approved and forwarded to partner${forwardTargets.length > 1 && 's'}.`
                         : 'The requested data exchange approval has been approved',
                     severity: 'success',
                 });
@@ -541,7 +539,7 @@ export const DataExchangeRequestInformationModal = ({
                     <Typography variant="body2">Do you really want to approve the data exchange request?</Typography>
                     {willForward && (
                         <Typography variant="body2">
-                            The request is also forwarded to {forwardTargets.length} partner{forwardTargets.length > 1 ? 's' : ''}.
+                            The request is also forwarded to {forwardTargets.length} partner{forwardTargets.length > 1 && 's'}.
                         </Typography>
                     )}
                 </DialogContent>

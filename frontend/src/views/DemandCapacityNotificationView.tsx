@@ -295,7 +295,7 @@ export const DemandCapacityNotificationView = () => {
                     dataExchangeApproval={selectedApproval}
                     demandCapacityNotification={activeRequestNotification}
                     dataExchangeRequest={selectedRequest}
-                    relatedNotificationsIds={demandCapacityNotification}
+                    candidateNotifications={demandCapacityNotification}
                     partners={filterPartners ?? partners}
                     onClose={() => {
                         setDataRequestModalOpen(false);
