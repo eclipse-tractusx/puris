@@ -15,7 +15,7 @@ registry:
   replicaCount: 1
   imagePullPolicy: IfNotPresent
   containerPort: 4243
-  host: trace-x-registry-customer.int.catena-x.net #<path:puris/data/customer/dtr#hostname>
+  host: trace-x-registry-customer.int.catena-x.net #<path:puris/data/companies/customer/dtr#hostname>
   ## If 'authentication' is set to false, no OAuth authentication is enforced
   authentication: false
   # Issuer url for the dtr (resource server),
@@ -23,9 +23,9 @@ registry:
   # If no value is committed, and the integrated Keycloak is enabled,
   # the K8s internal service name is used, which is a problem, when
   # validating the issuer claim in an access token
-  idpIssuerUri: "https://<path:puris/data/customer/dtr/keycloak#hostname>/realms/default-realm"
-  idpClientId: <path:puris/data/customer/dtr/keycloak#client-id>
-  tenantId: <path:puris/data/customer#bpnl>
+  idpIssuerUri: "https://<path:puris/data/companies/customer/dtr/keycloak#hostname>/realms/default-realm"
+  idpClientId: <path:puris/data/companies/customer/dtr/keycloak#client-id>
+  tenantId: <path:puris/data/companies/customer#bpnl>
   useGranularAccessControl: "false"
   granularAccessControlFetchSize: "500"
   service:
@@ -78,10 +78,10 @@ postgresql:
     ports:
       postgresql: 5432
   auth:
-    username: <path:puris/data/customer/dtr/postgres#user>
+    username: <path:puris/data/companies/customer/dtr/postgres#user>
     # if password is empty, the postgres password will be generated random via postgres-init
-    password: <path:puris/data/customer/dtr/postgres#password>
-    database: <path:puris/data/customer/dtr/postgres#database>
+    password: <path:puris/data/companies/customer/dtr/postgres#password>
+    database: <path:puris/data/companies/customer/dtr/postgres#database>
     # -- Secret contains passwords for username postgres.
     existingSecret: secret-dtr-postgres-init-customer
   resources:

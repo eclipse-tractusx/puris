@@ -1,9 +1,9 @@
 global:
   domain:
     backend:
-      ingress: &domain <path:puris/data/supplier/puris#backend-hostname>
+      ingress: &domain <path:puris/data/companies/supplier/puris#backend-hostname>
     frontend:
-      ingress: &frontendDomain <path:puris/data/supplier/puris#frontend-hostname>
+      ingress: &frontendDomain <path:puris/data/companies/supplier/puris#frontend-hostname>
 # FRONTEND -----------
 frontend:
   image:
@@ -44,7 +44,7 @@ frontend:
       # -- Name of the Realm of the keycloak instance.
       realm: <path:puris/data/environment#central-idp-realm>
       # -- Name of the client which is used for the application.
-      clientId: <path:puris/data/supplier/puris/idp#client-id>
+      clientId: <path:puris/data/companies/supplier/puris/idp#client-id>
       # -- URL to use as keycloak redirect url.
       redirectUrlFrontend: ""
   resources:
@@ -99,24 +99,24 @@ backend:
 #    baseurl: puris-backend-supplier.int.catena-x.net/
     api:
       # -- The API key of the PURIS application
-      key: "<path:puris/data/supplier/puris#backend-api-key>"
+      key: "<path:puris/data/companies/supplier/puris#backend-api-key>"
     edc:
       controlplane:
-        host: "https://<path:puris/data/supplier/edc#hostname-internet>"
+        host: "https://<path:puris/data/companies/supplier/edc#hostname-internet>"
         management:
           # -- Url to the EDC controlplane management of the edc
-          url: "https://<path:puris/data/supplier/edc#hostname-internet>/management"
+          url: "https://<path:puris/data/companies/supplier/edc#hostname-internet>/management"
         protocol:
           # -- Url to the EDC controlplane protocol API of the edc
-          url: "https://<path:puris/data/supplier/edc#hostname-internet>/api/v1/dsp"
+          url: "https://<path:puris/data/companies/supplier/edc#hostname-internet>/api/v1/dsp"
         # -- Key for the EDC control plane
-        key: <path:puris/data/supplier/edc#api-key>
+        key: <path:puris/data/companies/supplier/edc#api-key>
       dataplane:
         public:
-          url: "https://<path:puris/data/supplier/edc#hostname-internet>/api/public"
+          url: "https://<path:puris/data/companies/supplier/edc#hostname-internet>/api/public"
     own:
       # -- Own BPNL of the EDC
-      bpnl: <path:puris/data/supplier#bpnl>
+      bpnl: <path:puris/data/companies/supplier#bpnl>
       # -- Own BPNS of the EDC
       bpns: BPNS1234567890ZZ
       site:
@@ -140,18 +140,18 @@ backend:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
         ddl-auto: validate
     dtr:
-      url: https://<path:puris/data/supplier/dtr#hostname>/api/v3
+      url: https://<path:puris/data/companies/supplier/dtr#hostname>/api/v3
       idp:
         enabled: true
         # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
         # Mandatory if backend.puris.dtr.idp.enabled = true.
-        tokenurl:  https://<path:puris/data/supplier/dtr/keycloak#hostname>/realms/<path:puris/data/supplier/dtr/keycloak#realm>/protocol/openid-connect/token
+        tokenurl:  https://<path:puris/data/companies/supplier/dtr/keycloak#hostname>/realms/<path:puris/data/companies/supplier/dtr/keycloak#realm>/protocol/openid-connect/token
         clients:
           edc:
             # -- id of the client that has a service account with roles to view the DTR. Used by the application to create
             # DTR asset in the edc with read only access. See Admin Guide. Mandatory if
             # backend.puris.dtr.idp.enabled = true.
-            id: <path:puris/data/supplier/dtr/keycloak#client-id>
+            id: <path:puris/data/companies/supplier/dtr/keycloak#client-id>
             secret:
               # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
               # backend.puris.dtr.idp.enabled = true.
@@ -159,10 +159,10 @@ backend:
           puris:
             # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
             # create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true.
-            id: <path:puris/data/supplier/dtr/keycloak#client-id>
+            id: <path:puris/data/companies/supplier/dtr/keycloak#client-id>
             # -- secret of the client with write access (no vault alias). No default value will be created if empty.
             # Mandatory if backend.puris.dtr.idp.enabled = true.
-            secret: <path:puris/data/supplier/dtr/keycloak#client-secret>
+            secret: <path:puris/data/companies/supplier/dtr/keycloak#client-secret>
     batch:
       partnerdataupdate:
         # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
@@ -237,16 +237,16 @@ postgresql:
   # admin user
   auth:
     existingSecret: ""
-    # database: <path:puris/data/supplier/puris/postgres#database>
+    # database: <path:puris/data/companies/supplier/puris/postgres#database>
     username: postgres
-    password: <path:puris/data/supplier/puris/postgres#postgres-password>
-    # passwordPostgres: <path:puris/data/supplier/puris/postgres#postgres-password>
+    password: <path:puris/data/companies/supplier/puris/postgres#postgres-password>
+    # passwordPostgres: <path:puris/data/companies/supplier/puris/postgres#postgres-password>
   # custom user (non root)
   customUser:
     existingSecret: ""
-    name: <path:puris/data/supplier/puris/postgres#username>
-    database: <path:puris/data/supplier/puris/postgres#database>
-    password: <path:puris/data/supplier/puris/postgres#password>
+    name: <path:puris/data/companies/supplier/puris/postgres#username>
+    database: <path:puris/data/companies/supplier/puris/postgres#database>
+    password: <path:puris/data/companies/supplier/puris/postgres#password>
   resources:
     requests:
       cpu: "20m"
@@ -260,6 +260,6 @@ idp:
   # -- Name of the Realm of the keycloak instance.
   realm: <path:puris/data/environment#central-idp-realm>
   # -- Name of the client which is used for the application.
-  clientId: <path:puris/data/supplier/puris/idp#client-id>
+  clientId: <path:puris/data/companies/supplier/puris/idp#client-id>
   # -- URL to use as keycloak redirect url.
   redirectUrlFrontend: ""

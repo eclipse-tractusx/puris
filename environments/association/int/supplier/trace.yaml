@@ -19,12 +19,12 @@
 
 configuration:
   env:
-    bpn: &bpn <path:puris/data/supplier#bpnl>
+    bpn: &bpn <path:puris/data/companies/supplier#bpnl>
 
   frontend:
     name: &fe_name 'tx-frontend-supplier'
     hostName: &fe_host_name 'traceability-portal-supplier.int.catena-x.net'
-    backendApiUrl: &be_api_url 'https://traceability-supplier.int.catena-x.net/api' #<path:traceability-foss/data/supplier/frontend#catenax_portal_api_url> #TODO
+    backendApiUrl: &be_api_url 'https://traceability-supplier.int.catena-x.net/api' #<path:traceability-foss/data/companies/supplier/frontend#catenax_portal_api_url> #TODO
 
   backend:
     name: &backend_name 'tx-backend-supplier'
@@ -36,10 +36,10 @@ configuration:
     edcClient:
       callbackUrl: &backend_edc_client_callback_url 'http://tx-backend-supplier:8181/api/internal/endpoint-data-reference'
     backendDatabase:
-      url: &backend_database_url <path:puris/data/supplier/trace#postgres-jdbc-url>
+      url: &backend_database_url <path:puris/data/companies/supplier/trace#postgres-jdbc-url>
       name: &backend_database_name 'tx-backend-postgresql-supplier'
-      password: &backend_database_password <path:puris/data/supplier/trace#postgres-password> #<path:traceability-foss/data/supplier/database#tracePassword> # todo
-      rootPassword: &backend_database_root_password <path:puris/data/supplier/trace#postgres-root-password> #<path:traceability-foss/data/supplier/database#postgresPassword> #todo
+      password: &backend_database_password <path:puris/data/companies/supplier/trace#postgres-password> #<path:traceability-foss/data/companies/supplier/database#tracePassword> # todo
+      rootPassword: &backend_database_root_password <path:puris/data/companies/supplier/trace#postgres-root-password> #<path:traceability-foss/data/companies/supplier/database#postgresPassword> #todo
     security:
       # -- required to allow FE connection
       allowedCorsOrigins: &backend_security_allowed_fe 'https://traceability-portal-supplier.int.catena-x.net/'
@@ -47,7 +47,7 @@ configuration:
   pgadmin4:
     name: &pgadmin_name 'tx-pgadmin-supplier'
     hostName: &pgadmin_host_name 'tx-pgadmin-supplier.int.catena-x.net'
-    password: &pgadmin_password <path:puris/data/supplier/trace#pg-admin-password> # <path:traceability-foss/data/supplier/database#pgadminPassword>
+    password: &pgadmin_password <path:puris/data/companies/supplier/trace#pg-admin-password> # <path:traceability-foss/data/companies/supplier/database#pgadminPassword>
 
   irs:
     name: &irs_name 'tx-irs-supplier'
@@ -56,8 +56,8 @@ configuration:
     callbackUrl: &irs_callback_url 'http://tx-irs-supplier:8181/internal/endpoint-data-reference'
     irsDatabase:
       name: &irs_database_name 'tx-irs-minio-supplier'
-      username: &irs_database_username <path:puris/data/supplier/trace/irs#minio-user> #<path:traceability-foss/data/supplier/irs#MINIO_USER> #todo
-      password: &irs_database_password <path:puris/data/supplier/trace/irs#minio-password>
+      username: &irs_database_username <path:puris/data/companies/supplier/trace/irs#minio-user> #<path:traceability-foss/data/companies/supplier/irs#MINIO_USER> #todo
+      password: &irs_database_password <path:puris/data/companies/supplier/trace/irs#minio-password>
       url: &irs_database_url 'http://tx-irs-minio-supplier:9000'
 
   edc:
@@ -66,7 +66,7 @@ configuration:
       dataPlaneHost: &edc_provider_dataplane_url 'https://trace-x-edc-supplier-dataplane.int.catena-x.net'
     consumer:
       name: &edc_name 'tx-edc-consumer-supplier'
-      apiKey: &edc_api_key <path:puris/data/supplier/trace/edc#api-key> #<path:traceability-foss/data/supplier/edc/controlplane#edc.api.control.auth.apikey.value> #todo
+      apiKey: &edc_api_key <path:puris/data/companies/supplier/trace/edc#api-key> #<path:traceability-foss/data/companies/supplier/edc/controlplane#edc.api.control.auth.apikey.value> #todo
       controlplane:
         hostName: &edc_controlplane_hostname 'tx-edc-consumer-supplier-controlplane.int.catena-x.net' #todo: where does this come from
         managementUrl: &edc_controlplane_management_url 'https://tx-edc-consumer-supplier-controlplane.int.catena-x.net/management'
@@ -74,9 +74,9 @@ configuration:
         hostName: &edc_dataplane_hostname 'tx-edc-consumer-supplier-dataplane.int.catena-x.net'
       edcDatabase:
         name: &edc_database_name 'tx-edc-consumer-postgresql-supplier'
-        username: &edc_database_username <path:puris/data/supplier/trace/edc#postgres-user> #todo
-        password: &edc_database_password <path:puris/data/supplier/trace/edc#postgres-password>
-        jdbcUrl: &edc_database_jdbc_url <path:puris/data/supplier/trace/edc#postgres-jdbc-url>
+        username: &edc_database_username <path:puris/data/companies/supplier/trace/edc#postgres-user> #todo
+        password: &edc_database_password <path:puris/data/companies/supplier/trace/edc#postgres-password>
+        jdbcUrl: &edc_database_jdbc_url <path:puris/data/companies/supplier/trace/edc#postgres-jdbc-url>
       vault:
         hashicorp:
           url: &vault_url <path:puris/data/environment#vault-url>
@@ -87,19 +87,19 @@ configuration:
           transferProxyTokenEncryptionAesKey: &edc_encryption_key DATAPLANE_PROXY_PUBLIC_KEY
 
   portal:
-    domain: &portal_domain catena-x.net #<path:traceability-foss/data/supplier/frontend#catenax_portal_backend_domain> #todo
-    url: &portal_url https://portal.int.catena-x.net/ # <path:traceability-foss/data/supplier/frontend#catenax_portal_url>
+    domain: &portal_domain catena-x.net #<path:traceability-foss/data/companies/supplier/frontend#catenax_portal_backend_domain> #todo
+    url: &portal_url https://portal.int.catena-x.net/ # <path:traceability-foss/data/companies/supplier/frontend#catenax_portal_url>
     backend:
       url: &portal_backend_url 'https://portal-backend.int.catena-x.net/api'
     discoveryFinderUrl: &discovery_finder_url 'https://semantics.int.catena-x.net/discoveryfinder/api/v1.0/administration/connectors/discovery/search'
     serviceAccount: # todo service accounts
-      clientId: &service_account_id <path:puris/data/supplier/trace/keycloak#client-id> # sa267 #todo
-      clientPassword: &service_account_password <path:puris/data/supplier/trace/keycloak#client-password>
+      clientId: &service_account_id <path:puris/data/companies/supplier/trace/keycloak#client-id> # sa267 #todo
+      clientPassword: &service_account_password <path:puris/data/companies/supplier/trace/keycloak#client-password>
     auth:
       keycloakUrl: &portal_auth_keycloak_url <path:puris/data/environment#central-idp-url>
       tokenUri: &central_idp_token_uri 'https://centralidp.int.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token'
       jwkUri: &central_idp_jwk_uri 'https://centralidp.int.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/certs'
-      resourceClient: &central_idp_resource_client <path:puris/data/supplier/trace/keycloak#app-client-id>
+      resourceClient: &central_idp_resource_client <path:puris/data/companies/supplier/trace/keycloak#app-client-id>
 
   semanticHub: &semantichub_models_url 'https://semantics.int.catena-x.net/hub/api/v1/models'
 
@@ -169,8 +169,8 @@ backend:
     url: *be_url
     internalUrl: *be_url_internal
 
-  irsAdminApiKey: &irs_admin_api_key <path:puris/data/supplier/trace/irs#admin-api-key>
-  irsRegularApiKey: &irs_regular_api_key <path:puris/data/supplier/trace/irs#regular-api-key>
+  irsAdminApiKey: &irs_admin_api_key <path:puris/data/companies/supplier/trace/irs#admin-api-key>
+  irsRegularApiKey: &irs_regular_api_key <path:puris/data/companies/supplier/trace/irs#regular-api-key>
 
   datasource:
     url: *backend_database_url
@@ -363,7 +363,7 @@ tractusx-connector:
     id: *bpn
   iatp:
     # Decentralized IDentifier
-    id: <path:puris/data/supplier#did-url>
+    id: <path:puris/data/companies/supplier#did-url>
     # -- Configures the trusted issuers for this runtime
     trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
       - <path:puris/data/environment#trusted-issuer-1>
@@ -371,12 +371,12 @@ tractusx-connector:
       dim: #TDO urls
         url: <path:puris/data/environment#dim-url>
       oauth:
-        token_url: <path:puris/data/supplier#dim-idp-token-url>
+        token_url: <path:puris/data/companies/supplier#dim-idp-token-url>
         client:
-          id: <path:puris/data/supplier#dim-idp-client-id>
+          id: <path:puris/data/companies/supplier#dim-idp-client-id>
           # not supported, see https://github.com/eclipse-edc/Connector/discussions/4135
-          # secret_alias: "puris/data/supplier#dim-idp-client-secret"
-          secret_alias: "SUPPLIER_EDC/CLIENT_SECRET"
+          # secret_alias: "puris/data/companies/supplier#dim-idp-client-secret"
+          secret_alias: "companies/supplier/edc/dim-client-secret"
   controlplane:
     ingresses:
       - enabled: true
@@ -400,7 +400,7 @@ tractusx-connector:
         url: <path:puris/data/environment#bdrs-url> #todo
     # env:
     #   # workaround till 0.7.1 chart
-    #   EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: <path:traceability-foss/data/supplier/iatp#trustedIssuer> #todo
+    #   EDC_IAM_TRUSTED-ISSUER_ISSUER1_ID: <path:traceability-foss/data/companies/supplier/iatp#trustedIssuer> #todo
     endpoints:
       management:
         authKey: *edc_api_key

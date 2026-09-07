@@ -48,11 +48,6 @@ dataplane:
   # autoscaling:
   #  enabled: false
   # replicaCount: 0
-  token:
-    signer:
-      privatekey_alias: DATAPLANE_PROXY_PRIVATE_KEY
-    verifier:
-      publickey_alias: DATAPLANE_PROXY_PUBLIC_KEY
   resources:
     requests:
       cpu: "20m"

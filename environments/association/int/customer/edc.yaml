@@ -1,27 +1,27 @@
 
 participant:
   # TODO edc 0.13.x
-  # id: <path:puris/data/customer#did-url>
+  # id: <path:puris/data/companies/customer#did-url>
   # # -- BPN Number
-  # bpnl: <path:puris/data/customer#bpnl>
+  # bpnl: <path:puris/data/companies/customer#bpnl>
   # edc 0.12.x
-  id: <path:puris/data/customer#bpnl>
+  id: <path:puris/data/companies/customer#bpnl>
   # migration 0.11.x -> 0.12.x: add context id for multitenancy
-  contextId: <path:puris/data/customer#context-id>
+  contextId: <path:puris/data/companies/customer#context-id>
 
 controlplane:
 
   # -- endpoints of the control plane
   endpoints:
     management:
-      authKey: <path:puris/data/customer/edc#api-key>
+      authKey: <path:puris/data/companies/customer/edc#api-key>
 
   ## Ingress declaration to expose the network service.
   ingresses:
     ## Public / Internet facing Ingress
     - enabled: true
       # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-      hostname: <path:puris/data/customer/edc#hostname-internet>
+      hostname: <path:puris/data/companies/customer/edc#hostname-internet>
       # -- Additional ingress annotations to add
       annotations:
         # cert manager for ingress on CX int
@@ -41,7 +41,7 @@ controlplane:
     ## Public / Internet facing Ingress
     - enabled: true
       # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-      hostname: <path:puris/data/customer/edc#hostname-intranet>
+      hostname: <path:puris/data/companies/customer/edc#hostname-intranet>
       # -- EDC endpoints exposed by this ingress resource
       endpoints:
         - control
@@ -57,7 +57,7 @@ controlplane:
 # edc 0.12.x
 iatp:
   # Decentralized IDentifier
-  id: <path:puris/data/customer#did-url>
+  id: <path:puris/data/companies/customer#did-url>
   # -- Configures the trusted issuers for this runtime
   trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
     - <path:puris/data/environment#trusted-issuer-1>
@@ -69,12 +69,12 @@ iatp:
     dim:
       url: <path:puris/data/environment#dim-url>
     oauth:
-      token_url: <path:puris/data/customer#dim-idp-token-url>
+      token_url: <path:puris/data/companies/customer#dim-idp-token-url>
       client:
-        id: <path:puris/data/customer#dim-idp-client-id>
+        id: <path:puris/data/companies/customer#dim-idp-client-id>
         # not supported, see https://github.com/eclipse-edc/Connector/discussions/4135
-        # secret_alias: "puris/data/customer#dim-idp-client-secret"
-        secret_alias: "CUSTOMER_EDC/CLIENT_SECRET"
+        # secret_alias: "puris/data/companies/customer#dim-idp-client-secret"
+        secret_alias: "companies/customer/edc/dim-client-secret"
   # migration 0.11.x -> 0.12.x: cache verified credentials for a certain time to reduce load on the DIM
   cache:
     # -- Whether the Verifiable Presentation cache is enabled
@@ -86,12 +86,18 @@ iatp:
     selfRegistration:
       enabled: false
       # -- The URL of the BDRS to register the runtime's DID at
-      id: <path:puris/data/customer#did-url>
+      id: <path:puris/data/companies/customer#did-url>
 
 dataplane:
   endpoints:
     proxy:
-      authKey: <path:puris/data/customer/edc#api-key>
+      authKey: <path:puris/data/companies/customer/edc#api-key>
+
+  token:
+    signer:
+      privatekey_alias: <path:puris/data/companies/customer/edc/dataplane-proxy/private-key>
+    verifier:
+      publickey_alias: <path:puris/data/companies/customer/edc/dataplane-proxy/public-key>
 
   # "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
   # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
@@ -100,7 +106,7 @@ dataplane:
     ## Public / Internet facing Ingress
     - enabled: true
       # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-      hostname: <path:puris/data/customer/edc#hostname-internet>
+      hostname: <path:puris/data/companies/customer/edc#hostname-internet>
       # -- Additional ingress annotations to add
       annotations:
         # cert manager for ingress on CX int
@@ -122,30 +128,30 @@ postgresql:
   # image:
   #   repository: bitnamilegacy/postgresql
   #   tag: 16.2.0-debian-12-r10
-  jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:puris/data/customer/edc/postgres#database>"
+  jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:puris/data/companies/customer/edc/postgres#database>"
 
 
   # TODO edc 0.13.0 with cloudpirates and custom user
   # auth:
   #   database: "postgres"
   #   username: "postgres"
-  #   password: <path:puris/data/customer/edc/postgres#postgresPassword>
+  #   password: <path:puris/data/companies/customer/edc/postgres#postgresPassword>
   # customUser:
   #   # --  Name of the custom user to be created. If an existing secret is used, this value is overwritten into the existing secret.
   #   # @default -- edc
-  #   name: <path:puris/data/customer/edc/postgres#user>
+  #   name: <path:puris/data/companies/customer/edc/postgres#user>
   #   # -- Name for the custom database to be created and assigned to the custom user. If an existing secret is used, this value is overwritten into the existing secret.
   #   # @default -- edc
-  #   database: <path:puris/data/customer/edc/postgres#database>
+  #   database: <path:puris/data/companies/customer/edc/postgres#database>
   #   # -- Password to be used for the custom user. If an existing secret is used, this value is overwritten into the existing secret.
   #   # @default -- Autogenerated random alpha=numeric string with 16 characters (if empty).
-  #   password: <path:puris/data/customer/edc/postgres#password>
+  #   password: <path:puris/data/companies/customer/edc/postgres#password>
   # edc 0.12.x without cloudpirates and custom user
   auth:
-    database: <path:puris/data/customer/edc/postgres#database>
-    username: <path:puris/data/customer/edc/postgres#user>
-    password: <path:puris/data/customer/edc/postgres#password>
-    postgresPassword: <path:puris/data/customer/edc/postgres#postgresPassword>
+    database: <path:puris/data/companies/customer/edc/postgres#database>
+    username: <path:puris/data/companies/customer/edc/postgres#user>
+    password: <path:puris/data/companies/customer/edc/postgres#password>
+    postgresPassword: <path:puris/data/companies/customer/edc/postgres#postgresPassword>
 
 vault:
   hashicorp:
