@@ -1,0 +1,263 @@
+global:
+  domain:
+    backend:
+      ingress: &domain <path:puris/data/companies/ceres/puris#backend-hostname>
+    frontend:
+      ingress: &frontendDomain <path:puris/data/companies/ceres/puris#frontend-hostname>
+# FRONTEND -----------
+frontend:
+  # fullnameOverride: "customer-frontend"
+  image:
+    # tag: "main"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
+  ingress:
+    # -- Enable the Ingress
+    enabled: true
+    # -- Class name for the Ingress controller
+    className: "nginx"
+    # -- Annotations for the Ingress controller
+    annotations:
+      # cert manager for ingress on CX int
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # -- Hosts for the Ingress controller
+    hosts:
+      -   host: *frontendDomain
+          paths:
+            -   path: /
+                pathType: ImplementationSpecific
+    # -- TLS certificates for the Ingress controller
+    tls:
+      -   secretName: tls-secret-puris-customer-frontend
+          hosts:
+            - *frontendDomain
+  puris:
+    # -- The name of the app displayed in the frontend
+    appName: PURIS customer
+    # # -- The base URL for the backend base URL without further endpoints
+    baseUrl: *domain
+    # endpointPartner: partners
+  resources:
+    requests:
+      cpu: "5m"
+      memory: 128Mi
+    limits:
+      cpu: "200m"
+      memory: 128Mi
+
+# BACKEND -----------
+backend:
+  # fullnameOverride: "customer-backend"
+  image:
+    # tag: "main"
+    # pullPolicy: Always
+    pullPolicy: IfNotPresent
+  # -- Scale to 0 for scaledown
+  autoscaling:
+    enabled: false
+  replicaCount: 1
+  env:
+    LOGGING_LEVEL_ORG_ECLIPSE_TRACTUSX_PURIS_BACKEND: DEBUG
+  ingress:
+    # -- Enable the Ingress
+    enabled: true
+    # -- Annotations for the Ingress controller
+    annotations:
+      # cert manager for ingress on CX int
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      # -- Kubernetes Ingress class annotation for direct bindings
+      kubernetes.io/ingress.class: nginx
+      # -- Force redirects from HTTP to HTTPS
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      # -- Pass SSL traffic to the backend ports
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      # -- The backend protocol type (e.g. HTTP)
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    # -- Hosts for the Ingress controller
+    hosts:
+      -   host: *domain
+          paths:
+            -   path: /
+                pathType: ImplementationSpecific
+    # -- TLS certificates for the Ingress controller
+    tls:
+      -   secretName: tls-secret-puris-customer-backend
+          hosts:
+            - *domain
+  puris:
+    existingSecret: "customer-secret-backend-puris"
+    baseurl: *domain
+    allowedOrigins: 
+      - *frontendDomain
+#    baseurl: puris-backend-customer.int.catena-x.net/
+    api:
+      # -- The API key of the PURIS application
+      key: "<path:puris/data/companies/ceres/puris#backend-api-key>"
+    edc:
+      controlplane:
+        host: "https://<path:puris/data/companies/ceres/edc#hostname-internet>"
+        management:
+          # -- Url to the EDC controlplane management of the edc
+          url: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/management"
+        protocol:
+          # -- Url to the EDC controlplane protocol API of the edc
+          url: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/api/v1/dsp"
+        # -- Key for the EDC control plane
+        key: <path:puris/data/companies/ceres/edc#api-key>
+      dataplane:
+        public:
+          url: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/api/public"
+    own:
+      # -- Own BPNL of the EDC
+      bpnl: <path:puris/data/companies/ceres#bpnl>
+      # -- Own BPNS of the EDC
+      bpns: BPNS4444444444XX
+      site:
+        # -- Own site name
+        name: "Control Unit Creator Production Site"
+      # -- Own BPNA of the EDC
+      bpna: BPNA4444444444AA
+      # -- Own country
+      country: "USA"
+      # -- Own street and number
+      streetnumber: "13th Street 47"
+      # -- Own zipcode and city
+      zipcodeandcity: "10011 New York"
+      # -- Own name (self-description)
+      name: "Control Unit Creator Inc."
+    policyprofile:
+      # -- The default policy profile to use for policy definitions and contract definitions.
+      version: profile2509
+    jpa:
+      hibernate:
+        # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
+        ddl-auto: validate
+    dtr:
+      url: https://<path:puris/data/companies/ceres/dtr#hostname>/api/v3
+      edc:
+        asset:
+          # simulate DTR by other company
+          register: false
+      idp:
+        enabled: true
+        # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
+        # Mandatory if backend.puris.dtr.idp.enabled = true.
+        tokenurl:  https://<path:puris/data/companies/ceres/dtr/keycloak#hostname>/realms/<path:puris/data/companies/ceres/dtr/keycloak#realm>/protocol/openid-connect/token
+        clients:
+          edc:
+            # -- id of the client that has a service account with roles to view the DTR. Used by the application to create
+            # DTR asset in the edc with read only access. See Admin Guide. Mandatory if
+            # backend.puris.dtr.idp.enabled = true.
+            id: <path:puris/data/companies/ceres/dtr/keycloak#client-id>
+            secret:
+              # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
+              # backend.puris.dtr.idp.enabled = true.
+              #alias: "customer/dtr/keycloak/client-secret-edc"
+              alias: ""
+          puris:
+            # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
+            # create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true.
+            id: <path:puris/data/companies/ceres/dtr/keycloak#client-id>
+            # -- secret of the client with write access (no vault alias). No default value will be created if empty.
+            # Mandatory if backend.puris.dtr.idp.enabled = true.
+            secret: <path:puris/data/companies/ceres/dtr/keycloak#client-secret>
+    batch:
+      partnerdataupdate:
+        # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
+        enabled: true
+        # -- cron for spring @Scheduled batch, default daily at 9.00
+        cron: "0 0 9 * * *"
+        cleanup:
+          # -- toggle cleanup scheduler
+          enabled: true
+          # -- cron expression for cleanup (default: daily at 04:00)
+          cron: "0 0 4 * * *"
+          # -- number of days after which the old batch runs are removed
+          retentiondays: 30
+    frameworkagreement: ## data sovereingty
+      credential: DataExchangeGovernance
+      version: "1.0"
+    purpose:
+      name: "cx.puris.base"
+      version: "1"
+  resources:
+    requests:
+      cpu: "50m"
+      memory: 512Mi
+    limits:
+      cpu: "200m"
+      memory: 512Mi
+  livenessProbe:
+    # -- Number of failures (threshold) for a liveness probe
+    failureThreshold: 5
+    # -- Delay in seconds after which an initial liveness probe is checked
+    initialDelaySeconds: 180
+    # -- Wait time in seconds between liveness probes
+    periodSeconds: 10
+    # -- Number of trys until a pod is marked alive
+    successThreshold: 1
+    # -- Timeout in seconds of the liveness probe
+    timeoutSeconds: 1
+  # -- Checks if the pod is fully ready to operate
+  readinessProbe:
+    # -- Number of failures (threshold) for a readiness probe
+    failureThreshold: 5
+    # -- Delay in seconds after which an initial readiness probe is checked
+    initialDelaySeconds: 180
+    # -- Wait time in seconds between readiness probes
+    periodSeconds: 10
+    # -- Number of trys until a pod is marked ready
+    successThreshold: 1
+    # -- Timeout in seconds of the readiness probe
+    timeoutSeconds: 1
+
+postgresql:
+  # -- Enable postgres by default, set to false to use existing postgres. Make sure to set
+  # backend.puris.jpa.hibernate.ddl-auto accordingly (by default database is created using hibernate ddl from
+  # backend).
+  enabled: true
+  fullnameOverride: "customer-backend-postgresql"
+  service:
+    ports:
+      # -- Port of postgres database.
+      postgresql: 5432
+  primary:
+      persistence:
+        enabled: true
+        size: 2Gi
+      resources:
+        requests:
+          cpu: "5m"
+          memory: "128Mi"
+        limits:
+          cpu: "200m"
+          memory: "128Mi"     
+  # admin user
+  auth:
+    existingSecret: ""
+    # database: <path:puris/data/companies/ceres/puris/postgres#database>
+    username: postgres
+    password: <path:puris/data/companies/ceres/puris/postgres#postgres-password>
+    # passwordPostgres: <path:puris/data/companies/ceres/puris/postgres#postgres-password>
+  # custom user (non root)
+  customUser:
+    existingSecret: ""
+    name: <path:puris/data/companies/ceres/puris/postgres#username>
+    database: <path:puris/data/companies/ceres/puris/postgres#database>
+    password: <path:puris/data/companies/ceres/puris/postgres#password>
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+idp:
+  url: <path:puris/data/environment#central-idp-url>
+  # -- Name of the Realm of the keycloak instance.
+  realm: <path:puris/data/environment#central-idp-realm>
+  # -- Name of the client which is used for the application.
+  clientId: <path:puris/data/companies/ceres/puris/idp#client-id>
+  # -- URL to use as keycloak redirect url.
+  redirectUrlFrontend: ""
