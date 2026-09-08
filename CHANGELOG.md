@@ -34,7 +34,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Version Bumps
 
-- update frontend dependencies
+- update frontend dependencies ([#1212](https://github.com/eclipse-tractusx/puris/pull/1212))
   - bump browserslist from 4.28.1 to 4.28.9
   - bump caniuse-lite from 1.0.30001777 to 1.0.30001810
   - bump electron-to-chromium from 1.5.307 to 1.5.423
