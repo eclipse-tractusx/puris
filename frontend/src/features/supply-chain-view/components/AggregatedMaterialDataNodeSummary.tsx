@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { useMemo, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { AggregatedMaterialDataNode } from '@models/types/data/aggregated-material-data';
 import { usePartners } from '@features/stock-view/hooks/usePartners';
 import { createAnonymizedSummary } from '../util/anonymized-summary';
@@ -37,7 +37,6 @@ export function AggregatedMaterialDataNodeSummary({
     materialBySupplierNumber,
 }: AggregatedMaterialDataNodeSummaryProps) {
     const [isExpanded, setIsExpanded] = useState(false);
-    const hasAnonymizedData = node.productions.length > 0 || node.deliveries.length > 0 || node.stocks.length > 0;
     const anonymizedSummary = useMemo(
         () => createAnonymizedSummary(node.productions, node.deliveries, node.stocks),
         [node.productions, node.deliveries, node.stocks]
@@ -57,14 +56,7 @@ export function AggregatedMaterialDataNodeSummary({
                 onToggle={() => setIsExpanded((expanded) => !expanded)}
                 partner={partners?.[0]}
             />
-            {isExpanded &&
-                (hasAnonymizedData ? (
-                    <AnonymizedSummaryPanel summary={anonymizedSummary} />
-                ) : (
-                    <Typography variant="body3" color="text.secondary" padding="0.5rem 1rem">
-                        There was an error fetching the anonymized data for this material.
-                    </Typography>
-                ))}
+            {isExpanded && <AnonymizedSummaryPanel summary={anonymizedSummary} />}
             {isExpanded &&
                 node.childMaterialData.map((child) => (
                     <AggregatedMaterialDataNodeSummary
