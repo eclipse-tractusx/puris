@@ -34,7 +34,19 @@ The **need for configuration updates** is **marked bold**.
 
 ### Version Bumps
 
-- /
+- update frontend dependencies
+  - bump browserslist from 4.28.1 to 4.28.9
+  - bump caniuse-lite from 1.0.30001777 to 1.0.30001810
+  - bump electron-to-chromium from 1.5.307 to 1.5.423
+  - bump js-yaml from 4.2.0 to 4.3.2
+  - bump brace-expansion from 1.1.15 to 1.1.18 and from 2.1.1 to 2.1.4
+  - bump nanoid from 3.3.12 to 3.3.18
+  - bump node-releases from 2.0.36 to 2.0.54
+  - bump postcss from 8.5.15 to 8.5.28
+  - bump update-browserslist-db from 1.2.3 to 1.3.2
+  - bump websocket-driver from 0.7.4 to 0.7.5
+  - bump baseline-browser-mapping from 2.10.0 to 2.11.21
+  - remove unused yaml@2.9.0
 
 ### Known Knowns
 
