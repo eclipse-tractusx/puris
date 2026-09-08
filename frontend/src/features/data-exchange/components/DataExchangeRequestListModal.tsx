@@ -71,7 +71,6 @@ export const DataExchangeRequestListModal = ({
     const needsApproval = (request: DataExchangeRequest) => !isOutgoing && !request.dataExchangeApproval && demandCapacityNotification.status !== 'resolved';
 
     const handleRowClick = (request: DataExchangeRequest) => {
-        onClose();
         if (needsApproval(request)) {
             onCreateApprovalClicked(request);
         } else if (!request.dataExchangeApproval && isOutgoing) {

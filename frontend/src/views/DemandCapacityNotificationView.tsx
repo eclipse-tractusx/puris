@@ -49,7 +49,8 @@ export const DemandCapacityNotificationView = () => {
     const [selectedRequest, setSelectedRequest] = useState<DataExchangeRequest | null>(null);
     const [selectedApproval, setSelectedApproval] = useState<DataExchangeApproval | null>(null);
     const [filterPartners, setFilterPartners] = useState<Partner[] | null>(null);
-    const [requestListContext, setRequestListContext] = useState<{ notification: DemandCapacityNotification; requests: DataExchangeRequest[]; } | null>(null);
+    const [requestListNotification, setRequestListNotification] = useState<DemandCapacityNotification | null>(null);
+    const requestListRequests = requestListNotification ? dataExchangeRequests.filter((r) => r.notificationId === requestListNotification.notificationId) : [];
     const [forwardData, setForwardData] = useState<{
         relatedNotificationIds?: string[];
         sourceDisruptionId: string;
@@ -224,7 +225,7 @@ export const DemandCapacityNotificationView = () => {
                                 onViewApprovalClicked={openApproval}
                                 onCreateApprovalClicked={openCreateApproval}
                                 onCreateRequestClicked={openCreateRequest}
-                                onViewRequestListClicked={(notification, requests) => setRequestListContext({ notification, requests })}
+                                onViewRequestListClicked={(notification) => setRequestListNotification(notification)}
                             />
                         </Box>
                     ))
@@ -263,7 +264,7 @@ export const DemandCapacityNotificationView = () => {
                                 }}
                                 onViewRequestClicked={openRequest}
                                 onViewApprovalClicked={openApproval}
-                                onViewRequestListClicked={(notification, requests) => setRequestListContext({ notification, requests })}
+                                onViewRequestListClicked={(notification) => setRequestListNotification(notification)}
                             />
                         </Box>
                     ))
@@ -308,11 +309,11 @@ export const DemandCapacityNotificationView = () => {
                 />
             )}
             <DataExchangeRequestListModal
-                open={!!requestListContext}
-                demandCapacityNotification={requestListContext?.notification ?? null}
-                dataExchangeRequests={requestListContext?.requests ?? []}
+                open={!!requestListNotification}
+                demandCapacityNotification={requestListNotification}
+                dataExchangeRequests={requestListRequests}
                 partners={partners}
-                onClose={() => setRequestListContext(null)}
+                onClose={() => setRequestListNotification(null)}
                 onViewRequestClicked={openRequest}
                 onCreateApprovalClicked={openCreateApproval}
                 onViewApprovalClicked={openApproval}
