@@ -101,6 +101,7 @@ public class DtrRequestBodyBuilder {
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, hrefs.directionHref(), variablesService.getDaysOfSupplySubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedDirectionHref(), variablesService.getItemStockAnonymizedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDeliveryAnonymizedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDemandAnonymizedSubmodelApiAssetId()));
         log.debug("Created body for material {}\n{}", material.getOwnMaterialNumber(), body.toPrettyString());
         return body;
     }
@@ -150,6 +151,7 @@ public class DtrRequestBodyBuilder {
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedDirectionHref(), variablesService.getItemStockAnonymizedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDeliveryAnonymizedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getProductionAnonymizedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createSubmodelObject(AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDemandAnonymizedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createPartTypeLegacySubmodelObject(material.getOwnMaterialNumber()));
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));

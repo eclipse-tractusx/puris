@@ -242,6 +242,12 @@ public class EdcAdapterService {
             AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
+        log.info("Registration of Anonymized Demand Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getDemandAnonymizedSubmodelApiAssetId(),
+            variablesService.getDemandAnonymizedSubmodelEndpoint(),
+            AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
         log.info("Registration of Single Level Bom As Planned 3.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
             variablesService.getSingleLevelBomAsPlannedSubmodelEndpoint(),
@@ -861,6 +867,7 @@ public class EdcAdapterService {
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case DEMAND_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
@@ -1304,6 +1311,7 @@ public class EdcAdapterService {
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case DEMAND_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->  fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
