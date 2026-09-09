@@ -22,7 +22,7 @@ import { useFetch } from '@hooks/useFetch';
 import { config } from '@models/constants/config';
 import { Supply } from '@models/types/data/supply';
 import { BPNL, BPNS } from '@models/types/edc/bpn';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { incrementDate } from '@util/date-helpers';
 
 export function useReportedDaysOfSupply(materialNumber: string, direction: DirectionType, siteBpns?: BPNS, bpnl?: BPNL, numberOfDays = 28) {

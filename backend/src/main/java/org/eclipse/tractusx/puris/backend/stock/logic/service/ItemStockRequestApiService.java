@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
@@ -66,8 +65,6 @@ public class ItemStockRequestApiService {
     private ReportedProductItemStockService reportedProductItemStockService;
     @Autowired
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
-    @Autowired
-    private ErpAdapterTriggerService erpAdapterTriggerService;
     @Autowired
     private EdcAdapterService edcAdapterService;
     @Autowired
@@ -126,10 +123,6 @@ public class ItemStockRequestApiService {
                     return null;
                 }
 
-                if (notifyPartnerRequest) {
-                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
-                }
-
                 var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
                 return new ItemStockRequestData(partner, material, currentStocks, null);
             }
@@ -156,16 +149,6 @@ public class ItemStockRequestApiService {
                 }
 
                 Material material = mpr.getMaterial();
-
-                if (notifyPartnerRequest) {
-                    // request looks valid
-                    erpAdapterTriggerService.notifyPartnerRequest(
-                            bpnl,
-                            material.getOwnMaterialNumber(),
-                            AssetType.ITEM_STOCK_SUBMODEL,
-                            direction
-                    );
-                }
 
                 var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
                 return new ItemStockRequestData(partner, material, null, currentStocks);

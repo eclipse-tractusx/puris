@@ -201,8 +201,6 @@ frontend:
     endpointUpdateReportedMaterialStocks: stockView/update-reported-material-stocks?ownMaterialNumber=
     # -- The endpoint for triggering an update of your product stocks on your partners side
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
-    # -- The endpoint for scheduling an update of erp data (currently only stock supported)
-    endpointErpScheduleUpdate: erp-adapter/trigger
     # -- The endpoint for partner information
     endpointPartners: partners
     # -- The endpoint for the demand submodel
@@ -559,20 +557,6 @@ backend:
     # In a real-world-scenario, you must then use this randomly generated CatenaX-Id for the lifetime of that
     # Material entity.
     generatematerialcatenaxid: true
-    erpadapter:
-      # -- Toggles usage of the ERP adapter
-      enabled: false
-      # -- The url of your ERP adapter's request api. Must contain protocol (http/https).
-      url: https://my-erpadapter:8080
-      # -- The auth key to be used on your ERP adapter's request api
-      authkey: x-api-key
-      # -- The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret".
-      authsecret: ""
-      # -- Interval between two requests to the erp adapter for the same issue (minutes)
-      refreshinterval: 720
-      # -- Period since last received partner request after which no more new update requests to the
-      # erp adapter will be sent (days)
-      timelimit: 7
     batch:
       partnerdataupdate:
         # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
@@ -586,7 +570,6 @@ backend:
           cron: "0 0 4 * * *"
           # -- number of days after which the old batch runs are removed
           retentiondays: 30
-
 
   # -- Extra environment variables that will be passed onto the backend deployment pods
   env: {}

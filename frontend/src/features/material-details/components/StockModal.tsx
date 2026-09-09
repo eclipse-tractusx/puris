@@ -29,7 +29,7 @@ import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { useDataModal } from '@contexts/dataModalContext';
 import { getUnitOfMeasurement } from '@util/helpers';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { useSites } from '@features/stock-view/hooks/useSites';
 
 export type StockModalProps = {
