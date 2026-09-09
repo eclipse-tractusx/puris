@@ -34,7 +34,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Version Bumps
 
-- /
+- Bump `org.postgresql:postgresql` from `42.7.11` to `42.7.12` ([#1213](https://github.com/eclipse-tractusx/puris/pull/1213))
 
 ### Known Knowns
 
