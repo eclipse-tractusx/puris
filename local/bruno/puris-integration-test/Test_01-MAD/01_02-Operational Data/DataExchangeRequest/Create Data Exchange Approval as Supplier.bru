@@ -15,11 +15,17 @@ headers {
   X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
+
+script:pre-request {
+  const now = new Date();
+  bru.setVar("timestamp", now.toISOString());
+}
+
 body:json {
   {
     "approvalId": "54b1b097-d73c-4d50-83ca-f386d98c4100",
     "isFinalized": true,
-    "timestamp": "2026-12-17T08:00:00+01:00",
+    "timestamp": "{{timestamp}}",
     "approvedTypes": [
       "n-tier"
     ],

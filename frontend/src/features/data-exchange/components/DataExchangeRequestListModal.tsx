@@ -149,6 +149,7 @@ export const DataExchangeRequestListModal = ({
                         rows={rows}
                         getRowId={(row) => row.uuid ?? row.requestId}
                         getRowHeight={() => "auto"}
+                        rowSelection={false}
                     />
                 </Box>
 

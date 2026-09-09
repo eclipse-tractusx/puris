@@ -15,6 +15,14 @@ headers {
   X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
+script:pre-request {
+  const startDateOfEffect = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 1 day ago
+  const expectedEndDateOfEffect = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days in the future
+
+  bru.setVar("startDateOfEffect", startDateOfEffect.toISOString());
+  bru.setVar("expectedEndDateOfEffect", expectedEndDateOfEffect.toISOString());
+}
+
 body:json {
   {
     "notificationId": "be63823a-39ae-4f4d-9962-6941376267c3",
@@ -24,9 +32,9 @@ body:json {
     "effect": "capacity-reduction",
     "leadingRootCause": "strike",
     "status": "open",
-    "contentChangedAt": "2026-12-13T15:00:00+01:00",
-    "startDateOfEffect": "2026-12-13T15:00:00+01:00",
-    "expectedEndDateOfEffect": "2027-12-17T08:00:00+01:00",
+    "contentChangedAt": "{{startDateOfEffect}}",
+    "startDateOfEffect": "{{startDateOfEffect}}",
+    "expectedEndDateOfEffect": "{{expectedEndDateOfEffect}}",
     "affectedSitesBpnsSender": [],
     "affectedSitesBpnsRecipient": [],
     "affectedMaterialNumbers": [],

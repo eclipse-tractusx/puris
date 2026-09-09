@@ -15,12 +15,20 @@ headers {
   X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
 }
 
+script:pre-request {
+  const desiredStartDateTime = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 1 day ago
+  const desiredEndDateTime = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days in the future
+
+  bru.setVar("desiredStartDateTime", desiredStartDateTime.toISOString());
+  bru.setVar("desiredEndDateTime", desiredEndDateTime.toISOString());
+}
+
 body:json {
   {
     "requestId": "6ede86dc-7e16-4d46-8c41-c40bc26b28fe",
     "criticality": "high",
-    "desiredStartDateTime": "2026-12-13T15:00:00+01:00",
-    "desiredEndDateTime": "2027-12-17T08:00:00+01:00",
+    "desiredStartDateTime": "{{desiredStartDateTime}}",
+    "desiredEndDateTime": "{{desiredEndDateTime}}",
     "requestedTypes": [
       "n-tier"
     ],
