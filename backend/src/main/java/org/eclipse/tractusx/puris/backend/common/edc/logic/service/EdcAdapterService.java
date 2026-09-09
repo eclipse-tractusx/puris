@@ -19,6 +19,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.eclipse.tractusx.puris.backend.common.edc.logic.service;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,17 +38,14 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 /**
  * Service Layer of EDC Adapter. Builds and sends requests to a productEDC.
@@ -69,11 +69,6 @@ public class EdcAdapterService {
     private JsonLdUtils jsonLdUtils;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
-
-    @Autowired
-    public EdcAdapterService(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public EdcAdapterService(
         ObjectMapper objectMapper,
@@ -224,6 +219,10 @@ public class EdcAdapterService {
             variablesService.getDaysOfSupplySubmodelEndpoint(),
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
+        log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
+            variablesService.getDataExchangeRequestApiAssetId(),
+            variablesService.getDataExchangeRequestEndpoint()
+        )));
         result &= assetRegistration;
         log.info("Registration of Anonymized Item Stock Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getItemStockAnonymizedSubmodelApiAssetId(),
@@ -249,13 +248,22 @@ public class EdcAdapterService {
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
+        log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getPartTypeLegacySubmodelApiAssetId(),
+            variablesService.getParttypeInformationLegacyServerendpoint(),
+            AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
+        log.info("Registration of PartTypeInformation 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getPartTypeSubmodelApiAssetId(),
+            variablesService.getParttypeInformationServerendpoint(),
+            AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID
+        )));
         result &= assetRegistration;
         log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
         return result;
     }
-
 
     /**
      * Utility method to register policy- and contract-definitions for both the
@@ -275,8 +283,10 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
-        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
+        createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner);
+        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeLegacySubmodelApiAssetId(), partner) && result;
     }
 
     /**
@@ -412,15 +422,9 @@ public class EdcAdapterService {
         }
     }
 
-
     private boolean registerDtrAsset() {
         var body = edcRequestBodyBuilder.buildDtrRegistrationBody();
         return sendAssetRegistrationRequest(body, "DTR");
-    }
-
-    private boolean registerPartTypeInfoSubmodelAsset() {
-        var body = edcRequestBodyBuilder.buildPartTypeInfoSubmodelRegistrationBody();
-        return sendAssetRegistrationRequest(body, variablesService.getPartTypeSubmodelApiAssetId());
     }
 
     private boolean registerSubmodelAsset(String assetId, String endpoint, String semanticId) {
@@ -430,6 +434,11 @@ public class EdcAdapterService {
 
     private boolean registerNotificationAsset(String assetId, String endpoint) {
         var body = edcRequestBodyBuilder.buildNotificationRegistrationBody(assetId, endpoint);
+        return sendAssetRegistrationRequest(body, assetId);
+    }
+
+    private boolean registerDataExchangeRequestAsset(String assetId, String endpoint) {
+        var body = edcRequestBodyBuilder.buildDataExchangeRequestRegistrationBody(assetId, endpoint);
         return sendAssetRegistrationRequest(body, assetId);
     }
 
@@ -752,46 +761,71 @@ public class EdcAdapterService {
         }
     }
 
-    private JsonNode postNotificationToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
+    private JsonNode postAssetToPartner(Partner partner, AssetType type, JsonNode payload, int retries) {
         if (retries < 0) {
             return null;
         }
+
         boolean failed = true;
         String partnerDspUrl = partner.getEdcUrl();
-        var assetId = switch (type) {
+
+        String assetId = switch (type) {
             case NOTIFICATION -> variablesService.getNotificationApiAssetId();
+            case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestApiAssetId();
             default -> throw new IllegalArgumentException("Unsupported type " + type);
         };
+
         try {
             String contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
+
             if (contractId == null) {
-                log.info("Need Contract for " + type + " with " + partner.getBpnl());
-                if (negotiateContractForNotification(partner, type)) {
+                log.info("Need Contract for {} with {}", type, partner.getBpnl());
+
+                boolean negotiated = switch (type) {
+                    case NOTIFICATION -> negotiateContractForNotification(partner, type);
+                    case DATA_EXCHANGE_REQUEST -> negotiateContractForDataExchangeRequest(partner, type);
+                    default -> throw new IllegalArgumentException("Unsupported type " + type);
+                };
+
+                if (negotiated) {
                     contractId = edcContractMappingService.getContractId(partner, type, assetId, partnerDspUrl);
                 } else {
-                    log.error("Failed to contract for " + type + " with " + partner.getBpnl());
-                    return postNotificationToPartner(partner, type, payload, --retries);
+                    log.error("Failed to contract for {} with {}", type, partner.getBpnl());
+                    return postAssetToPartner(partner, type, payload, retries - 1);
                 }
             }
-            // Request EdrToken
+
             var transferResp = initiateProxyPullTransfer(partner, contractId, partnerDspUrl);
             log.debug("Transfer Request {}", transferResp.toPrettyString());
             String transferId = transferResp.get("@id").asText();
-            // try proxy pull and terminate request
+
             try {
                 EdrDto edrDto = getAndAwaitEdrDto(transferId);
-                log.info("Received EDR data for " + assetId + " with " + partner.getEdcUrl());
+                log.info("Received EDR data for {} with {}", assetId, partner.getEdcUrl());
+
                 if (edrDto == null) {
-                    log.error("Failed to obtain EDR data for " + assetId + " with " + partner.getEdcUrl());
-                    return doNotificationPostRequest(type, partner, payload, --retries);
+                    log.error("Failed to obtain EDR data for {} with {}", assetId, partner.getEdcUrl());
+
+                    return postAssetToPartner(partner, type, payload, retries - 1);
                 }
-                try (var response = postProxyPullRequest(edrDto.endpoint(), edrDto.authKey(), edrDto.authCode(), new ObjectMapper().writeValueAsString(payload))) {
+
+                try (var response = postProxyPullRequest(
+                    edrDto.endpoint(),
+                    edrDto.authKey(),
+                    edrDto.authCode(),
+                    objectMapper.writeValueAsString(payload)
+                )) {
                     if (response.isSuccessful()) {
                         String responseString = response.body().string();
                         failed = false;
                         return objectMapper.readTree(responseString);
                     }
-                    log.info("Failed to post Notification to Partner.");
+
+                    switch (type) {
+                        case NOTIFICATION -> log.error("Failed to post Notification to Partner.");
+                        case DATA_EXCHANGE_REQUEST -> log.error("Failed to post Data Exchange Request to Partner.");
+                        default -> throw new IllegalArgumentException("Unsupported type " + type);
+                    }
                 }
             } finally {
                 if (transferId != null) {
@@ -799,17 +833,18 @@ public class EdcAdapterService {
                 }
             }
         } catch (Exception e) {
-            log.error("Error in Transfer Request for " + type + " at " + partner.getBpnl(), e);
+            log.error("Error in Transfer Request for {} at {}", type, partner.getBpnl(), e);
         } finally {
             if (failed) {
-                log.warn("Invalidating Contract data for " + type + " with " + partner.getBpnl());
+                log.warn("Invalidating Contract data for {} with {}", type, partner.getBpnl());
                 edcContractMappingService.putContractId(partner, type, assetId, partnerDspUrl, null);
             }
         }
-        return postNotificationToPartner(partner, type, payload, --retries);
+
+        return postAssetToPartner(partner, type, payload, retries - 1);
     }
 
-    private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction, int retries) {
+    private JsonNode getSubmodelFromPartner(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction, int retries) {
         if (retries < 0) {
             return null;
         }
@@ -822,11 +857,13 @@ public class EdcAdapterService {
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
             case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
+            case DATA_EXCHANGE_REQUEST -> throw new IllegalArgumentException("DataExchangeRequest not supported");
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+            case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
         };
         boolean failed = true;
         try {
@@ -914,7 +951,7 @@ public class EdcAdapterService {
         return edrDto;
     }
 
-    public JsonNode doSubmodelRequest(AssetType type, MaterialPartnerRelation mpr, DirectionCharacteristic direction, int retries) {
+    public JsonNode doSubmodelRequest(AssetType type, MaterialPartnerRelation mpr, DirectionEnum direction, int retries) {
         if (retries < 0) {
             return null;
         }
@@ -925,15 +962,16 @@ public class EdcAdapterService {
         return data;
     }
 
-    public JsonNode doNotificationPostRequest(AssetType type, Partner partner, JsonNode body, int retries) {
-        if (retries < 0) {
-            return null;
-        }
-        var data = postNotificationToPartner(partner, type, body, retries);
-        if (data == null) {
-            return doNotificationPostRequest(type, partner, body, --retries);
-        }
-        return data;
+    public JsonNode doNotificationPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.NOTIFICATION, body, 2);
+    }
+
+    public JsonNode doDataExchangeRequestPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
+    }
+
+    public JsonNode doDataExchangeApprovalPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
     }
 
     private boolean negotiateForPartnerDtr(Partner partner) {
@@ -1001,7 +1039,7 @@ public class EdcAdapterService {
         }
     }
 
-    private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionCharacteristic direction) {
+    private SubmodelData fetchSubmodelDataByDirection(MaterialPartnerRelation mpr, String semanticId, DirectionEnum direction) {
         String manufacturerPartId = switch (direction) {
             case INBOUND -> mpr.getMaterial().getOwnMaterialNumber();
             case OUTBOUND -> mpr.getPartnerMaterialNumber();
@@ -1011,11 +1049,6 @@ public class EdcAdapterService {
             case OUTBOUND -> mpr.getPartner().getBpnl();
         };
         return fetchSubmodelData(mpr, semanticId, manufacturerPartId, manufacturerId);
-    }
-
-    private SubmodelData fetchPartTypeSubmodelData(MaterialPartnerRelation mpr) {
-        return fetchSubmodelData(mpr, "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation",
-            mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
     }
 
     private record SubmodelData(String assetId, String dspUrl, String href) {
@@ -1257,7 +1290,7 @@ public class EdcAdapterService {
      * @return true, if a contract was successfully negotiated
      */
 
-    private boolean negotiateContractForSubmodel(MaterialPartnerRelation mpr, AssetType type, DirectionCharacteristic direction) {
+    private boolean negotiateContractForSubmodel(MaterialPartnerRelation mpr, AssetType type, DirectionEnum direction) {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
@@ -1267,10 +1300,12 @@ public class EdcAdapterService {
             case DELIVERY_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, direction);
             case NOTIFICATION -> throw new IllegalArgumentException("DemandAndCapacityNotification not supported");
             case DAYS_OF_SUPPLY -> fetchSubmodelDataByDirection(mpr, AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, direction);
+            case DATA_EXCHANGE_REQUEST -> throw new IllegalArgumentException("DataExchangeRequest not supported");
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->  fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+            case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
@@ -1294,6 +1329,16 @@ public class EdcAdapterService {
         return negotiateContract(partner, variablesService.getNotificationApiAssetId(), type, partner.getEdcUrl(), equalFilters);
     }
 
+    public boolean negotiateContractForDataExchangeRequest(Partner partner, AssetType type) {
+        Map<String, String> equalFilters = new HashMap<>();
+        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "1.0");
+        equalFilters.put(
+            "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
+            JsonLdConstants.CX_TAXO_NAMESPACE + "DataExchangeRequestApi"
+        );
+        return negotiateContract(partner, variablesService.getDataExchangeRequestApiAssetId(), type, partner.getEdcUrl(), equalFilters);
+    }
+
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {
         try {
             DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), dspUrl);
@@ -1306,6 +1351,7 @@ public class EdcAdapterService {
             }
 
             var catalogArray = responseNode.get(JsonLdConstants.DCAT_NAMESPACE + "dataset");
+
             // If there is exactly one asset, the catalogContent will be a JSON object.
             // In all other cases catalogContent will be a JSON array.
             // For the sake of uniformity we will embed a single object in an array.
@@ -1368,18 +1414,42 @@ public class EdcAdapterService {
     }
 
     /**
-     * This method will return the partnerCXId from the supplier partner and
-     * for the material that are contained in the given MaterialPartnerRelation.
+     * Returns the partner's CatenaX-Id for the material in the given MaterialPartnerRelation.
      * <p>
-     * If the partner is not a supplier for that material, we can't expect to find a
-     * result a that partner's PartType Submodel API.
+     * PartTypeInformation 2.0.0 is attempted first, since it is the version used by default.
+     * Only if the partner does not offer it, the legacy version 1.0.0 is used as a fallback.
      *
      * @param mpr the MaterialPartnerRelation
-     * @return the partner's CXid for that material
+     * @return the partner's CX Id for that material, or null if it could not be obtained
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
-        var data = getSubmodelFromPartner(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL, null, 1);
-        return data.get("catenaXId").asText();
+        String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL);
+        if (cxId != null) return cxId;
+        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0", mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
+        cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
+        if (cxId == null) {
+            log.error("Could not obtain partner CX id for {} from {} via either PartTypeInformation version", mpr.getMaterial().getOwnMaterialNumber(), mpr.getPartner().getBpnl());
+        }
+        return cxId;
+    }
+
+    private String fetchCxId(MaterialPartnerRelation mpr, AssetType type) {
+        String cxIdProperty = switch (type) {
+            case PART_TYPE_INFORMATION_SUBMODEL -> "globalAssetId";
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> "catenaXId";
+            default -> throw new IllegalArgumentException("Unsupported type for PartTypeInformation: " + type);
+        };
+        try {
+            var data = getSubmodelFromPartner(mpr, type, null, 1);
+            if (data == null) {
+                return null;
+            }
+            var cxIdNode = data.get(cxIdProperty);
+            return cxIdNode == null ? null : cxIdNode.asText();
+        } catch (Exception e) {
+            log.warn("Could not obtain {} for {} from partner {}", cxIdProperty, type, mpr.getPartner().getBpnl());
+            return null;
+        }
     }
 
     /**

@@ -33,7 +33,7 @@ import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequest
 import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshResult;
 import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.DaysOfSupplyRequestApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +97,7 @@ public class MaterialRefreshService {
                             () -> daysOfSupplyRequestApiService
                                     .doReportedDaysOfSupplyRequest(customer,
                                             material,
-                                            DirectionCharacteristic.INBOUND),
+                                            DirectionEnum.INBOUND),
                             executorService));
         });
         // suppliers
@@ -117,7 +117,7 @@ public class MaterialRefreshService {
                             () -> daysOfSupplyRequestApiService
                                     .doReportedDaysOfSupplyRequest(supplier,
                                             material,
-                                            DirectionCharacteristic.OUTBOUND),
+                                            DirectionEnum.OUTBOUND),
                             executorService));
         });
         // deliveries

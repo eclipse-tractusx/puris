@@ -1,0 +1,56 @@
+meta {
+  name: Create Notification
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{SUPPLIER_PURIS_BACKEND}}/catena/demand-and-capacity-notification
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
+}
+
+script:pre-request {
+  const now = new Date();
+
+  const contentChangedAt = now;
+  const startDateOfEffect = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 1 day in the past
+  const expectedEndDateOfEffect = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days in the future
+
+  bru.setVar("contentChangedAt", contentChangedAt.toISOString());
+  bru.setVar("startDateOfEffect", startDateOfEffect.toISOString());
+  bru.setVar("expectedEndDateOfEffect", expectedEndDateOfEffect.toISOString());
+
+  bru.setVar("notificationStartDateOfEffect", startDateOfEffect.toISOString());
+  bru.setVar("notificationExpectedEndDateOfEffect", expectedEndDateOfEffect.toISOString());
+}
+
+body:json {
+  {
+    "notificationId": "be63823a-39ae-4f4d-9962-6941376267c3",
+    "partnerBpnl": "{{CUSTOMER_BPNL}}",
+    "sourceDisruptionId": "c9274399-cd3a-48c1-923c-c9b4eec2aa7b",
+    "text": "Capacity reduction due to ongoing strike.",
+    "effect": "capacity-reduction",
+    "leadingRootCause": "strike",
+    "status": "open",
+    "contentChangedAt": "{{startDateOfEffect}}",
+    "startDateOfEffect": "{{startDateOfEffect}}",
+    "expectedEndDateOfEffect": "{{expectedEndDateOfEffect}}",
+    "affectedSitesBpnsSender": [],
+    "affectedSitesBpnsRecipient": [],
+    "affectedMaterialNumbers": [],
+    "relatedNotificationIds": []
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  })
+}

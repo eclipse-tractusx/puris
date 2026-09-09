@@ -37,7 +37,6 @@ import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionReq
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
 import org.eclipse.tractusx.puris.backend.demand.logic.services.DemandRequestApiService;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.DaysOfSupplyRequestApiService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.logic.service.PartnerDataUpdateBatchService;
 import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,7 +148,7 @@ public class PartnerDataUpdateBatchProcessServiceImpl implements PartnerDataUpda
     
                     // Days of Supply
                     try {
-                        RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionCharacteristic.OUTBOUND);
+                        RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionEnum.OUTBOUND);
                         String errMsg = extractErrorMessage(res);
                         boolean err = errMsg != null;
                         addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
@@ -200,7 +199,7 @@ public class PartnerDataUpdateBatchProcessServiceImpl implements PartnerDataUpda
     
                     // Days of Supply
                     try {
-                        RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionCharacteristic.INBOUND);
+                        RefreshResult res = daysOfSupplyService.doReportedDaysOfSupplyRequest(partner, material, DirectionEnum.INBOUND);
                         String errMsg = extractErrorMessage(res);
                         boolean err = errMsg != null;
                         addEntry(material, partner, dirEnum, InformationEnum.DAYS_OF_SUPPLY, err ? BatchRunEntryStatusEnum.ERROR : BatchRunEntryStatusEnum.SUCCESS, errMsg);
