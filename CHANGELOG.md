@@ -20,6 +20,7 @@ The **need for configuration updates** is **marked bold**.
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
   - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
+  - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
 - Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
 
 ### Changed
@@ -47,6 +48,7 @@ The **need for configuration updates** is **marked bold**.
   - bump websocket-driver from 0.7.4 to 0.7.5
   - bump baseline-browser-mapping from 2.10.0 to 2.11.21
   - remove unused yaml@2.9.0
+- bump `org.postgresql:postgresql` from `42.7.11` to `42.7.12` ([#1213](https://github.com/eclipse-tractusx/puris/pull/1213))
 
 ### Known Knowns
 

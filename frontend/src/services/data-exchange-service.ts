@@ -37,7 +37,7 @@ export const getDataExchangeRequest = async (isIncoming: boolean) => {
     }
     return res.json();
 }
-
+ 
 export const postDataExchangeRequest = async (request: Partial<DataExchangeRequest>) => {
     const res = await fetch(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_DATA_EXCHANGE_REQUEST, {
         method: 'POST',
@@ -53,7 +53,7 @@ export const postDataExchangeRequest = async (request: Partial<DataExchangeReque
     }
     return res.json();
 }
-
+ 
 export const getDataExchangeApproval = async (isIncoming: boolean) => {
     const endpoint = isIncoming ? `${config.app.ENDPOINT_DATA_EXCHANGE_APPROVAL}/reported` : `${config.app.ENDPOINT_DATA_EXCHANGE_APPROVAL}`;
     const res = await fetch(`${config.app.BACKEND_BASE_URL}${endpoint}`, {
@@ -69,9 +69,10 @@ export const getDataExchangeApproval = async (isIncoming: boolean) => {
     }
     return res.json();
 }
-
-export const postDataExchangeApproval = async (id: string, approval: Partial<DataExchangeApproval>) => {
-    const res = await fetch(config.app.BACKEND_BASE_URL + `${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/reported/${id}/approvals`, {
+ 
+export const postDataExchangeApproval = async (id: string, approval: Partial<DataExchangeApproval>, forward: boolean = false) => {
+    const params = new URLSearchParams({ forward: String(forward) });
+    const res = await fetch(`${config.app.BACKEND_BASE_URL}${config.app.ENDPOINT_DATA_EXCHANGE_REQUEST}/reported/${id}/approvals?${params.toString()}`, {
         method: 'POST',
         body: JSON.stringify(approval),
         headers: {
