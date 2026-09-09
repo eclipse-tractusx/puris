@@ -21,6 +21,7 @@ The **need for configuration updates** is **marked bold**.
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
   - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
   - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+  - Updated user guide with data exchange forwarding feature ([#1214](https://github.com/eclipse-tractusx/puris/pull/1214))
 - Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
 
 ### Changed
