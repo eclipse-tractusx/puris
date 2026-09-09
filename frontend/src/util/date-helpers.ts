@@ -56,3 +56,6 @@ export function incrementDate(date: Date, days: number) {
   newDate.setDate(newDate.getDate() + days);
   return newDate;
 }
+
+export const maxDate = (a: Date, b: Date) => (a < b ? b : a);
+export const minDate = (a: Date, b: Date) => (a < b ? a : b);
