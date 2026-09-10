@@ -111,12 +111,12 @@ backend:
       # -- Own BPNL of the EDC
       bpnl: <path:puris/data/companies/bristol#bpnl>
       # -- Own BPNS of the EDC
-      bpns: BPNS4444444444XX
+      bpns: <path:puris/data/companies/bristol#bpns>
       site:
         # -- Own site name
         name: "Control Unit Creator Production Site"
       # -- Own BPNA of the EDC
-      bpna: BPNA4444444444AA
+      bpna: <path:puris/data/companies/bristol#bpna>
       # -- Own country
       country: "USA"
       # -- Own street and number

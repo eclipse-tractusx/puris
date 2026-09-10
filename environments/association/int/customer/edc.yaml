@@ -95,7 +95,7 @@ dataplane:
 
   token:
     signer:
-      privatekey_alias: companies/supplier/edc/dataplane-proxy/private-key
+      privatekey_alias: companies/customer/edc/dataplane-proxy/private-key
     verifier:
       publickey_alias: companies/customer/edc/dataplane-proxy/public-key
 
