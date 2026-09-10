@@ -16,14 +16,26 @@ headers {
   edc-bpn: BPNL8888888888YY
 }
 
+script:pre-request {
+  const now = new Date();
+
+  const sentDateTime = new Date();
+  const startDateOfEffect = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 1 day ago
+  const expectedEndDateOfEffect = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days in the future
+
+  bru.setVar("sentDateTime", sentDateTime.toISOString());
+  bru.setVar("startDateOfEffect", startDateOfEffect.toISOString());
+  bru.setVar("expectedEndDateOfEffect", expectedEndDateOfEffect.toISOString());
+}
+
 body:json {
     {
         "header": {
             "messageId": "3b4edc05-e214-47a1-b0c2-1d831cdd9ba9",
-            "context": "CX-DemandAndCapacityNotificationAPI-Receive:2.0",
+            "context": "CX-DemandAndCapacityNotificationAPI-Receive:2.0.0",
             "receiverBpn": "{{SUPPLIER_BPNL}}",
             "senderBpn": "{{NOTIFICATION_SOURCE_PARTNER_BPNL}}",
-            "sentDateTime": "2023-06-19T21:24:00+07:00",
+            "sentDateTime": "{{sentDateTime}}",
             "version": "3.0.0"
         },
         "content": {
@@ -34,9 +46,9 @@ body:json {
                 "effect": "capacity-reduction",
                 "leadingRootCause": "strike",
                 "status": "open",
-                "contentChangedAt": "2023-12-13T15:00:00+01:00",
-                "startDateOfEffect": "2023-12-13T15:00:00+01:00",
-                "expectedEndDateOfEffect": "2025-12-17T08:00:00+01:00",
+                "contentChangedAt": "{{startDateOfEffect}}",
+                "startDateOfEffect": "{{startDateOfEffect}}",
+                "expectedEndDateOfEffect": "{{expectedEndDateOfEffect}}",
                 "affectedSitesSender": [],
                 "affectedSitesRecipient": [],
                 "materialsAffected": [],

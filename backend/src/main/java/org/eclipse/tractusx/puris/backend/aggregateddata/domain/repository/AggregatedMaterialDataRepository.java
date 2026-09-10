@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
@@ -26,5 +27,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AggregatedMaterialDataRepository extends JpaRepository<AggregatedMaterialData, UUID> {
-    
+    List<AggregatedMaterialData> findAllByMaterial_OwnMaterialNumber(String ownMaterialNumber);
+
 }

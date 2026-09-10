@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2023 Volkswagen AG
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,12 +16,26 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
+package org.eclipse.tractusx.puris.backend.irs.domain.model;
 
 /**
- * Generated class {@link DirectionCharacteristic}.
+ * Represents whether the locally persisted state of an {@link IrsChainOpeningGrant}
+ * has been successfully reflected at the IRS.
  */
+public enum IrsGrantSyncStatusEnumeration {
+    NOT_SYNCED("NOT_SYNCED"),
+    PENDING("PENDING"),
+    SYNCED("SYNCED"),
+    DELETED("DELETED"),
+    OUT_OF_SYNC("OUT_OF_SYNC");
 
-public enum DirectionCharacteristic {
-	INBOUND, OUTBOUND;
+    private final String value;
+
+    IrsGrantSyncStatusEnumeration(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

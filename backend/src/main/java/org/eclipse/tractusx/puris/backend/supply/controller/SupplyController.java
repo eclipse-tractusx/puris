@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.PartnerDto;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.Supply;
 import org.eclipse.tractusx.puris.backend.supply.logic.dto.SupplyDto;
 import org.eclipse.tractusx.puris.backend.supply.logic.service.CustomerSupplyService;
@@ -107,7 +107,7 @@ public class SupplyController {
         List<Partner> allCustomerPartnerEntities = mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber);
         for (Partner customerPartner : allCustomerPartnerEntities) {
             executorService.submit(() ->
-                daysOfSupplyRequestApiService.doReportedDaysOfSupplyRequest(customerPartner, materialEntity, DirectionCharacteristic.INBOUND));
+                daysOfSupplyRequestApiService.doReportedDaysOfSupplyRequest(customerPartner, materialEntity, DirectionEnum.INBOUND));
         }
         return ResponseEntity.ok(allCustomerPartnerEntities.stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).toList());
     }
@@ -147,7 +147,7 @@ public class SupplyController {
         List<Partner> allSupplierPartnerEntities = mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber);
         for (Partner supplierPartner : allSupplierPartnerEntities) {
             executorService.submit(() ->
-                daysOfSupplyRequestApiService.doReportedDaysOfSupplyRequest(supplierPartner, materialEntity, DirectionCharacteristic.OUTBOUND));
+                daysOfSupplyRequestApiService.doReportedDaysOfSupplyRequest(supplierPartner, materialEntity, DirectionEnum.OUTBOUND));
         }
         return ResponseEntity.ok(allSupplierPartnerEntities.stream().map(partner -> modelMapper.map(partner, PartnerDto.class)).toList());
     }

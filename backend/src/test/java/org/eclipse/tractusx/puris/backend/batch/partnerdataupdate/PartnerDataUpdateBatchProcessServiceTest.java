@@ -28,7 +28,7 @@ import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.model.P
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.repository.PartnerDataUpdateBatchRunEntryRepository;
 import org.eclipse.tractusx.puris.backend.batch.partnerdataupdate.domain.repository.PartnerDataUpdateBatchRunRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ItemStockRequestApiService;
 import org.eclipse.tractusx.puris.backend.production.logic.service.ProductionRequestApiService;
 import org.eclipse.tractusx.puris.backend.delivery.logic.service.DeliveryRequestApiService;
@@ -143,8 +143,8 @@ class PartnerDataUpdateBatchProcessServiceTest {
         // then
         verify(itemStockService, times(1)).doItemStockSubmodelReportedMaterialItemStockRequest(eq(supplier), eq(material));
         verify(itemStockService, times(1)).doItemStockSubmodelReportedProductItemStockRequest(eq(customer), eq(material));
-        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(customer), eq(material), eq(DirectionCharacteristic.INBOUND));
-        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(supplier), eq(material), eq(DirectionCharacteristic.OUTBOUND));
+        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(customer), eq(material), eq(DirectionEnum.INBOUND));
+        verify(daysOfSupplyService, times(1)).doReportedDaysOfSupplyRequest(eq(supplier), eq(material), eq(DirectionEnum.OUTBOUND));
         verify(productionService, times(1)).doReportedProductionRequest(eq(supplier), eq(material));
         verify(demandService, times(1)).doReportedDemandRequest(eq(customer), eq(material));
         verify(deliveryService, times(1)).doReportedDeliveryRequest(eq(supplier), eq(material));

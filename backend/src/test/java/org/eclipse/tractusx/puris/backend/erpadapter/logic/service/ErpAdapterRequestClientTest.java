@@ -28,7 +28,7 @@ import org.assertj.core.api.Assertions;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.erpadapter.ErpAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.erpadapter.domain.model.ErpAdapterRequest;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,7 +93,7 @@ public class ErpAdapterRequestClientTest {
             .requestDate(new Date())
             .partnerBpnl(supplierPartnerBpnl)
             .id(uuid)
-            .directionCharacteristic(DirectionCharacteristic.INBOUND)
+            .directionEnum(DirectionEnum.INBOUND)
             .ownMaterialNumber(matNbrCustomer)
             .requestType(requestType)
             .sammVersion(sammVersion)
@@ -128,7 +128,7 @@ public class ErpAdapterRequestClientTest {
         try (InputStream stream = request.getBody().inputStream()) {
             JsonNode requestBodyNode = objectMapper.readTree(new String(stream.readAllBytes()));
             Assertions.assertThat(requestBodyNode.get("material").asText()).isEqualTo(matNbrCustomer);
-            Assertions.assertThat(requestBodyNode.get("direction").asText()).isEqualTo(DirectionCharacteristic.INBOUND.toString());
+            Assertions.assertThat(requestBodyNode.get("direction").asText()).isEqualTo(DirectionEnum.INBOUND.toString());
             Assertions.assertThat(requestBodyNode.get("responseUrl").asText()).isEqualTo(erpResponseUrl);
         }
     }

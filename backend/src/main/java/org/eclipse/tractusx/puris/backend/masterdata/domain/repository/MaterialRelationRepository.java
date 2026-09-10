@@ -29,6 +29,8 @@ public interface MaterialRelationRepository extends JpaRepository<MaterialRelati
 
 	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
 
+	List<MaterialRelation> findAllByChildOwnMaterialNumber(String childOwnMaterialNumber);
+
 	MaterialRelation findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
 		String parentOwnMaterialNumber,
 		String childOwnMaterialNumber);
