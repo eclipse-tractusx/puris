@@ -33,6 +33,9 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.Reque
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
@@ -41,9 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
  
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -56,7 +57,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
  
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.never;
@@ -158,7 +158,13 @@ public class DataExchangeApprovalApiServiceTest {
     private IndustryCoreMessageService messageService;
     @Mock
     private EdcAdapterService edcAdapterService;
- 
+    @Mock
+    private IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
+    @Mock
+    private IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+    @Mock
+    private IrsJobService irsJobService;
+
     @InjectMocks
     private DataExchangeApprovalApiService apiService;
  
@@ -307,6 +313,103 @@ public class DataExchangeApprovalApiServiceTest {
         Assertions.assertEquals(existing.getUuid(), incoming.getUuid());
         verify(reportedDataExchangeApprovalService, never()).create(any());
     }
+
+    @Test
+    void handleIncoming_WhenNewRootRequestAndFinalized_SyncsGrantsAndCreatesJobs() {
+        ReportedDataExchangeApproval approval = approval(true, null);
+        when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
+        when(sammMapper.sammToReportedDataExchangeApproval(incomingSamm)).thenReturn(approval);
+        when(reportedDataExchangeApprovalService.findByApprovalId(approval.getApprovalId())).thenReturn(null);
+        when(reportedDataExchangeApprovalService.create(approval)).thenReturn(approval);
+
+        apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
+
+        verify(irsChainOpeningRootGrantService).syncGrantsForNotification(approval.getDataExchangeRequest().getNotification());
+        verify(irsJobService).createJobsForNotification(approval.getDataExchangeRequest().getNotification());
+        verify(irsChainOpeningGrantService, never()).onRelatedApprovalReceived(any());
+    }
+
+    @Test
+    void handleIncoming_WhenNewRootRequestAndNotFinalized_OnlySyncsGrants() {
+        ReportedDataExchangeApproval approval = approval(false, null);
+        when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
+        when(sammMapper.sammToReportedDataExchangeApproval(incomingSamm)).thenReturn(approval);
+        when(reportedDataExchangeApprovalService.findByApprovalId(approval.getApprovalId())).thenReturn(null);
+        when(reportedDataExchangeApprovalService.create(approval)).thenReturn(approval);
+
+        apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
+
+        verify(irsChainOpeningRootGrantService).syncGrantsForNotification(approval.getDataExchangeRequest().getNotification());
+        verify(irsJobService, never()).createJobsForNotification(any());
+    }
+
+    @Test
+    void handleIncoming_WhenNewRelatedRequest_OnlyNotifiesRelatedGrantServiceRegardlessOfFinalized() {
+        ReportedDataExchangeRequest relatedRequest = originRequest();
+        ReportedDataExchangeApproval approval = approval(true, relatedRequest);
+        when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
+        when(sammMapper.sammToReportedDataExchangeApproval(incomingSamm)).thenReturn(approval);
+        when(reportedDataExchangeApprovalService.findByApprovalId(approval.getApprovalId())).thenReturn(null);
+        when(reportedDataExchangeApprovalService.create(approval)).thenReturn(approval);
+
+        apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
+
+        verify(irsChainOpeningGrantService).onRelatedApprovalReceived(approval);
+        verify(irsChainOpeningRootGrantService, never()).syncGrantsForNotification(any());
+        verify(irsJobService, never()).createJobsForNotification(any());
+    }
+
+    // --- update branch ---
+
+    @Test
+    void handleIncoming_WhenExistingRootRequestFinalized_CreatesJobs() {
+        ReportedDataExchangeApproval existing = approval(false, null);
+        existing.setUuid(UUID.randomUUID());
+        ReportedDataExchangeApproval incoming = approval(true, null);
+        when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
+        when(sammMapper.sammToReportedDataExchangeApproval(incomingSamm)).thenReturn(incoming);
+        when(reportedDataExchangeApprovalService.findByApprovalId(incoming.getApprovalId())).thenReturn(existing);
+        when(reportedDataExchangeApprovalService.update(incoming)).thenReturn(incoming);
+
+        apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
+
+        verify(irsJobService).createJobsForNotification(incoming.getDataExchangeRequest().getNotification());
+        verify(irsChainOpeningGrantService, never()).onRelatedApprovalReceived(any());
+    }
+
+    @Test
+    void handleIncoming_WhenExistingRootRequestNotFinalized_DoesNothingIrsRelated() {
+        ReportedDataExchangeApproval existing = approval(false, null);
+        existing.setUuid(UUID.randomUUID());
+        ReportedDataExchangeApproval incoming = approval(false, null);
+        when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
+        when(sammMapper.sammToReportedDataExchangeApproval(incomingSamm)).thenReturn(incoming);
+        when(reportedDataExchangeApprovalService.findByApprovalId(incoming.getApprovalId())).thenReturn(existing);
+        when(reportedDataExchangeApprovalService.update(incoming)).thenReturn(incoming);
+
+        apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
+
+        verify(irsJobService, never()).createJobsForNotification(any());
+        verify(irsChainOpeningRootGrantService, never()).syncGrantsForNotification(any());
+        verify(irsChainOpeningGrantService, never()).onRelatedApprovalReceived(any());
+    }
+
+    @Test
+    void handleIncoming_WhenExistingRelatedRequest_NotifiesRelatedGrantService() {
+        ReportedDataExchangeRequest relatedRequest = originRequest();
+        ReportedDataExchangeApproval existing = approval(false, relatedRequest);
+        existing.setUuid(UUID.randomUUID());
+        ReportedDataExchangeApproval incoming = approval(true, relatedRequest);
+        when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
+        when(sammMapper.sammToReportedDataExchangeApproval(incomingSamm)).thenReturn(incoming);
+        when(reportedDataExchangeApprovalService.findByApprovalId(incoming.getApprovalId())).thenReturn(existing);
+        when(reportedDataExchangeApprovalService.update(incoming)).thenReturn(incoming);
+
+        apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
+
+        verify(irsChainOpeningGrantService).onRelatedApprovalReceived(incoming);
+        verify(irsJobService, never()).createJobsForNotification(any());
+    }
  
     private void createNewApproval (ReportedDataExchangeApproval incoming) {
         when(partnerService.findByBpnl(SUPPLIER_BPNL)).thenReturn(supplierPartner);
@@ -370,6 +473,11 @@ public class DataExchangeApprovalApiServiceTest {
             .build();
     }
  
+    static ReportedDataExchangeApproval approval(boolean finalized, ReportedDataExchangeRequest relatedRequest) {
+        OwnDataExchangeRequest request = forwardedRequest(relatedRequest, supplierPartner);
+        return reportedApproval(request, finalized);
+    }
+
     static ReportedDataExchangeApproval reportedApproval(OwnDataExchangeRequest request, boolean finalized) {
         return ReportedDataExchangeApproval.builder()
             .uuid(UUID.randomUUID())

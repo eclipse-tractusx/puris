@@ -33,6 +33,9 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.dataexc
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +64,12 @@ public class DataExchangeApprovalApiService {
     private OwnDataExchangeRequestService ownDataExchangeRequestService;
     @Autowired
     private ExecutorService executorService;
+    @Autowired
+    private IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
+    @Autowired
+    private IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+    @Autowired
+    private IrsJobService irsJobService;
 
     public ReportedDataExchangeApproval handleIncomingDataExchangeApproval(String bpnl, DataExchangeApprovalSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -91,12 +100,27 @@ public class DataExchangeApprovalApiService {
                 return null;
             }
             finalizeOriginApprovalIfComplete(approval);
+            if (approval.getDataExchangeRequest().getRelatedDataExchangeRequest() != null) {
+                irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
+            } else if (approval.isFinalized()) {
+                irsJobService.createJobsForNotification(approval.getDataExchangeRequest().getNotification());
+            }
             return approval;
         }
         try {
             log.info("Creating new Approval");
             ReportedDataExchangeApproval created = reportedDataExchangeApprovalService.create(approval);
             finalizeOriginApprovalIfComplete(created);
+            if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
+                // create root grants for the notification if the approval is for a root request
+                irsChainOpeningRootGrantService.syncGrantsForNotification(created.getDataExchangeRequest().getNotification());
+                if (created.isFinalized()) {
+                    irsJobService.createJobsForNotification(created.getDataExchangeRequest().getNotification());
+                }
+            } else {
+                // add the notification to the affected materials' parent materials' grants if the approval is for a related request
+                irsChainOpeningGrantService.onRelatedApprovalReceived(created);
+            }
             return created;
         } catch (KeyAlreadyExistsException e) {
             log.error("Approval already exists", e);
@@ -111,7 +135,8 @@ public class DataExchangeApprovalApiService {
         var body = createDataExchangeApprovalBody(approval);
         try {
             edcAdapterService.doDataExchangeApprovalPostRequest(partner, body);
-            log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl()); 
+            irsChainOpeningGrantService.createGrantsForApproval(approval);
+            log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl());
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeApproval for partner " + partner.getBpnl(), e);
         }
