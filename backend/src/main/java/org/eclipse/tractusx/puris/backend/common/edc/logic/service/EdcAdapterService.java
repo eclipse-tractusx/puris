@@ -293,25 +293,45 @@ public class EdcAdapterService {
      * Register contract definitions for assets that should only be accessible by the own organization.
      * Creates access policy restricted to own BPNL (with membership credential requirement).
      * Contract policy uses standard Framework Agreement terms.
-     * 
+     *
+     * Registers these self-contracts for every supported {@link PolicyProfileVersionEnumeration},
+     * not just the currently configured one, so self-negotiation keeps working regardless of
+     * which profile a request happens to be resolved to.
+     *
      * @return true if all registrations were successful, otherwise false
      */
     private boolean createPolicyAndContractDefForOwnPartner() {
-        Partner ownPartner = new Partner();
-        ownPartner.setPolicyProfileVersion(variablesService.getEdcProfileVersion());
-        ownPartner.setBpnl(variablesService.getOwnBpnl());
-        
-        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
-        log.info("Self policy definition registration {}", result ? "successful" : "failed");
-        
-        boolean contractReg = createSubmodelContractDefinitionForPartner(
-            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
-            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
-            ownPartner
-        );
-        log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
-        
-        return result && contractReg;
+        boolean result = true;
+        for (PolicyProfileVersionEnumeration profileVersion : PolicyProfileVersionEnumeration.values()) {
+            Partner ownPartner = new Partner();
+            ownPartner.setPolicyProfileVersion(profileVersion);
+            ownPartner.setBpnl(variablesService.getOwnBpnl());
+
+            boolean policyReg = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
+            log.info("Self policy definition registration for profile {} {}", profileVersion.getValue(), policyReg ? "successful" : "failed");
+            result &= policyReg;
+
+            result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
+                variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL, "ItemStockAnonymized",
+                variablesService.getItemStockAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.DELIVERY_ANONYMIZED_SUBMODEL, "DeliveryInformationAnonymized",
+                variablesService.getDeliveryAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL, "PlannedProductionOutputAnonymized",
+                variablesService.getProductionAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_SUBMODEL, "PartTypeInformation",
+                variablesService.getPartTypeSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "PartTypeInformationLegacy",
+                variablesService.getPartTypeLegacySubmodelApiAssetId(), ownPartner);
+        }
+
+        return result;
+    }
+
+    private boolean createSelfContractDefinition(AssetType assetType, String logName, String assetId, Partner ownPartner) {
+        boolean contractReg = createSubmodelContractDefinitionForPartner(assetType.URN_SEMANTIC_ID, assetId, ownPartner);
+        log.info("Self-contract for {} (profile {}) {}", logName, ownPartner.getPolicyProfileVersion().getValue(), contractReg ? "successful" : "failed");
+        return contractReg;
     }
 
     private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
