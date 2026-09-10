@@ -13,23 +13,48 @@ The **need for configuration updates** is **marked bold**.
 
 ### Added
 
-- Added base entities and repositories for Aggregated Supply Chain Data ([#1182](https://github.com/eclipse-tractusx/puris/pull/1182))
-- Updated data model for base entities and repositories for Aggregated Supply Chain Data ([#1187](https://github.com/eclipse-tractusx/puris/pull/1187))
-- Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
-- Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
+- Added IC Notification Message Header integration ([#1143](https://github.com/eclipse-tractusx/puris/pull/1143))
+- Added logic for exchanging Data Exchange Requests and Approvals
+  - Added backend implementation for data exchange request ([#1116](https://github.com/eclipse-tractusx/puris/pull/1116))
+  - Added Data exchange request edc integration ([#1126](https://github.com/eclipse-tractusx/puris/pull/1126))
+  - Added Data exchange approval edc integration ([#1173](https://github.com/eclipse-tractusx/puris/pull/1173))
+  - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
+  - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
+  - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
+  - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+- Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
+- Add logic to handle aggregated supply chain data
+  - Added base entities and repositories for Aggregated Supply Chain Data ([#1182](https://github.com/eclipse-tractusx/puris/pull/1182), [#1187](https://github.com/eclipse-tractusx/puris/pull/1187))
+  - Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
+  - Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
 - Added link to affected outgoing material on the material details header, showing open demand/capacity notifications affecting a material via its descendant (child) materials ([#1202](https://github.com/eclipse-tractusx/puris/pull/1202))
 
 ### Changed
 
-- /
+- Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
+- Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
+- Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
 
 ### Fixes
 
-- /
+- Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
 
 ### Version Bumps
 
-- /
+- update frontend dependencies ([#1212](https://github.com/eclipse-tractusx/puris/pull/1212))
+  - bump browserslist from 4.28.1 to 4.28.9
+  - bump caniuse-lite from 1.0.30001777 to 1.0.30001810
+  - bump electron-to-chromium from 1.5.307 to 1.5.423
+  - bump js-yaml from 4.2.0 to 4.3.2
+  - bump brace-expansion from 1.1.15 to 1.1.18 and from 2.1.1 to 2.1.4
+  - bump nanoid from 3.3.12 to 3.3.18
+  - bump node-releases from 2.0.36 to 2.0.54
+  - bump postcss from 8.5.15 to 8.5.28
+  - bump update-browserslist-db from 1.2.3 to 1.3.2
+  - bump websocket-driver from 0.7.4 to 0.7.5
+  - bump baseline-browser-mapping from 2.10.0 to 2.11.21
+  - remove unused yaml@2.9.0
+- bump `org.postgresql:postgresql` from `42.7.11` to `42.7.12` ([#1213](https://github.com/eclipse-tractusx/puris/pull/1213))
 
 ### Known Knowns
 
@@ -39,7 +64,8 @@ PURIS FOSS may not be run on a shared DTR and EDC with full scope. See [Admin Gu
 
 #### Limitations to anonymized submodels
 
- Currently, the anonymized submodels are limited to single customer scenarios, where each Digital Twin is exclusive to one partner. 
+Currently, the anonymized submodels are limited to single customer scenarios, where each Digital Twin is exclusive to one partner.
+
 #### Upgradeability
 
 Data base migrations are performed but assets.
@@ -48,36 +74,36 @@ Data base migrations are performed but assets.
 
 For productive use the following enhancements are encouraged
 
-* User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
+- User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
   --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
-* Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
+- Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
   --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)  
   --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
-* As a non-Admin user I do not have ability to view policies in detail  
+- As a non-Admin user I do not have ability to view policies in detail  
   --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
-* ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
+- ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
   --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
-* unclear meaning of different stati in negotations  
+- unclear meaning of different stati in negotations  
   --> add view of successfull contract agreeements wrt which data have been closed
-* current logging only done on info level  
+- current logging only done on info level  
   --> enhance logging of policies (currently only available at debug level)
-* in case of non-matching policies (tested in various scenarios) no negotiation takes place  
+- in case of non-matching policies (tested in various scenarios) no negotiation takes place  
   --> enhance visualization or specific Error message to user
-* no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+- no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
 
 #### Styleguide
 
 ##### Overall
 
-* Brief description at the top of each page describing content would be nice for better user experience.
+- Brief description at the top of each page describing content would be nice for better user experience.
 
 ##### Catalog
 
-* No action possible -> unclear to user when and how user will consume an offer
+- No action possible -> unclear to user when and how user will consume an offer
 
 ##### Negotiations
 
-* Add filters for transparency (bpnl, state)
+- Add filters for transparency (bpnl, state)
 
 ## v6.1.1
 

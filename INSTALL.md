@@ -12,7 +12,6 @@ basis. Please find below the most relevant configurations:
 - **EDC**, under `backend.puris.edc`
 - **DTR** incl. keycloak under `backend.puris.dtr`
 - **Own master data**, under `backend.puris.own`
-- **Role demonstration setup**, under `backend.puris.demonstrator.role`
 - **Postgresql settings**, under `backend.puris.datasource` (only necessary, if `postgres.enabled` is false -
   else autoconfigured).
 - **Frontend Keycloak** is disabled by default but can be configured under `frontend.puris.keycloak`.

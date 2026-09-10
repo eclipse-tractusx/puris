@@ -33,7 +33,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialServi
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.production.logic.service.OwnProductionService;
 import org.eclipse.tractusx.puris.backend.stock.domain.model.ProductItemStock;
-import org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm.DirectionCharacteristic;
+import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
 import org.eclipse.tractusx.puris.backend.stock.logic.service.ProductItemStockService;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.OwnSupplierSupply;
 import org.eclipse.tractusx.puris.backend.supply.domain.model.ReportedSupplierSupply;
@@ -68,8 +68,8 @@ public class SupplierSupplyService extends SupplyService<OwnSupplierSupply, Repo
 
     @Override
     protected List<Double> getConsumedValues(String material, Optional<String> partnerBpnl, Optional<String> siteBpns, int numberOfDays) {
-        List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.OUTBOUND, numberOfDays);
-        List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionCharacteristic.OUTBOUND, numberOfDays);
+        List<Double> ownDeliveries = ownDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionEnum.OUTBOUND, numberOfDays);
+        List<Double> reportedDeliveries = reportedDeliveryService.getQuantityForDays(material, partnerBpnl, siteBpns, DirectionEnum.OUTBOUND, numberOfDays);
         List<Double> deliveries = mergeDeliveries(ownDeliveries, reportedDeliveries);
         return deliveries;
     }

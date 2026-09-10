@@ -21,7 +21,6 @@
  */
 package org.eclipse.tractusx.puris.backend.common.util;
 
-import lombok.Getter;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -54,14 +53,6 @@ public class VariablesService {
     public String getPurisBaseUrl() {
         return purisBaseUrl.endsWith("/") ? purisBaseUrl : purisBaseUrl + "/";
     }
-
-    @Value("${puris.demonstrator.role}")
-    /**
-     * Must be set to "CUSTOMER" or "SUPPLIER" if
-     * you want to start with some initial settings
-     * defined in the DataInjectionCommandLineRunner
-     */
-    private String demoRole;
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
@@ -163,6 +154,21 @@ public class VariablesService {
      * during asset creation.
      */
     private String daysOfSupplySubmodelAssetId;
+
+    /**
+     * The url under which this application's data exchange request endpoint can
+     * be reached by external machines.
+     */
+    public String getDataExchangeRequestEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "data-exchange-request/request";
+    }
+
+    @Value("${puris.dataExchangeRequestApi.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Data Exchange Request request API
+     * during asset creation.
+     */
+    private String dataExchangeRequestApi;
 
     /**
      * The url under which this application's anonymized delivery information request endpoint can
@@ -277,11 +283,19 @@ public class VariablesService {
     private boolean registerDtrAssetFlag;
 
     /**
+     * The url under which this application's part type legacy request endpoint can
+     * be reached by external machines.
+     */
+    public String getParttypeInformationLegacyServerendpoint() {
+        return getPurisBaseUrl() + getContextPath() + "parttypeinformation/1-0-0";
+    }
+
+    /**
      * The url under which this application's part type request endpoint can
      * be reached by external machines.
      */
     public String getParttypeInformationServerendpoint() {
-        return getPurisBaseUrl() + getContextPath() + "parttypeinformation";
+        return getPurisBaseUrl() + getContextPath() + "parttypeinformation/2-0-0";
     }
 
     @Value("${puris.generatematerialcatenaxid}")
@@ -404,6 +418,14 @@ public class VariablesService {
 
     public String getNotificationApiAssetId() {
         return notificationAssetId + "@" + ownBpnl;
+    }
+
+    public String getDataExchangeRequestApiAssetId() {
+        return dataExchangeRequestApi + "@" + ownBpnl;
+    }
+
+    public String getPartTypeLegacySubmodelApiAssetId() {
+        return "PartTypeInformationLegacySubmodelApi@" + getOwnBpnl();
     }
 
     public String getPartTypeSubmodelApiAssetId() {
