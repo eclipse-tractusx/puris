@@ -110,13 +110,19 @@ script:post-response {
 
   // Self-contracted assets are now offered under every supported policy profile
   // version (e.g. profile2405 and profile2509), so the EDC catalog can legitimately
-  // return more than one odrl:hasPolicy offer for the same asset. Any one of them
-  // is valid for negotiation, so just take the first.
-  const rawOffer = catalogEntry["odrl:hasPolicy"]
-  const offer = Array.isArray(rawOffer) ? rawOffer[0] : rawOffer
-  if (!offer) {
+  // return more than one odrl:hasPolicy offer for the same asset, in non-deterministic
+  // order. Only the offer matching the profile version this negotiation actually uses
+  // (COMMON_POLICY_PROFILE_VERSION, see collection.bru) can be negotiated, so pick that
+  // one instead of an arbitrary offer.
+  const offers = [].concat(catalogEntry["odrl:hasPolicy"] || [])
+  if (offers.length === 0) {
     throw new Error("No odrl:hasPolicy found in catalog entry")
   }
+  const wantsProfile2509 = bru.getVar("COMMON_POLICY_PROFILE_VERSION") === "profile2509"
+  const offer = offers.find(o => {
+    const leftOperandId = o["odrl:permission"]?.["odrl:constraint"]?.["odrl:and"]?.[0]?.["odrl:leftOperand"]?.["@id"] || ""
+    return leftOperandId.includes("2025/9") === wantsProfile2509
+  }) || offers[0]
 
   const offerId = offer["@id"]
   const assetId = catalogEntry.id
