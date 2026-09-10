@@ -294,22 +294,26 @@ public class EdcAdapterService {
      * Creates access policy restricted to own BPNL (with membership credential requirement).
      * Contract policy uses standard Framework Agreement terms.
      *
-     * Registers these self-contracts for every supported {@link PolicyProfileVersionEnumeration}.
+     * Registers self-contract definitions for every supported {@link PolicyProfileVersionEnumeration}.
      * Profile 2405 is always supported for compatibility. Profile 2509 is only added if the
      * app's configured profile is 2509, since not every partner's EDC can negotiate that profile.
+     *
+     * The access policy itself is not profile-specific (it is always built for the app's
+     * configured profile, see {@link EdcRequestBodyBuilder#buildBpnAndMembershipRestrictedPolicy}),
+     * so it only needs to be registered once, outside the loop, and shared by every profile's
+     * contract definitions.
      *
      * @return true if all registrations were successful, otherwise false
      */
     private boolean createPolicyAndContractDefForOwnPartner() {
-        boolean result = true;
-        for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
-            Partner ownPartner = new Partner();
-            ownPartner.setPolicyProfileVersion(profileVersion);
-            ownPartner.setBpnl(variablesService.getOwnBpnl());
+        Partner ownPartner = new Partner();
+        ownPartner.setBpnl(variablesService.getOwnBpnl());
 
-            boolean policyReg = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
-            log.info("Self policy definition registration for profile {} {}", profileVersion.getValue(), policyReg ? "successful" : "failed");
-            result &= policyReg;
+        boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
+        log.info("Self policy definition registration {}", result ? "successful" : "failed");
+
+        for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
+            ownPartner.setPolicyProfileVersion(profileVersion);
 
             result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
                 variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);

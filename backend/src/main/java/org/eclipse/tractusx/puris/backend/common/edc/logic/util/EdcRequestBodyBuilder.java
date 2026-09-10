@@ -322,7 +322,7 @@ public class EdcRequestBodyBuilder {
      * @return the policy-id
      */
     private String getBpnPolicyId(Partner partner) {
-        return partner.getBpnl() + "_policy_" + partner.getPolicyProfileVersion().getValue();
+        return partner.getBpnl() + "_policy";
     }
 
     /**
