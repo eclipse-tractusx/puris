@@ -195,6 +195,8 @@ frontend:
     endpointSupplier: stockView/supplier?ownMaterialNumber=
     # -- The endpoint for the partners' (supplier) material stocks that they potentially will deliver to me
     endpointReportedMaterialStocks: stockView/reported-material-stocks?ownMaterialNumber=
+    # -- The endpoint for mapping own material numbers to the material numbers used by partners
+    endpointMaterialNumbersMapping: stockView/materialnumbers-mapping?ownMaterialNumber=
     # -- The endpoint for the partners' (customer) product stocks that they received from me
     endpointReportedProductStocks: stockView/reported-product-stocks?ownMaterialNumber=
     # -- The endpoint for triggering an update of your material stocks on your partners side
@@ -229,6 +231,8 @@ frontend:
     endpointPartnerDataUpdateBatch: batch/partner-data-update
     # -- The endpoint for interfacing with material relations
     endpointMaterialRelations: material-relations
+    # -- The endpoint for interfacing with aggregated material data
+    endpointAggregatedData: aggregated-data
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m
