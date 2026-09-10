@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,21 +16,22 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
+package org.eclipse.tractusx.puris.backend.irs.domain.repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MaterialRelationRepository extends JpaRepository<MaterialRelation, UUID> {
+public interface IrsQueuedRequestRepository extends JpaRepository<IrsQueuedRequest, UUID> {
 
-	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
+    List<IrsQueuedRequest> findAllByStatusAndNextAttemptAtBefore(IrsQueuedRequestStatusEnumeration status, Instant now);
 
-	List<MaterialRelation> findAllByChildOwnMaterialNumber(String childOwnMaterialNumber);
+    List<IrsQueuedRequest> findAllByTypeAndLinkedEntityUuidAndStatus(IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid,
+        IrsQueuedRequestStatusEnumeration status);
 
-	MaterialRelation findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
-		String parentOwnMaterialNumber,
-		String childOwnMaterialNumber);
 }

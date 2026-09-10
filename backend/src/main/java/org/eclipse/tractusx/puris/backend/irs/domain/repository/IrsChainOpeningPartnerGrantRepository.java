@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,21 +16,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
+package org.eclipse.tractusx.puris.backend.irs.domain.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MaterialRelationRepository extends JpaRepository<MaterialRelation, UUID> {
+public interface IrsChainOpeningPartnerGrantRepository extends JpaRepository<IrsChainOpeningPartnerGrant, UUID> {
 
-	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
+	Optional<IrsChainOpeningPartnerGrant> findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
+		String requesterBpn, String globalAssetId, String sourceDisruptionId);
 
-	List<MaterialRelation> findAllByChildOwnMaterialNumber(String childOwnMaterialNumber);
+	List<IrsChainOpeningPartnerGrant> findAllByReportedNotifications_Uuid(UUID notificationUuid);
 
-	MaterialRelation findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
-		String parentOwnMaterialNumber,
-		String childOwnMaterialNumber);
 }

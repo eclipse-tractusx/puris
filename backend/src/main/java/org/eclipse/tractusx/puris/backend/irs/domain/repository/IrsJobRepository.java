@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2025 Volkswagen AG
- * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ * Copyright (c) 2026 Volkswagen AG
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,21 +16,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
+package org.eclipse.tractusx.puris.backend.irs.domain.repository;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MaterialRelationRepository extends JpaRepository<MaterialRelation, UUID> {
+import java.util.UUID;
 
-	List<MaterialRelation> findAllByParentOwnMaterialNumber(String parentOwnMaterialNumber);
-
-	List<MaterialRelation> findAllByChildOwnMaterialNumber(String childOwnMaterialNumber);
-
-	MaterialRelation findByParentOwnMaterialNumberAndChildOwnMaterialNumber(
-		String parentOwnMaterialNumber,
-		String childOwnMaterialNumber);
+public interface IrsJobRepository extends JpaRepository<IrsJob, UUID> {
 }
