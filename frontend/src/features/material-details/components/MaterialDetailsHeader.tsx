@@ -24,13 +24,14 @@ import { Add, ChevronLeftOutlined, NotificationsActive, Refresh, Schedule } from
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LoadingButton } from '@components/ui/LoadingButton';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { DemandCapacityNotificationImpactTooltip } from '@components/ui/DemandCapacityNotificationImpactTooltip';
 import { getAffectingNotifications } from '@util/affecting-notifications';
 import { useDemandCapacityNotifications } from '@features/notifications/hooks/useDemandCapacityNotifications';
-import { useMaterialRelations } from '@hooks/useMaterialRelations';
+import { MaterialRelation } from '@models/types/data/material-relation';
+import { getAllMaterialRelations } from '@services/material-relation-service';
 
 type MaterialDetailsHeaderProps = {
     material: Material;
@@ -44,10 +45,13 @@ type MaterialDetailsHeaderProps = {
 export function MaterialDetailsHeader({ material, direction, isRefreshing, isSchedulingUpdate, onRefresh, onScheduleUpdate }: MaterialDetailsHeaderProps) {
     const { openDialog } = useDataModal();
     const { notifications } = useDemandCapacityNotifications();
-    const { materialRelations } = useMaterialRelations();
+    const [materialRelations, setMaterialRelations] = useState<MaterialRelation[]>([]);
+    useEffect(() => {
+        getAllMaterialRelations().then(setMaterialRelations).catch(console.error);
+    }, []);
     const affectingNotifications = useMemo(() => {
         const openNotifications = notifications.filter((n) => n.status === 'open');
-        return getAffectingNotifications(material.ownMaterialNumber ?? '', direction === DirectionType.Outbound, openNotifications, materialRelations ?? []);
+        return getAffectingNotifications(material.ownMaterialNumber ?? '', direction === DirectionType.Outbound, openNotifications, materialRelations);
     }, [notifications, materialRelations, direction, material.ownMaterialNumber]);
     // TODO: link inbound (demand) impacts to their affected component once that view exists
     const notificationLinkTo = direction === DirectionType.Outbound ? `/materials/outbound/${material.ownMaterialNumber}/supply-chain` : undefined;
