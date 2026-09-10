@@ -20,6 +20,9 @@ The **need for configuration updates** is **marked bold**.
   - Added Data exchange approval edc integration ([#1173](https://github.com/eclipse-tractusx/puris/pull/1173))
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
+  - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
+  - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+- Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
 - Added IRS Adapter to exchange data with an external Item Relationship Service
   - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195), [#1208](https://github.com/eclipse-tractusx/puris/pull/1208))
   - Added Logic to manage Irs Grants and keep them in sync with application state ([#1203](https://github.com/eclipse-tractusx/puris/pull/1203))
@@ -33,11 +36,24 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
 
 ### Version Bumps
 
-- /
+- update frontend dependencies ([#1212](https://github.com/eclipse-tractusx/puris/pull/1212))
+  - bump browserslist from 4.28.1 to 4.28.9
+  - bump caniuse-lite from 1.0.30001777 to 1.0.30001810
+  - bump electron-to-chromium from 1.5.307 to 1.5.423
+  - bump js-yaml from 4.2.0 to 4.3.2
+  - bump brace-expansion from 1.1.15 to 1.1.18 and from 2.1.1 to 2.1.4
+  - bump nanoid from 3.3.12 to 3.3.18
+  - bump node-releases from 2.0.36 to 2.0.54
+  - bump postcss from 8.5.15 to 8.5.28
+  - bump update-browserslist-db from 1.2.3 to 1.3.2
+  - bump websocket-driver from 0.7.4 to 0.7.5
+  - bump baseline-browser-mapping from 2.10.0 to 2.11.21
+  - remove unused yaml@2.9.0
+- bump `org.postgresql:postgresql` from `42.7.11` to `42.7.12` ([#1213](https://github.com/eclipse-tractusx/puris/pull/1213))
 
 ### Known Knowns
 

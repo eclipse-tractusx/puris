@@ -16,21 +16,13 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
-import { DataExchangeApproval } from "./data-exchange-approval";
+import jakarta.persistence.Entity;
+import lombok.ToString;
 
-export type CriticalityEnumeration = "low" | "medium" | "high";
-export type RequestedTypeEnumeration = "n-tier";
-export type DataExchangeRequest = {
-    uuid: string,
-    requestId: string,
-    criticality: CriticalityEnumeration,
-    desiredStartDateTime: Date,
-    desiredEndDateTime: Date,
-    requestedTypes: RequestedTypeEnumeration[],
-    text: string,
-    timestamp: Date,
-    notificationId: string,
-    dataExchangeApproval:  DataExchangeApproval | null;
-    relatedDataExchangeRequests: DataExchangeRequest[] | null;
-};
+@Entity
+@ToString(callSuper = true)
+public class PartTypeLegacyContractMapping extends ContractMapping {
+    
+}

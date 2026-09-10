@@ -16,20 +16,16 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-package org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository;
-import java.util.List;
-import java.util.UUID;
-import java.util.Optional;
+package org.eclipse.tractusx.puris.backend.common.edc.domain.repository;
 
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.ContractMapping;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.PartTypeLegacyContractMapping;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OwnDataExchangeRequestRepository extends DataExchangeRequestRepository<OwnDataExchangeRequest> {
-
-    Optional<OwnDataExchangeRequest> findByNotification_Uuid(UUID notificationUuid);
-
-    List<OwnDataExchangeRequest> findAllByRelatedDataExchangeRequest_Uuid(UUID relatedDataExchangeRequestUuid);
-
-    List<OwnDataExchangeRequest> findByRelatedDataExchangeRequest_Uuid(UUID uuid);
+public interface PartTypeLegacyContractMappingRepository extends GeneralContractMappingRepository<PartTypeLegacyContractMapping> {
+    @Override
+    default Class<? extends ContractMapping> getType() {
+        return PartTypeLegacyContractMapping.class;
+    }
 }

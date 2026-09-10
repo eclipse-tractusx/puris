@@ -15,21 +15,24 @@ headers {
   X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
+script:pre-request {
+  console.log("Waiting 10 seconds");
+  await (new Promise(resolve => setTimeout(resolve, 10000)));
+
+  const approvalTimestamp = new Date();
+  bru.setVar("approvalTimestamp", approvalTimestamp.toISOString());
+}
+
 body:json {
   {
     "approvalId": "54b1b097-d73c-4d50-83ca-f386d98c4100",
     "isFinalized": true,
-    "timestamp": "2025-12-17T08:00:00+01:00",
+    "timestamp": "{{approvalTimestamp}}",
     "approvedTypes": [
       "n-tier"
     ],
     "dataExchangeRequestId": "6ede86dc-7e16-4d46-8c41-c40bc26b28fe"
   }
-}
-
-script:pre-request {
-  console.log("Waiting 10 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 10000)));
 }
 
 tests {

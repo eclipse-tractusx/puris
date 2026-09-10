@@ -50,6 +50,17 @@ public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<
         return repository.save(ownDataExchangeApproval);
     }
 
+    public final OwnDataExchangeApproval update(OwnDataExchangeApproval ownDataExchangeApproval) {
+        if (!validator.apply(ownDataExchangeApproval)) {
+            throw new IllegalArgumentException("Invalid approval");
+        }
+        if (ownDataExchangeApproval.getUuid() == null
+                || repository.findById(ownDataExchangeApproval.getUuid()).isEmpty()) {
+            return null;
+        }
+        return repository.save(ownDataExchangeApproval);
+    }
+
     @Override
     public boolean validate(OwnDataExchangeApproval dataExchangeApproval) {
         return dataExchangeApproval != null &&

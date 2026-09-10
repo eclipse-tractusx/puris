@@ -20,8 +20,10 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +67,10 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
     public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {
         return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl))
                 .toList();
+    }
+
+    public List<ReportedDemandAndCapacityNotification> findByNotificationIdIn(Collection<UUID> ids) {
+        return repository.findByNotificationIdIn(ids);
     }
 
     public boolean isAnyChildAffectedByActiveNotifications(Material parent) {

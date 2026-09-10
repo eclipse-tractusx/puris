@@ -15,23 +15,32 @@ headers {
   X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
 }
 
+script:pre-request {
+  console.log("Waiting 5 seconds");
+  await (new Promise(resolve => setTimeout(resolve, 5000)));
+
+  const notificationStart = bru.getVar("notificationStartDateOfEffect") ? new Date(bru.getVar("notificationStartDateOfEffect")) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const notificationEnd = bru.getVar("notificationExpectedEndDateOfEffect") ? new Date(bru.getVar("notificationExpectedEndDateOfEffect")) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  const desiredStartDateTime = new Date(notificationStart.getTime() + 60 * 60 * 1000);
+  const desiredEndDateTime = new Date(notificationEnd.getTime() - 60 * 60 * 1000);
+
+  bru.setVar("desiredStartDateTime", desiredStartDateTime.toISOString());
+  bru.setVar("desiredEndDateTime", desiredEndDateTime.toISOString());
+}
+
 body:json {
   {
     "requestId": "6ede86dc-7e16-4d46-8c41-c40bc26b28fe",
     "criticality": "high",
-    "desiredStartDateTime": "2023-12-13T15:00:00+01:00",
-    "desiredEndDateTime": "2025-12-17T08:00:00+01:00",
+    "desiredStartDateTime": "{{desiredStartDateTime}}",
+    "desiredEndDateTime": "{{desiredEndDateTime}}",
     "requestedTypes": [
       "n-tier"
     ],
     "text": "Please provide the requested data.",
     "notificationId": "be63823a-39ae-4f4d-9962-6941376267c3"
   }
-}
-
-script:pre-request {
-  console.log("Waiting 5 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 5000)));
 }
 
 tests {

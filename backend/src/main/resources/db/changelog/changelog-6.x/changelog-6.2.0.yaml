@@ -313,6 +313,41 @@ databaseChangeLog:
             constraintName: fk_reported_data_exchange_approval_data_exchange_request
   - changeSet:
       id: "6"
+      author: OlgaIvkovic
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName: part_type_legacy_contract_mapping
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: part_type_legacy_contract_mapping_pkey
+                  name: partner_bpnl
+                  type: VARCHAR(255)
+            tableName: part_type_legacy_contract_mapping
+  - changeSet:
+      id: "7"
+      author: OlgaIvkovic
+      changes:
+        - delete:
+            tableName: notification_related_notification_ids
+            where: notification_uuid IN (SELECT uuid FROM reported_demand_and_capacity_notification)
+        - renameTable:
+            oldTableName: notification_related_notification_ids
+            newTableName: own_notification_related_notification_ids
+        - addForeignKeyConstraint:
+            constraintName: fk_own_notification_related
+            baseTableName: own_notification_related_notification_ids
+            baseColumnNames: notification_uuid
+            referencedTableName: own_demand_and_capacity_notification
+            referencedColumnNames: uuid
+  - changeSet:
+      id: "8"
       author: ReneSchroederLJ
       changes:
         - createTable:
@@ -391,7 +426,7 @@ databaseChangeLog:
                   constraints:
                     nullable: true
   - changeSet:
-      id: "7"
+      id: "9"
       author: ReneSchroederLJ
       changes:
         - createTable:
@@ -473,7 +508,7 @@ databaseChangeLog:
             referencedColumnNames: uuid
             referencedTableName: reported_demand_and_capacity_notification
   - changeSet:
-      id: "8"
+      id: "10"
       author: ReneSchroederLJ
       changes:
         - createTable:
@@ -555,7 +590,7 @@ databaseChangeLog:
             referencedColumnNames: uuid
             referencedTableName: reported_demand_and_capacity_notification
   - changeSet:
-      id: "9"
+      id: "11"
       author: ReneSchroederLJ
       changes:
         - createTable:
