@@ -35,8 +35,9 @@ export function DemandCapacityNotificationImpactTooltip({ impacts, children }: D
                 <>
                     {impacts.map(({ notification, viaChildMaterialNumbers }, index) => (
                         <div key={notification.uuid ?? index}>
-                            {EFFECTS.find((e) => e.key === notification.effect)?.value ?? notification.effect}
-                            {viaChildMaterialNumbers.length > 0 && ` (via component ${viaChildMaterialNumbers.join(', ')})`}
+                            {viaChildMaterialNumbers.length > 0
+                                ? `Affected by component ${viaChildMaterialNumbers.join(', ')}`
+                                : EFFECTS.find((e) => e.key === notification.effect)?.value ?? notification.effect}
                         </div>
                     ))}
                 </>
