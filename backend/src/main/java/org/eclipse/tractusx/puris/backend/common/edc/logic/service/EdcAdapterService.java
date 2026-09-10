@@ -294,15 +294,15 @@ public class EdcAdapterService {
      * Creates access policy restricted to own BPNL (with membership credential requirement).
      * Contract policy uses standard Framework Agreement terms.
      *
-     * Registers these self-contracts for every supported {@link PolicyProfileVersionEnumeration},
-     * not just the currently configured one, so self-negotiation keeps working regardless of
-     * which profile a request happens to be resolved to.
+     * Registers these self-contracts for every supported {@link PolicyProfileVersionEnumeration}.
+     * Profile 2405 is always supported for compatibility. Profile 2509 is only added if the
+     * app's configured profile is 2509, since not every partner's EDC can negotiate that profile.
      *
      * @return true if all registrations were successful, otherwise false
      */
     private boolean createPolicyAndContractDefForOwnPartner() {
         boolean result = true;
-        for (PolicyProfileVersionEnumeration profileVersion : PolicyProfileVersionEnumeration.values()) {
+        for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
             Partner ownPartner = new Partner();
             ownPartner.setPolicyProfileVersion(profileVersion);
             ownPartner.setBpnl(variablesService.getOwnBpnl());

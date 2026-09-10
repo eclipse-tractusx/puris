@@ -194,7 +194,7 @@ public class EdcRequestBodyBuilder {
 
         List<PolicyConstraint> constraints = new ArrayList<>();
 
-        PolicyProfileVersionEnumeration profileVersion = partner.getPolicyProfileVersion();
+        PolicyProfileVersionEnumeration profileVersion = variablesService.getEdcProfileVersion();
 
         if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
             constraints.add(new PolicyConstraint(
