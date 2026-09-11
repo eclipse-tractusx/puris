@@ -53,8 +53,6 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
         const openNotifications = notifications.filter((n) => n.status === 'open');
         return getAffectingNotifications(material.ownMaterialNumber ?? '', direction === DirectionType.Outbound, openNotifications, materialRelations);
     }, [notifications, materialRelations, direction, material.ownMaterialNumber]);
-    // TODO: link inbound (demand) impacts to their affected component once that view exists
-    const notificationLinkTo = direction === DirectionType.Outbound ? `/materials/outbound/${material.ownMaterialNumber}/supply-chain` : undefined;
     return (
         <>
             <Stack direction="row" alignItems="center" spacing={1} width="100%">
@@ -62,10 +60,11 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                 <Typography variant="h3" component="h1">
                     {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} (<TextToClipboard text={material?.ownMaterialNumber ?? ""} />, {capitalize(direction.toLowerCase())})
                 </Typography>
-                {affectingNotifications.length > 0 && (
+                {direction === DirectionType.Outbound && affectingNotifications.length > 0 && (
                     <DemandCapacityNotificationImpactTooltip impacts={affectingNotifications}>
                         <Box
-                            {...(notificationLinkTo && { component: Link, to: notificationLinkTo })}
+                            component={Link}
+                            to="./supply-chain"
                             data-testid="material-notification-indicator"
                             display="flex"
                             alignItems="center"
