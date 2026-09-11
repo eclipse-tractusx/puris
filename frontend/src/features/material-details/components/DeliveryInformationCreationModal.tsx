@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { Input} from '@catena-x/portal-shared-components';
 import { DateTime } from '@components/ui/DateTime';
-import { usePartners } from '@features/stock-view/hooks/usePartners';
+import { usePartners } from '@hooks/usePartners';
 import { UNITS_OF_MEASUREMENT } from '@models/constants/uom';
 import { Delivery } from '@models/types/data/delivery';
 import { Close, Save } from '@mui/icons-material';
@@ -32,7 +32,7 @@ import { INCOTERMS } from '@models/constants/incoterms';
 import { ARRIVAL_TYPES, DEPARTURE_TYPES } from '@models/constants/event-type';
 import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSites } from '@hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
 import { Site } from '@models/types/edc/site';
