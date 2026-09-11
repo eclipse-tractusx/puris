@@ -243,7 +243,7 @@ public class IrsRequestQueueWorker {
 				} else if (state == IrsJobStateEnumeration.COMPLETED) {
         			mapAndSaveAggregatedMaterialData(irsJob, request, response);
 				} else {
-					log.warn("IRS job {} reached terminal state {} without completing successfully, skipping aggregated data mapping", irsJob.getUuid(), state, request.getUuid());
+					log.warn("IRS job {} reached terminal state {} without completing successfully, skipping aggregated data mapping", irsJob.getUuid(), state);
 				}
 			}, () -> log.warn("Linked IRS job {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
@@ -261,7 +261,7 @@ public class IrsRequestQueueWorker {
 	 * Maps a completed IRS job's response body to Aggregated Material Data
 	 */
 	private void mapAndSaveAggregatedMaterialData(IrsJob irsJob, IrsQueuedRequest request, IrsResponse response) {
-		var aggregatedMaterialData = mapToAggregatedMaterialData(irsJob, request, response.getResponseBody());
+		var aggregatedMaterialData = mapToAggregatedMaterialData(request, response.getResponseBody());
 		if (aggregatedMaterialData == null) {
 			log.warn("Could not map IRS job {} response to aggregated material data (queued request {})", irsJob.getUuid(), request.getUuid());
 			return;
@@ -270,7 +270,7 @@ public class IrsRequestQueueWorker {
 		log.info("Saved aggregated material data for IRS job {}", irsJob.getUuid());
 	}
 
-	private AggregatedMaterialData mapToAggregatedMaterialData(IrsJob irsJob, IrsQueuedRequest request, String responseBody) {
+	private AggregatedMaterialData mapToAggregatedMaterialData(IrsQueuedRequest request, String responseBody) {
 		if (responseBody == null || responseBody.isBlank()) {
 			throw new IllegalStateException("IRS response for queued request " + request.getUuid() + " has no body to map to aggregated material data");
 		}

@@ -886,3 +886,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: aggregated_material_data_node_id
+  - changeSet:
+      id: "13"
+      author: OlgaIvkovic
+      changes:
+        - insert:
+            columns:
+              - column:
+                  name: target_version
+                  value: "6.2.0"
+            tableName: migration_task
