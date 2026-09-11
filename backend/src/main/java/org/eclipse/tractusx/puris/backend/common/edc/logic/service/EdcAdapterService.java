@@ -407,15 +407,16 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
+                Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", profileVersion.CONTRACT_POLICY_ID));
+                if (policyExists.isSuccessful()) {
                     log.info("Framework agreement policy definition already existed");
-                    return true;
+                } else {
+                    log.warn("Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
             }
             /** 
              * if the IRS adapter is enabled the framework policy for 24.05 should be registered in the policy store
