@@ -92,31 +92,45 @@ script:pre-request {
   console.log("---------------------------------------------------------------------------------------------------------------------")
 }
 
-script:post-response { 
-  let jsonData = res.getBody()
-  let catalog = jsonData['dcat:dataset']
-  
-  if (!catalog || catalog.length === 0) {
+script:post-response {
+  const jsonData = res.getBody()
+  const datasets = jsonData['dcat:dataset']
+  const catalog = Array.isArray(datasets) ? datasets : (datasets ? [datasets] : [])
+
+  if (catalog.length === 0) {
     throw new Error("Catalog response contains no datasets!")
   }
 
   const submodelSemanticId = bru.getVar("SUBMODEL_SEMANTIC_ID")
-  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]["@id"] === submodelSemanticId)
+  const catalogEntry = catalog.find(ce => ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]?.["@id"] === submodelSemanticId)
 
   if (!catalogEntry) {
     throw new Error(`No catalog entry found for semanticId: ${submodelSemanticId}`)
   }
-  
-  let offer = catalogEntry["odrl:hasPolicy"]
+
+  // Self-contracted assets are now offered under every supported policy profile
+  // version (e.g. profile2405 and profile2509), so the EDC catalog can legitimately
+  // return more than one odrl:hasPolicy offer for the same asset, in non-deterministic
+  // order. Only the offer matching the profile version this negotiation actually uses
+  // (COMMON_POLICY_PROFILE_VERSION, see collection.bru) can be negotiated, so pick that
+  // one instead of an arbitrary offer.
+  const offers = [].concat(catalogEntry["odrl:hasPolicy"] || [])
+  if (offers.length === 0) {
+    throw new Error("No odrl:hasPolicy found in catalog entry")
+  }
+  const wantsProfile2509 = bru.getVar("COMMON_POLICY_PROFILE_VERSION") === "profile2509"
+  const offer = offers.find(o => {
+    const leftOperandId = o["odrl:permission"]?.["odrl:constraint"]?.["odrl:and"]?.[0]?.["odrl:leftOperand"]?.["@id"] || ""
+    return leftOperandId.includes("2025/9") === wantsProfile2509
+  }) || offers[0]
+
   const offerId = offer["@id"]
   const assetId = catalogEntry.id
-  
-  offer.offerId = offerId
-  delete offer["@id"]
-  
-  offer.assetId = assetId
-  
-  offer = {
+  if (!offerId || !assetId) {
+    throw new Error("Missing offerId or assetId in catalog entry")
+  }
+
+  const builtOffer = {
       "@context": "http://www.w3.org/ns/odrl.jsonld",
       "@type": "odrl:Offer",
       "@id": offerId,
@@ -126,7 +140,7 @@ script:post-response {
           "odrl:action": {
               "odrl:type": "http://www.w3.org/ns/odrl/2/use"
           },
-          "odrl:constraint": offer["odrl:permission"]["odrl:constraint"]
+          "odrl:constraint": offer["odrl:permission"]?.["odrl:constraint"]
       },
       "odrl:prohibition": [],
       "odrl:obligation": [],
@@ -134,7 +148,7 @@ script:post-response {
           "@id": assetId
       }
   }
-  bru.setVar("SUBMODEL_CATALOG_OFFER", JSON.stringify(offer))
+  bru.setVar("SUBMODEL_CATALOG_OFFER", JSON.stringify(builtOffer))
   bru.setVar("SUBMODEL_CATALOG_OFFER_ID", offerId)
 }
 

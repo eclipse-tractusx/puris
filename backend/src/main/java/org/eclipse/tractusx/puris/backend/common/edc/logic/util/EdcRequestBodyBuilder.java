@@ -219,7 +219,7 @@ public class EdcRequestBodyBuilder {
         JsonNode body = buildPolicy(
             getBpnPolicyId(partner),
             constraints,
-            variablesService.getEdcProfileVersion().equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)
+            profileVersion.equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)
                 ? profileVersion.CX_POLICY_NAMESPACE + "access"
                 : JsonLdConstants.ODRL_NAMESPACE + "use",
             profileVersion
@@ -287,7 +287,7 @@ public class EdcRequestBodyBuilder {
 
     public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
-        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId);
+        body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId + "_" + partner.getPolicyProfileVersion().getValue());
         body.put("accessPolicyId", getBpnPolicyId(partner));
         body.put("contractPolicyId", partner.getPolicyProfileVersion().CONTRACT_POLICY_ID);
         var assetsSelector = MAPPER.createObjectNode();
