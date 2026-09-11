@@ -31,8 +31,6 @@ import org.eclipse.tractusx.puris.backend.delivery.domain.model.EventTypeEnumera
 import org.eclipse.tractusx.puris.backend.delivery.domain.model.ReportedAnonymizedDelivery;
 import org.eclipse.tractusx.puris.backend.delivery.logic.dto.anonymizeddeliverysamm.DeliveryInformationAnonymized;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.production.domain.model.ReportedAnonymizedProduction;
 import org.eclipse.tractusx.puris.backend.production.logic.dto.anonymizedplannedproductionsamm.PlannedProductionOutputAnonymized;
@@ -51,41 +49,35 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AggregatedMaterialDataNodeMapper {
     @Autowired
-    private MaterialPartnerRelationService mprService;
- 
-    @Autowired
     private MaterialService materialService;
- 
+
     @Autowired
     private ObjectMapper objectMapper;
- 
-    public AggregatedMaterialData jsonToAggregatedMaterialData(JsonNode json, Partner partner) {
-        String globalAssetId = getText(json, "globalAssetId");
+
+    public AggregatedMaterialData jsonToAggregatedMaterialData(JsonNode json) {
+        String globalAssetId = getText(json.path("job"), "globalAssetId");
         if (globalAssetId == null) {
-            log.warn("Missing globalAssetId in aggregated data payload");
+            log.warn("Missing job.globalAssetId in aggregated data payload");
             return null;
         }
-        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, globalAssetId);
         Material material = materialService.findByMaterialNumberCx(globalAssetId);
-        if (material == null && mpr == null) {
+        if (material == null) {
             log.warn("Could not find material {}", globalAssetId);
             return null;
         }
-        if (material == null) {
-            material = mpr.getMaterial();
-        }
- 
+
         var aggregatedData = AggregatedMaterialData.builder()
             .material(material)
             .childMaterialData(new ArrayList<>())
             .build();
- 
-        var rootNode = mapNode(json, aggregatedData, null);
-        aggregatedData.getChildMaterialData().add(rootNode);
- 
+
+        for (JsonNode childNode : elements(json.path("result").get("childItems"))) {
+            aggregatedData.getChildMaterialData().add(mapNode(childNode, aggregatedData, null));
+        }
+
         return aggregatedData;
     }
- 
+
     private AggregatedMaterialDataNode mapNode(JsonNode json, AggregatedMaterialData root, AggregatedMaterialDataNode parent) {
         var quantity = readQuantity(json);
         if (quantity == null) {
@@ -103,16 +95,16 @@ public class AggregatedMaterialDataNodeMapper {
             .stocks(new HashSet<>())
             .childMaterialData(new ArrayList<>())
             .build();
- 
+
         mapAspectItems(json.get("items"), node);
- 
+
         for (JsonNode childNode : elements(json.get("childItems"))) {
             node.getChildMaterialData().add(mapNode(childNode, root, node));
         }
- 
+
         return node;
     }
- 
+
     private void mapAspectItems(JsonNode itemsNode, AggregatedMaterialDataNode target) {
         for (JsonNode itemNode : elements(itemsNode)) {
             String aspect = getText(itemNode, "aspect");
@@ -144,7 +136,7 @@ public class AggregatedMaterialDataNodeMapper {
             var arrivalEvent = deliveryAnonymized.getTransitEvents().stream()
                 .filter(e -> e.getEventType() == EventTypeEnumeration.ACTUAL_ARRIVAL || e.getEventType() == EventTypeEnumeration.ESTIMATED_ARRIVAL)
                 .findFirst();
- 
+
             var builder = ReportedAnonymizedDelivery.builder()
                 .quantity(deliveryAnonymized.getDeliveryQuantity().getValue())
                 .measurementUnit(deliveryAnonymized.getDeliveryQuantity().getUnit())
@@ -158,7 +150,7 @@ public class AggregatedMaterialDataNodeMapper {
         }
         return deliveries;
     }
- 
+
     private Set<ReportedAnonymizedStock> mapStocks(ItemStockAnonymizedSamm samm) {
         var stocks = new HashSet<ReportedAnonymizedStock>();
         for (var allocatedStock : samm.getAllocatedStocksAnonymized()) {
@@ -172,7 +164,7 @@ public class AggregatedMaterialDataNodeMapper {
         }
         return stocks;
     }
- 
+
     private Set<ReportedAnonymizedProduction> mapProductions(PlannedProductionOutputAnonymized samm) {
         var productions = new HashSet<ReportedAnonymizedProduction>();
         for (var output : samm.getAllocatedPlannedProductionOutputs()) {
@@ -199,11 +191,11 @@ public class AggregatedMaterialDataNodeMapper {
             throw new IllegalArgumentException("Error processing quantity " + quantity, e);
         }
     }
- 
+
     private static Iterable<JsonNode> elements(JsonNode node) {
         return node != null && node.isArray() ? node : List.<JsonNode>of();
     }
- 
+
     private static String getText(JsonNode node, String fieldName) {
         if (node == null) {
             return null;

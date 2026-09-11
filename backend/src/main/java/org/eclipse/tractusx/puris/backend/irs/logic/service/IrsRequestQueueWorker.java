@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository.AggregatedMaterialDataRepository;
+import org.eclipse.tractusx.puris.backend.aggregateddata.logic.adapter.AggregatedMaterialDataNodeMapper;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
@@ -80,6 +83,12 @@ public class IrsRequestQueueWorker {
 
 	@Autowired
 	private ExecutorService executorService;
+
+	@Autowired
+	private AggregatedMaterialDataNodeMapper aggregatedMaterialDataNodeMapper;
+
+	@Autowired
+	private AggregatedMaterialDataRepository aggregatedMaterialDataRepository;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -231,6 +240,10 @@ public class IrsRequestQueueWorker {
 				log.info("IRS job {} status is {}", irsJob.getUuid(), state);
 				if (!state.isTerminal()) {
 					enqueueJobStatusPoll(irsJob);
+				} else if (state == IrsJobStateEnumeration.COMPLETED) {
+        			mapAndSaveAggregatedMaterialData(irsJob, request, response);
+				} else {
+					log.warn("IRS job {} reached terminal state {} without completing successfully, skipping aggregated data mapping", irsJob.getUuid(), state, request.getUuid());
 				}
 			}, () -> log.warn("Linked IRS job {} for queued request {} no longer exists",
 				request.getLinkedEntityUuid(), request.getUuid()));
@@ -242,6 +255,31 @@ public class IrsRequestQueueWorker {
 	private void enqueueJobStatusPoll(IrsJob irsJob) {
 		irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.GET, JOB_STATUS_PATH_PREFIX + irsJob.getJobId(), null, null,
 			IrsQueuedRequestTypeEnumeration.JOB_GET, irsJob.getUuid(), Duration.ofSeconds(irsAdapterConfiguration.getJobPollDelaySeconds()));
+	}
+
+	/**
+	 * Maps a completed IRS job's response body to Aggregated Material Data
+	 */
+	private void mapAndSaveAggregatedMaterialData(IrsJob irsJob, IrsQueuedRequest request, IrsResponse response) {
+		var aggregatedMaterialData = mapToAggregatedMaterialData(irsJob, request, response.getResponseBody());
+		if (aggregatedMaterialData == null) {
+			log.warn("Could not map IRS job {} response to aggregated material data (queued request {})", irsJob.getUuid(), request.getUuid());
+			return;
+		}
+		aggregatedMaterialDataRepository.save(aggregatedMaterialData);
+		log.info("Saved aggregated material data for IRS job {}", irsJob.getUuid());
+	}
+
+	private AggregatedMaterialData mapToAggregatedMaterialData(IrsJob irsJob, IrsQueuedRequest request, String responseBody) {
+		if (responseBody == null || responseBody.isBlank()) {
+			throw new IllegalStateException("IRS response for queued request " + request.getUuid() + " has no body to map to aggregated material data");
+		}
+		try {
+			var responseJson = objectMapper.readTree(responseBody);
+			return aggregatedMaterialDataNodeMapper.jsonToAggregatedMaterialData(responseJson);
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to map IRS response body to aggregated material data for queued request " + request.getUuid(), e);
+		}
 	}
 
 	/**
