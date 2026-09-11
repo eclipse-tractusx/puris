@@ -634,3 +634,265 @@ databaseChangeLog:
             constraintName: fk_irs_job_material
             referencedColumnNames: own_material_number
             referencedTableName: material
+  - changeSet:
+      id: "12"
+      author: OlgaIvkovic
+      changes:
+        - createTable:
+            tableName: aggregated_material_data
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: aggregated_material_data_pkey
+              - column:
+                  name: material_own_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: aggregated_material_data_node
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: aggregated_material_data_node_pkey
+              - column:
+                  name: aggregated_material_data_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_node_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+              - column:
+                  name: external_material_number
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_material_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: reported_anonymized_delivery
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_anonymized_delivery_pkey
+              - column:
+                  name: aggregated_material_data_node_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_of_departure
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_of_arrival
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: departure_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: arrival_type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: origin_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destination_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: reported_anonymized_stock
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_anonymized_stock_pkey
+              - column:
+                  name: aggregated_material_data_node_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stock_location_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_blocked
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: reported_anonymized_production
+            columns:
+              - column:
+                  name: uuid
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: reported_anonymized_production_pkey
+              - column:
+                  name: aggregated_material_data_node_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: FLOAT8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: measurement_unit
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: production_site_bpns_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: estimated_time_of_completion
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_updated_on_date_time
+                  type: TIMESTAMP WITHOUT TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: material_global_asset_id_anonymized
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: aggregated_material_data
+            baseColumnNames: material_own_material_number
+            referencedTableName: material
+            referencedColumnNames: own_material_number
+            constraintName: fk_aggregated_material_data_material
+        - addForeignKeyConstraint:
+            baseTableName: aggregated_material_data_node
+            baseColumnNames: aggregated_material_data_id
+            referencedTableName: aggregated_material_data
+            referencedColumnNames: uuid
+            constraintName: fk_aggregated_material_data_node_root
+        - addForeignKeyConstraint:
+            baseTableName: aggregated_material_data_node
+            baseColumnNames: parent_node_id
+            referencedTableName: aggregated_material_data_node
+            referencedColumnNames: uuid
+            constraintName: fk_aggregated_material_data_node_parent
+        - createIndex:
+            indexName: idx_aggregated_material_data_node_root
+            tableName: aggregated_material_data_node
+            columns:
+              - column:
+                  name: aggregated_material_data_id
+        - createIndex:
+            indexName: idx_aggregated_material_data_node_parent
+            tableName: aggregated_material_data_node
+            columns:
+              - column:
+                  name: parent_node_id
+        - createIndex:
+            indexName: idx_reported_anonymized_delivery_aggregated_data
+            tableName: reported_anonymized_delivery
+            columns:
+              - column:
+                  name: aggregated_material_data_node_id
+        - createIndex:
+            indexName: idx_reported_anonymized_stock_aggregated_data
+            tableName: reported_anonymized_stock
+            columns:
+              - column:
+                  name: aggregated_material_data_node_id
+        - createIndex:
+            indexName: idx_reported_anonymized_production_aggregated_data
+            tableName: reported_anonymized_production
+            columns:
+              - column:
+                  name: aggregated_material_data_node_id
+  - changeSet:
+      id: "13"
+      author: OlgaIvkovic
+      changes:
+        - insert:
+            columns:
+              - column:
+                  name: target_version
+                  value: "6.2.0"
+            tableName: migration_task

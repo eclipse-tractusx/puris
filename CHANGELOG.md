@@ -27,6 +27,12 @@ The **need for configuration updates** is **marked bold**.
   - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195), [#1208](https://github.com/eclipse-tractusx/puris/pull/1208))
   - Added Logic to manage Irs Grants and keep them in sync with application state ([#1203](https://github.com/eclipse-tractusx/puris/pull/1203))
   - Added Job Management logic to create jobs and automatically poll for results ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+- Add logic to handle aggregated supply chain data
+  - Added base entities and repositories for Aggregated Supply Chain Data ([#1182](https://github.com/eclipse-tractusx/puris/pull/1182), [#1187](https://github.com/eclipse-tractusx/puris/pull/1187))
+  - Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
+  - Added logic to map and save received irs job data ([#1184](https://github.com/eclipse-tractusx/puris/pull/1184))
+  - Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
+- Added link to affected outgoing material on the material details header, showing open demand/capacity notifications affecting a material via its descendant (child) materials ([#1202](https://github.com/eclipse-tractusx/puris/pull/1202))
 
 ### Changed
 

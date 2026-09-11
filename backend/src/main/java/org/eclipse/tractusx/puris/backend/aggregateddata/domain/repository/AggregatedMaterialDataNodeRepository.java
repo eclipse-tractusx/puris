@@ -1,6 +1,5 @@
 /*
-Copyright (c) 2024 Volkswagen AG
-Copyright (c) 2024 Contributors to the Eclipse Foundation
+Copyright (c) 2026 Volkswagen AG
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -17,18 +16,15 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
+package org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository;
 
-import { useFetch } from '@hooks/useFetch';
-import { config } from '@models/constants/config';
-import { Material } from '@models/types/data/stock';
+import java.util.UUID;
 
-export const useAllMaterials = () => {
-    const endpoint = config.app.ENDPOINT_ALL_MATERIALS + "/all";
-    const { data: materials, isLoading: isLoadingMaterials } = useFetch<Material[]>(
-        `${config.app.BACKEND_BASE_URL}${endpoint}`
-    );
-    return {
-        materials,
-        isLoadingMaterials,
-    };
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialDataNode;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface AggregatedMaterialDataNodeRepository extends JpaRepository<AggregatedMaterialDataNode, UUID> {
+    
 }
