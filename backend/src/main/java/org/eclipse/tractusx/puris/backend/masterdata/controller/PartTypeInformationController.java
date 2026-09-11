@@ -159,10 +159,15 @@ public class PartTypeInformationController {
         if (material == null || !material.isProductFlag()) {
             return ProductLookup.error(HttpStatus.NOT_FOUND);
         }
-        var mpr = mprService.find(material, partner);
-        if (mpr == null || !mpr.isPartnerBuysMaterial()) {
-            return ProductLookup.error(HttpStatus.NOT_FOUND);
+
+        // #1222: don't evaluate the MPR, if it is a self-lookup from IRS
+        if (!bpnl.equals(partnerService.getOwnPartnerEntity().getBpnl())){
+            var mpr = mprService.find(material, partner);
+            if (mpr == null || !mpr.isPartnerBuysMaterial()) {
+                return ProductLookup.error(HttpStatus.NOT_FOUND);
+            }
         }
+
         return ProductLookup.found(material);
     }
 
