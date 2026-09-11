@@ -16,9 +16,6 @@ headers {
 }
 
 script:pre-request {
-  console.log("Waiting 10 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 10000)));
-
   const approvalTimestamp = new Date();
   bru.setVar("approvalTimestamp", approvalTimestamp.toISOString());
 }
@@ -36,6 +33,7 @@ body:json {
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("response is created", function() {
     expect(res.getStatus()).to.equal(201);
   });
