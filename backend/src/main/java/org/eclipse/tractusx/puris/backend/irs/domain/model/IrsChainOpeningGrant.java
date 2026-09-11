@@ -26,9 +26,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -110,7 +112,7 @@ public abstract class IrsChainOpeningGrant {
 	 * of {@link #getReportedNotifications()}. This is the wire shape expected by the IRS
 	 * grant-creation request.
 	 */
-	@JsonProperty("allowedBpnls")
+	@JsonIgnore
 	public Set<String> getAllowedBpnls() {
 		return getReportedNotifications().stream()
 			.map(ReportedDemandAndCapacityNotification::getPartner)

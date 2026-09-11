@@ -46,6 +46,7 @@ The **need for configuration updates** is **marked bold**.
 - Create self-contracts for all supported profile versions, and extend self-contracting to the anonymized submodels and PartTypeInformation ([#1216](https://github.com/eclipse-tractusx/puris/pull/1216))
 - improved check for existing policies ([#1220](https://github.com/eclipse-tractusx/puris/pull/1220), [#1221](https://github.com/eclipse-tractusx/puris/pull/1221))
 - allow requests with own bpnl in part type controller for irs ([#1222](https://github.com/eclipse-tractusx/puris/pull/1222))
+- Fixed validity dates and renamed allowedBpnls property to allowedBpnlSet for Chain Opening Grants ([#1224](https://github.com/eclipse-tractusx/puris/pull/1224))
 
 ### Version Bumps
 
