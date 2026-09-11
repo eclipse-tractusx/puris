@@ -180,6 +180,12 @@ backend:
     purpose:
       name: "cx.puris.base"
       version: "1"
+    irsadapter:
+      enabled: true
+      url: "https://<path:puris/data/companies/ceres/irs#base-url>"
+      authkey: x-api-key
+      adminauthsecret: <path:puris/data/companies/ceres/irs/api#api-key-admin>
+      authsecret: <path:puris/data/companies/ceres/irs/api#api-key-regular>
   resources:
     requests:
       cpu: "50m"
