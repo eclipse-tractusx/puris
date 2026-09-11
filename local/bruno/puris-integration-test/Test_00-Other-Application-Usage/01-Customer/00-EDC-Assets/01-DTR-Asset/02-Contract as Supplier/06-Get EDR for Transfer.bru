@@ -1,5 +1,5 @@
 meta {
-  name: 06-Get EDR for Transfer
+  name: 06-Get EDR for Transfer (Share-Enablement)
   type: http
   seq: 8
   tags: [
@@ -23,12 +23,8 @@ auth:apikey {
   placement: header
 }
 
-script:pre-request {
-  console.log("Waiting 10 seconds to let transfer process start");
-  await new Promise(resolve => setTimeout(resolve, 10000));
-}
-
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });

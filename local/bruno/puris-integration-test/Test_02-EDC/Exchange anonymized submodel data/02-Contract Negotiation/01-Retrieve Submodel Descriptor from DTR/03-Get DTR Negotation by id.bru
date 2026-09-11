@@ -1,5 +1,5 @@
 meta {
-  name: 03-Get DTR Negotation by id
+  name: 03-Get DTR Negotation by id (Anon)
   type: http
   seq: 3
   tags: [
@@ -13,15 +13,15 @@ get {
   auth: apikey
 }
 
+script:pre-request {
+  bru.setVar("retryUntilField", "state");
+  bru.setVar("retryUntilValue", "FINALIZED");
+}
+
 auth:apikey {
   key: X-API-KEY
   value: {{SUPPLIER_EDC_API_KEY}}
   placement: header
-}
-
-script:pre-request {
-  console.log("Waiting 5 seconds to let negotiation terminate");
-  await (new Promise(resolve => setTimeout(resolve, 5000)));
 }
 
 script:post-response {
@@ -30,6 +30,7 @@ script:post-response {
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });
