@@ -124,7 +124,7 @@ backend:
       # -- Own zipcode and city
       zipcodeandcity: "10011 New York"
       # -- Own name (self-description)
-      name: "Control Unit Creator Inc."
+      name: "Ceres"
     policyprofile:
       # -- The default policy profile to use for policy definitions and contract definitions.
       version: profile2509
@@ -137,7 +137,7 @@ backend:
       edc:
         asset:
           # simulate DTR by other company
-          register: false
+          register: true
       idp:
         enabled: true
         # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
