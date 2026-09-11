@@ -32,6 +32,7 @@ import { getAffectingNotifications } from '@util/affecting-notifications';
 import { useDemandCapacityNotifications } from '@features/notifications/hooks/useDemandCapacityNotifications';
 import { MaterialRelation } from '@models/types/data/material-relation';
 import { getAllMaterialRelations } from '@services/material-relation-service';
+import { getAllMaterials } from '@services/materials-service';
 
 type MaterialDetailsHeaderProps = {
     material: Material;
@@ -46,8 +47,14 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
     const { openDialog } = useDataModal();
     const { notifications } = useDemandCapacityNotifications();
     const [materialRelations, setMaterialRelations] = useState<MaterialRelation[]>([]);
+    const [materialNamesByNumber, setMaterialNamesByNumber] = useState<Map<string, string>>(new Map());
     useEffect(() => {
         getAllMaterialRelations().then(setMaterialRelations).catch(console.error);
+    }, []);
+    useEffect(() => {
+        getAllMaterials()
+            .then((materials: Material[]) => setMaterialNamesByNumber(new Map(materials.map((m) => [m.ownMaterialNumber ?? '', m.name]))))
+            .catch(console.error);
     }, []);
     const affectingNotifications = useMemo(() => {
         const openNotifications = notifications.filter((n) => n.status === 'open');
@@ -61,7 +68,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                     {direction === DirectionType.Outbound ? 'Production Information' : 'Demand Information'} for {material?.name} (<TextToClipboard text={material?.ownMaterialNumber ?? ""} />, {capitalize(direction.toLowerCase())})
                 </Typography>
                 {direction === DirectionType.Outbound && affectingNotifications.length > 0 && (
-                    <DemandCapacityNotificationImpactTooltip impacts={affectingNotifications}>
+                    <DemandCapacityNotificationImpactTooltip impacts={affectingNotifications} materialNamesByNumber={materialNamesByNumber}>
                         <Box
                             component={Link}
                             to="./supply-chain"
@@ -72,16 +79,14 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                             sx={{
                                 marginLeft: '1rem',
                                 padding: '0.25rem',
+                                textDecoration: 'none',
+                                cursor: 'pointer',
                                 '& svg': {
                                     fontSize: '1.5rem',
                                 },
-                                ...(notificationLinkTo && {
-                                    textDecoration: 'none',
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                        color: 'warning.dark',
-                                    },
-                                }),
+                                '&:hover': {
+                                    color: 'warning.dark',
+                                },
                             }}
                         >
                             <NotificationsActive />

@@ -24,24 +24,21 @@ import { DemandCapacityNotificationImpact } from '@util/affecting-notifications'
 
 type DemandCapacityNotificationImpactTooltipProps = {
     impacts: DemandCapacityNotificationImpact[];
+    materialNamesByNumber: Map<string, string>;
     children: ReactElement;
 };
 
-export function DemandCapacityNotificationImpactTooltip({ impacts, children }: DemandCapacityNotificationImpactTooltipProps) {
+export function DemandCapacityNotificationImpactTooltip({ impacts, materialNamesByNumber, children }: DemandCapacityNotificationImpactTooltipProps) {
     return (
         <Tooltip
             arrow
-            title={
-                <>
-                    {impacts.map(({ notification, viaChildMaterialNumbers }, index) => (
-                        <div key={notification.uuid ?? index}>
-                            {viaChildMaterialNumbers.length > 0
-                                ? `Affected by component ${viaChildMaterialNumbers.join(', ')}`
-                                : EFFECTS.find((e) => e.key === notification.effect)?.value ?? notification.effect}
-                        </div>
-                    ))}
-                </>
-            }
+            title={impacts.map(({ notification, viaChildMaterialNumbers }, index) => {
+                const effectLabel = EFFECTS.find((e) => e.key === notification.effect)?.value ?? notification.effect;
+                const affectedMaterials = viaChildMaterialNumbers
+                    .map((number) => `${materialNamesByNumber.get(number) ?? number} (${number})`)
+                    .join(', ');
+                return <div key={notification.uuid ?? index}>{`${effectLabel} affecting ${affectedMaterials}`}</div>;
+            })}
         >
             {children}
         </Tooltip>
