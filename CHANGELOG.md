@@ -25,7 +25,7 @@ The **need for configuration updates** is **marked bold**.
 - Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
 - Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
 - Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
-- Removed DashboardView and StockView because they are not used anymore ([]())
+- Removed DashboardView and StockView because they are not used anymore ([#1217](https://github.com/eclipse-tractusx/puris/pull/1217))
 
 ### Fixes
 
