@@ -2,6 +2,25 @@ apiVersion: v1
 entries:
   puris:
   - apiVersion: v2
+    appVersion: 6.2.0-rc3
+    created: "2026-09-11T14:03:13.638193354Z"
+    dependencies:
+    - alias: postgresql
+      condition: postgresql.enabled
+      name: postgres
+      repository: oci://registry-1.docker.io/cloudpirates
+      version: 0.18.3
+    description: A helm chart for Kubernetes deployment of PURIS
+    digest: e74885f17c9f146232fc82bacb9477b4719583d0312607decea2652b9cb84ec1
+    home: https://github.com/eclipse-tractusx/puris
+    name: puris
+    sources:
+    - https://github.com/eclipse-tractusx/puris
+    type: application
+    urls:
+    - https://github.com/eclipse-tractusx/puris/releases/download/puris-7.2.0-rc3/puris-7.2.0-rc3.tgz
+    version: 7.2.0-rc3
+  - apiVersion: v2
     appVersion: 6.2.0-rc2
     created: "2026-09-11T12:58:41.458085071Z"
     dependencies:
@@ -529,4 +548,4 @@ entries:
     urls:
     - https://github.com/eclipse-tractusx/puris/releases/download/puris-1.0.0/puris-1.0.0.tgz
     version: 1.0.0
-generated: "2026-09-11T12:58:41.458343622Z"
+generated: "2026-09-11T14:03:13.638501757Z"
