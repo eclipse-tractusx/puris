@@ -32,6 +32,7 @@ The **need for configuration updates** is **marked bold**.
   - Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
   - Added logic to map and save received irs job data ([#1184](https://github.com/eclipse-tractusx/puris/pull/1184))
   - Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
+- Added link to affected outgoing material on the material details header, showing open demand/capacity notifications affecting a material via its descendant (child) materials ([#1202](https://github.com/eclipse-tractusx/puris/pull/1202))
 
 ### Changed
 
