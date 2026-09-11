@@ -199,11 +199,8 @@ public class IrsChainOpeningRootGrantService {
 		Instant notificationEnd = notification.getExpectedEndDateOfEffect() != null
 			? notification.getExpectedEndDateOfEffect().toInstant() : null;
 
-		Instant newValidFrom = grant.getValidFrom() == null || notificationStart.isBefore(grant.getValidFrom())
-			? notificationStart : grant.getValidFrom();
-		Instant newValidUntil = grant.getValidUntil() == null || notificationEnd == null
-			? null
-			: (notificationEnd.isAfter(grant.getValidUntil()) ? notificationEnd : grant.getValidUntil());
+		Instant newValidFrom = notificationStart;
+		Instant newValidUntil = notificationEnd;
 
 		if (!Objects.equals(grant.getValidFrom(), newValidFrom) || !Objects.equals(grant.getValidUntil(), newValidUntil)) {
 			changed = true;

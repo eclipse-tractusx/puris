@@ -64,7 +64,12 @@ public class IrsRequestBodybuilder {
      * @return the grant creation request body
      */
     public JsonNode buildGrantCreationRequestBody(IrsChainOpeningGrant grant) {
-        return objectMapper.valueToTree(grant);
+        ObjectNode grantNode = objectMapper.valueToTree(grant);
+        ArrayNode allowedBpnlsNode = objectMapper.createArrayNode();
+        grantNode.set("allowedBpnlSet", allowedBpnlsNode);
+        grant.getAllowedBpnls().forEach(allowedBpnlsNode::add);
+        allowedBpnlsNode.add(variablesService.getOwnBpnl());
+        return grantNode;
     }
 
     /**
