@@ -264,7 +264,6 @@ idp:
   # -- Name of the Realm of the keycloak instance.
   realm: <path:puris/data/environment#central-idp-realm>
   # -- Name of the client which is used for the application.
-  # TODO: in future switch from customer to ceres
-  clientId: <path:puris/data/companies/customer/puris/idp#client-id>
+  clientId: <path:puris/data/companies/ceres/puris/idp#client-id>
   # -- URL to use as keycloak redirect url.
   redirectUrlFrontend: ""
