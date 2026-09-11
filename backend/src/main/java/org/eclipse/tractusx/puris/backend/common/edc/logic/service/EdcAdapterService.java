@@ -407,14 +407,18 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", profileVersion.CONTRACT_POLICY_ID));
-                if (policyExists.isSuccessful()) {
-                    log.info("Framework agreement policy definition already existed");
-                } else {
-                    log.warn("Framework Policy Registration failed");
-                    if (response.body() != null) {
-                        log.warn("Response: \n" + response.body().string());
+                try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", profileVersion.CONTRACT_POLICY_ID))) {
+                    if (policyExists.isSuccessful()) {
+                        log.info("PURIS Framework agreement policy definition already existed");
+                    } else {
+                        log.warn("Framework Policy Registration failed");
+                        if (response.body() != null) {
+                            log.warn("Response: \n" + response.body().string());
+                        }
+                        return false;
                     }
+                } catch(Exception e) {
+                    log.error("Failed to check if puris framework agreement policy definition already exists", e);
                     return false;
                 }
             }
@@ -441,15 +445,20 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", profileVersion.DTR_CONTRACT_POLICY_ID))) {
+                    if (policyExists.isSuccessful()) {
+                        log.info("DTR Framework agreement policy definition already existed");
+                    } else {
+                        log.warn("Framework Policy Registration failed");
+                        if (response.body() != null) {
+                            log.warn("Response: \n" + response.body().string());
+                        }
+                        return false;
+                    }
+                } catch(Exception e) {
+                    log.error("Failed to check if dtr framework agreement policy definition already exists", e);
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
             }
             /** 
              * if the IRS adapter is enabled the DTR framework policy for 24.05 should be registered in the policy store

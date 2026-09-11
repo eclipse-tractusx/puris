@@ -44,7 +44,7 @@ The **need for configuration updates** is **marked bold**.
 
 - Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
 - Create self-contracts for all supported profile versions, and extend self-contracting to the anonymized submodels and PartTypeInformation ([#1216](https://github.com/eclipse-tractusx/puris/pull/1216))
-- improved check for existing policies ([#1220](https://github.com/eclipse-tractusx/puris/pull/1220))
+- improved check for existing policies ([#1220](https://github.com/eclipse-tractusx/puris/pull/1220), [#1221](https://github.com/eclipse-tractusx/puris/pull/1221))
 
 ### Version Bumps
 
