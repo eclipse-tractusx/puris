@@ -50,6 +50,7 @@ The **need for configuration updates** is **marked bold**.
 - Fixed validity dates and renamed allowedBpnls property to allowedBpnlSet for Chain Opening Grants ([#1224](https://github.com/eclipse-tractusx/puris/pull/1224))
 - Renamed "validUntil" to "validTo" in chain opening grants ([#1226](https://github.com/eclipse-tractusx/puris/pull/1226))
 - Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
+- Ignore parent object when converting aggregated data nodes to json ([#1228](https://github.com/eclipse-tractusx/puris/pull/1228))
 
 ### Version Bumps
 

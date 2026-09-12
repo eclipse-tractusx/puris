@@ -38,6 +38,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,11 +63,13 @@ public class AggregatedMaterialDataNode {
     @ManyToOne(optional = false)
     @JoinColumn(name = "aggregated_material_data_id")
     @ToString.Exclude
+    @JsonIgnore
     protected AggregatedMaterialData aggregatedMaterialData;
 
     @ManyToOne
     @JoinColumn(name = "parent_node_id")
     @ToString.Exclude
+    @JsonIgnore
     protected AggregatedMaterialDataNode parentNode;
 
     @OneToMany(mappedBy = "parentNode", cascade = CascadeType.ALL)
