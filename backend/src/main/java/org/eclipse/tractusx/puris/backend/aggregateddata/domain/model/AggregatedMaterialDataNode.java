@@ -18,8 +18,6 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.aggregateddata.domain.model;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -71,7 +69,7 @@ public class AggregatedMaterialDataNode {
 
     @OneToMany(mappedBy = "parentNode", cascade = CascadeType.ALL)
     @ToString.Exclude
-    protected List<AggregatedMaterialDataNode> childMaterialData = new ArrayList<>();
+    protected List<AggregatedMaterialDataNode> childMaterialData;
 
     @NotNull
     protected double quantity;
@@ -87,18 +85,15 @@ public class AggregatedMaterialDataNode {
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     protected String externalMaterialName;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aggregated_material_data_node_id")
+    @OneToMany(mappedBy = "aggregatedMaterialDataNode", cascade = CascadeType.ALL)
     @Valid
-    protected Set<ReportedAnonymizedProduction> productions = new HashSet<>();
+    protected Set<ReportedAnonymizedProduction> productions;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aggregated_material_data_node_id")
+    @OneToMany(mappedBy = "aggregatedMaterialDataNode", cascade = CascadeType.ALL)
     @Valid
-    protected Set<ReportedAnonymizedDelivery> deliveries = new HashSet<>();
+    protected Set<ReportedAnonymizedDelivery> deliveries;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "aggregated_material_data_node_id")
+    @OneToMany(mappedBy = "aggregatedMaterialDataNode", cascade = CascadeType.ALL)
     @Valid
-    protected Set<ReportedAnonymizedStock> stocks = new HashSet<>();
+    protected Set<ReportedAnonymizedStock> stocks;
 }
