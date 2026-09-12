@@ -896,3 +896,15 @@ databaseChangeLog:
                   name: target_version
                   value: "6.2.0"
             tableName: migration_task
+  - changeSet:
+      id: "14"
+      author: "ReneSchroederLj"
+      changes:
+        - renameColumn:
+            tableName: "chain_opening_root_grant"
+            oldColumnName: "valid_until"
+            newColumnName: "valid_to"
+        - renameColumn:
+            tableName: "chain_opening_grant"
+            oldColumnName: "valid_until"
+            newColumnName: "valid_to"
