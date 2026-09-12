@@ -286,7 +286,7 @@ public class IrsChainOpeningPartnerGrantService {
 				.sourceDisruptionId(sourceDisruptionId)
 				.useCase(IrsAdapterConfiguration.PURIS_USE_CASE)
 				.validFrom(ownNotification.getStartDateOfEffect().toInstant())
-				.validUntil(ownNotification.getExpectedEndDateOfEffect() == null
+				.validTo(ownNotification.getExpectedEndDateOfEffect() == null
 					? null : ownNotification.getExpectedEndDateOfEffect().toInstant())
 				.syncStatus(IrsGrantSyncStatusEnumeration.NOT_SYNCED)
 				.build();
@@ -369,7 +369,7 @@ public class IrsChainOpeningPartnerGrantService {
 		OwnDemandAndCapacityNotification matchingNotification = ownNotificationRepository
 			.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, grant.getRequesterBpn()).stream()
 			.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))
-			.filter(notification -> DemandAndCapacityNotificationService.isWithinNotificationBounds(notification, grant.getValidFrom(), grant.getValidUntil()))
+			.filter(notification -> DemandAndCapacityNotificationService.isWithinNotificationBounds(notification, grant.getValidFrom(), grant.getValidTo()))
 			.filter(notification -> DemandAndCapacityNotificationService.affectsMaterialWithMaterialNumberCx(notification, grant.getGlobalAssetId()))
 			.findFirst()
 			.orElse(null);

@@ -33,6 +33,7 @@ The **need for configuration updates** is **marked bold**.
   - Added logic to map and save received irs job data ([#1184](https://github.com/eclipse-tractusx/puris/pull/1184))
   - Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
 - Added link to affected outgoing material on the material details header, showing open demand/capacity notifications affecting a material via its descendant (child) materials ([#1202](https://github.com/eclipse-tractusx/puris/pull/1202))
+- Added logic to create missing partner contract definitions and policies during migrations ([#1225](https://github.com/eclipse-tractusx/puris/pull/1225))
 
 ### Changed
 
@@ -47,6 +48,7 @@ The **need for configuration updates** is **marked bold**.
 - improved check for existing policies ([#1220](https://github.com/eclipse-tractusx/puris/pull/1220), [#1221](https://github.com/eclipse-tractusx/puris/pull/1221))
 - allow requests with own bpnl in part type controller for irs ([#1222](https://github.com/eclipse-tractusx/puris/pull/1222))
 - Fixed validity dates and renamed allowedBpnls property to allowedBpnlSet for Chain Opening Grants ([#1224](https://github.com/eclipse-tractusx/puris/pull/1224))
+- Renamed "validUntil" to "validTo" in chain opening grants ([#1226](https://github.com/eclipse-tractusx/puris/pull/1226))
 - Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
 
 ### Version Bumps

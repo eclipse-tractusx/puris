@@ -900,6 +900,18 @@ databaseChangeLog:
       id: "14"
       author: ReneSchroederLJ
       changes:
+        - renameColumn:
+            tableName: "chain_opening_root_grant"
+            oldColumnName: "valid_until"
+            newColumnName: "valid_to"
+        - renameColumn:
+            tableName: "chain_opening_grant"
+            oldColumnName: "valid_until"
+            newColumnName: "valid_to"
+  - changeSet:
+      id: "15"
+      author: ReneSchroederLJ
+      changes:
         - addForeignKeyConstraint:
             baseTableName: reported_anonymized_delivery
             baseColumnNames: aggregated_material_data_node_id
