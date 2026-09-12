@@ -898,7 +898,7 @@ databaseChangeLog:
             tableName: migration_task
   - changeSet:
       id: "14"
-      author: "ReneSchroederLj"
+      author: ReneSchroederLJ
       changes:
         - renameColumn:
             tableName: "chain_opening_root_grant"
@@ -908,3 +908,25 @@ databaseChangeLog:
             tableName: "chain_opening_grant"
             oldColumnName: "valid_until"
             newColumnName: "valid_to"
+  - changeSet:
+      id: "15"
+      author: ReneSchroederLJ
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: reported_anonymized_delivery
+            baseColumnNames: aggregated_material_data_node_id
+            referencedTableName: aggregated_material_data_node
+            referencedColumnNames: uuid
+            constraintName: fk_reported_anonymized_delivery_node
+        - addForeignKeyConstraint:
+            baseTableName: reported_anonymized_stock
+            baseColumnNames: aggregated_material_data_node_id
+            referencedTableName: aggregated_material_data_node
+            referencedColumnNames: uuid
+            constraintName: fk_reported_anonymized_stock_node
+        - addForeignKeyConstraint:
+            baseTableName: reported_anonymized_production
+            baseColumnNames: aggregated_material_data_node_id
+            referencedTableName: aggregated_material_data_node
+            referencedColumnNames: uuid
+            constraintName: fk_reported_anonymized_production_node

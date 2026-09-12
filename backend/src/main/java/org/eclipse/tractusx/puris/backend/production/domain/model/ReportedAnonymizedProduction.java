@@ -24,15 +24,20 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialDataNode;
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -50,8 +55,11 @@ public class ReportedAnonymizedProduction {
     @GeneratedValue
     protected UUID uuid;
 
-    @Column(name = "aggregated_material_data_node_id", insertable = false, updatable = false)
-    protected UUID aggregatedMaterialDataNodeId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "aggregated_material_data_node_id")
+    @ToString.Exclude
+    @JsonIgnore
+    protected AggregatedMaterialDataNode aggregatedMaterialDataNode;
 
     protected double quantity;
     protected ItemUnitEnumeration measurementUnit;

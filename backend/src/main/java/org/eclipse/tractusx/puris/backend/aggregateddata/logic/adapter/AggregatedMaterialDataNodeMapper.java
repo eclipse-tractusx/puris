@@ -115,11 +115,11 @@ public class AggregatedMaterialDataNodeMapper {
             try {
                 switch (AssetType.fromUrn(aspect)) {
                     case DELIVERY_ANONYMIZED_SUBMODEL -> target.getDeliveries().addAll(
-                        mapDeliveries(objectMapper.treeToValue(payload, DeliveryInformationAnonymized.class)));
+                        mapDeliveries(objectMapper.treeToValue(payload, DeliveryInformationAnonymized.class), target));
                     case ITEM_STOCK_ANONYMIZED_SUBMODEL -> target.getStocks().addAll(
-                        mapStocks(objectMapper.treeToValue(payload, ItemStockAnonymizedSamm.class)));
+                        mapStocks(objectMapper.treeToValue(payload, ItemStockAnonymizedSamm.class), target));
                     case PRODUCTION_ANONYMIZED_SUBMODEL -> target.getProductions().addAll(
-                        mapProductions(objectMapper.treeToValue(payload, PlannedProductionOutputAnonymized.class)));
+                        mapProductions(objectMapper.treeToValue(payload, PlannedProductionOutputAnonymized.class), target));
                     default -> throw new IllegalArgumentException("Unexpected aspect: " + aspect);
                 }
             } catch (JsonProcessingException e) {
@@ -128,7 +128,7 @@ public class AggregatedMaterialDataNodeMapper {
         }
     }
 
-    private Set<ReportedAnonymizedDelivery> mapDeliveries(DeliveryInformationAnonymized samm) {
+    private Set<ReportedAnonymizedDelivery> mapDeliveries(DeliveryInformationAnonymized samm, AggregatedMaterialDataNode target) {
         var deliveries = new HashSet<ReportedAnonymizedDelivery>();
         for (var deliveryAnonymized : samm.getDeliveries()) {
             var departureEvent = deliveryAnonymized.getTransitEvents().stream()
@@ -144,14 +144,15 @@ public class AggregatedMaterialDataNodeMapper {
                 .dateOfDeparture(departureEvent.getDateTimeOfEvent())
                 .departureType(departureEvent.getEventType())
                 .originBpnsAnonymized(deliveryAnonymized.getOriginBpnsAnonymized())
-                .destinationBpnsAnonymized(deliveryAnonymized.getDestinationBpnsAnonymized());
+                .destinationBpnsAnonymized(deliveryAnonymized.getDestinationBpnsAnonymized())
+                .aggregatedMaterialDataNode(target);
             arrivalEvent.ifPresent(event -> builder.dateOfArrival(event.getDateTimeOfEvent()).arrivalType(event.getEventType()));
             deliveries.add(builder.build());
         }
         return deliveries;
     }
 
-    private Set<ReportedAnonymizedStock> mapStocks(ItemStockAnonymizedSamm samm) {
+    private Set<ReportedAnonymizedStock> mapStocks(ItemStockAnonymizedSamm samm, AggregatedMaterialDataNode target) {
         var stocks = new HashSet<ReportedAnonymizedStock>();
         for (var allocatedStock : samm.getAllocatedStocksAnonymized()) {
             stocks.add(ReportedAnonymizedStock.builder()
@@ -160,12 +161,13 @@ public class AggregatedMaterialDataNodeMapper {
                 .stockLocationBpnsAnonymized(allocatedStock.getStockLocationBPNSAnonymized())
                 .isBlocked(allocatedStock.getIsBlocked())
                 .lastUpdatedOnDateTime(allocatedStock.getLastUpdatedOnDateTime())
+                .aggregatedMaterialDataNode(target)
                 .build());
         }
         return stocks;
     }
 
-    private Set<ReportedAnonymizedProduction> mapProductions(PlannedProductionOutputAnonymized samm) {
+    private Set<ReportedAnonymizedProduction> mapProductions(PlannedProductionOutputAnonymized samm, AggregatedMaterialDataNode target) {
         var productions = new HashSet<ReportedAnonymizedProduction>();
         for (var output : samm.getAllocatedPlannedProductionOutputs()) {
             productions.add(ReportedAnonymizedProduction.builder()
@@ -175,6 +177,7 @@ public class AggregatedMaterialDataNodeMapper {
                 .estimatedTimeOfCompletion(output.getEstimatedTimeOfCompletion())
                 .lastUpdatedOnDateTime(output.getLastUpdatedOnDateTime())
                 .materialGlobalAssetIdAnonymized(samm.getMaterialGlobalAssetIdAnonymized())
+                .aggregatedMaterialDataNode(target)
                 .build());
         }
         return productions;

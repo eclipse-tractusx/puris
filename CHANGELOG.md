@@ -49,6 +49,7 @@ The **need for configuration updates** is **marked bold**.
 - allow requests with own bpnl in part type controller for irs ([#1222](https://github.com/eclipse-tractusx/puris/pull/1222))
 - Fixed validity dates and renamed allowedBpnls property to allowedBpnlSet for Chain Opening Grants ([#1224](https://github.com/eclipse-tractusx/puris/pull/1224))
 - Renamed "validUntil" to "validTo" in chain opening grants ([#1226](https://github.com/eclipse-tractusx/puris/pull/1226))
+- Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
 
 ### Version Bumps
 

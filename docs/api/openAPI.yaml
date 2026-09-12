@@ -1766,10 +1766,6 @@ components:
     ReportedAnonymizedDelivery:
       additionalProperties: false
       properties:
-        aggregatedMaterialDataNodeId:
-          format: uuid
-          maxItems: 50
-          type: string
         arrivalType:
           enum:
           - estimated-departure
@@ -1860,10 +1856,6 @@ components:
     ReportedAnonymizedProduction:
       additionalProperties: false
       properties:
-        aggregatedMaterialDataNodeId:
-          format: uuid
-          maxItems: 50
-          type: string
         estimatedTimeOfCompletion:
           format: date-time
           maxItems: 50
@@ -1933,10 +1925,6 @@ components:
     ReportedAnonymizedStock:
       additionalProperties: false
       properties:
-        aggregatedMaterialDataNodeId:
-          format: uuid
-          maxItems: 50
-          type: string
         blocked:
           type: boolean
         lastUpdatedOnDateTime:
