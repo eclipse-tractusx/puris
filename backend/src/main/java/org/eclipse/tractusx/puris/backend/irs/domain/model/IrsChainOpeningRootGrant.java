@@ -47,7 +47,7 @@ import lombok.experimental.SuperBuilder;
  * A root grant's {@link #requesterBpn} is always our own company BPNL. It allows us to
  * recursively query the set of {@link #getAllowedBpnls()} for child materials of the material
  * identified by {@link #globalAssetId} (a parent of a material affected by a reported disruption
- * notification), for the duration of the [{@link #validFrom}, {@link #validUntil}] window. The
+ * notification), for the duration of the [{@link #validFrom}, {@link #validTo}] window. The
  * allowed BPNLs are derived from the partners of {@link #reportedNotifications}, the set of
  * reported notifications currently backing this grant.
  */

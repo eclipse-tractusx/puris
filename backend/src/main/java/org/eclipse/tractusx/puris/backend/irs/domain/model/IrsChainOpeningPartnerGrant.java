@@ -48,7 +48,7 @@ import lombok.experimental.SuperBuilder;
  * {@link #getAllowedBpnls()} for child materials of the material identified by
  * {@link #globalAssetId} (a material directly affected by one of our own disruption
  * notifications that we approved data exchange for), for the duration of the
- * [{@link #validFrom}, {@link #validUntil}] window. The allowed BPNLs are derived from the
+ * [{@link #validFrom}, {@link #validTo}] window. The allowed BPNLs are derived from the
  * partners of {@link #reportedNotifications}, the set of reported notifications currently
  * backing this grant.
  */

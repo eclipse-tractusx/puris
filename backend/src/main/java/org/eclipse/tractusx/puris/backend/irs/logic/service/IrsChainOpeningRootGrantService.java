@@ -201,21 +201,21 @@ public class IrsChainOpeningRootGrantService {
 
 		Instant newValidFrom = grant.getValidFrom() == null
 			? notificationStart : (notificationStart.isBefore(grant.getValidFrom()) ? notificationStart : grant.getValidFrom());
-		Instant newValidUntil = null;
-		if (grant.getValidUntil() == null || (notificationEnd != null && notificationEnd.isAfter(grant.getValidUntil()))) {
-			newValidUntil = notificationEnd;
+		Instant newValidTo = null;
+		if (grant.getValidTo() == null || (notificationEnd != null && notificationEnd.isAfter(grant.getValidTo()))) {
+			newValidTo = notificationEnd;
 		} else {
-			newValidUntil = grant.getValidUntil();
+			newValidTo = grant.getValidTo();
 		}
-		if (newValidUntil == null) {
-			newValidUntil = newValidFrom.plusSeconds(60 * 60 * 24 * 7);
+		if (newValidTo == null) {
+			newValidTo = newValidFrom.plusSeconds(60 * 60 * 24 * 7);
 		}
 
-		if (!Objects.equals(grant.getValidFrom(), newValidFrom) || !Objects.equals(grant.getValidUntil(), newValidUntil)) {
+		if (!Objects.equals(grant.getValidFrom(), newValidFrom) || !Objects.equals(grant.getValidTo(), newValidTo)) {
 			changed = true;
 		}
 		grant.setValidFrom(newValidFrom);
-		grant.setValidUntil(newValidUntil);
+		grant.setValidTo(newValidTo);
 
 		if (!isNew && changed && grant.getSyncStatus() == IrsGrantSyncStatusEnumeration.SYNCED) {
 			grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);

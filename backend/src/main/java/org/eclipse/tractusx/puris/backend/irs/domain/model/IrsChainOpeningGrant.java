@@ -57,7 +57,7 @@ import lombok.experimental.SuperBuilder;
  * <p>
  * A grant allows {@link #requesterBpn} to recursively query the set of {@link #getAllowedBpnls()}
  * for the material identified by {@link #globalAssetId}, for the duration of the
- * [{@link #validFrom}, {@link #validUntil}] window. A grant is uniquely identified by the
+ * [{@link #validFrom}, {@link #validTo}] window. A grant is uniquely identified by the
  * combination of {@link #requesterBpn}, {@link #globalAssetId} and {@link #sourceDisruptionId}.
  * <p>
  * {@link #getReportedNotifications()} is declared abstract rather than mapped here: a real
@@ -96,7 +96,7 @@ public abstract class IrsChainOpeningGrant {
 
 	protected Instant validFrom;
 
-	protected Instant validUntil;
+	protected Instant validTo;
 
 	@Builder.Default
 	protected String useCase = IrsAdapterConfiguration.PURIS_USE_CASE;

@@ -81,7 +81,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
     private static final String SUPPLIER_BPNL = "BPNLXXSUPPLIERXX";
     private static final UUID SOURCE_DISRUPTION_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final Instant VALID_FROM = Instant.now().minusSeconds(7 * 24 * 3600L);
-    private static final Instant VALID_UNTIL = Instant.now().plusSeconds(7 * 24 * 3600L);
+    private static final Instant VALID_TO = Instant.now().plusSeconds(7 * 24 * 3600L);
 
     @Mock
     private IrsRequestService irsRequestService;
@@ -155,11 +155,11 @@ class IrsChainOpeningPartnerGrantServiceTest {
         notification.setSourceDisruptionId(SOURCE_DISRUPTION_ID);
         notification.setPartner(partner(PARTNER_BPNL));
         notification.setStatus(StatusEnumeration.OPEN);
-        // Padded a bit wider than [VALID_FROM, VALID_UNTIL] (the grant's own bounds) so
+        // Padded a bit wider than [VALID_FROM, VALID_TO] (the grant's own bounds) so
         // isWithinNotificationBounds isn't tripped up by Instant<->Date millisecond truncation
         // at an exact boundary.
         notification.setStartDateOfEffect(Date.from(VALID_FROM.minusSeconds(3600)));
-        notification.setExpectedEndDateOfEffect(Date.from(VALID_UNTIL.plusSeconds(3600)));
+        notification.setExpectedEndDateOfEffect(Date.from(VALID_TO.plusSeconds(3600)));
         notification.setMaterials(materials);
         return notification;
     }
@@ -213,7 +213,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
             .requesterBpn(PARTNER_BPNL)
             .reportedNotifications(notifications)
             .validFrom(VALID_FROM)
-            .validUntil(VALID_UNTIL)
+            .validTo(VALID_TO)
             .build();
     }
 
