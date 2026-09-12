@@ -346,6 +346,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -363,6 +367,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and DTR");
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR");
                 return false;
             }
@@ -385,6 +393,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildBpnAndMembershipRestrictedPolicy(partner);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(edcRequestBodyBuilder.getBpnPolicyId(partner))) {
+                    log.info("Policy definition already exists for partner " + partner.getBpnl());
+                    return true;
+                }
                 log.warn("Policy Registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -407,18 +419,13 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", profileVersion.CONTRACT_POLICY_ID))) {
-                    if (policyExists.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(profileVersion.CONTRACT_POLICY_ID)) {
                         log.info("PURIS Framework agreement policy definition already existed");
-                    } else {
-                        log.warn("Framework Policy Registration failed");
-                        if (response.body() != null) {
-                            log.warn("Response: \n" + response.body().string());
-                        }
-                        return false;
+                } else {
+                    log.warn("Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
                     }
-                } catch(Exception e) {
-                    log.error("Failed to check if puris framework agreement policy definition already exists", e);
                     return false;
                 }
             }
@@ -445,18 +452,13 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", profileVersion.DTR_CONTRACT_POLICY_ID))) {
-                    if (policyExists.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(profileVersion.DTR_CONTRACT_POLICY_ID)) {
                         log.info("DTR Framework agreement policy definition already existed");
-                    } else {
-                        log.warn("Framework Policy Registration failed");
-                        if (response.body() != null) {
-                            log.warn("Response: \n" + response.body().string());
-                        }
-                        return false;
+                } else {
+                    log.warn("DTR Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
                     }
-                } catch(Exception e) {
-                    log.error("Failed to check if dtr framework agreement policy definition already exists", e);
                     return false;
                 }
             }
@@ -1634,5 +1636,24 @@ public class EdcAdapterService {
         log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
 
         return true;
+    }
+
+    /**
+     * This method checks if a policy with the given ID already exists in the EDC.
+     * It sends a GET request to the EDC to verify the existence of the policy.
+     * If the request is successful, it returns true, indicating that the policy exists.
+     * If the request fails or an exception occurs, it returns false.
+     * 
+     * NOTE: This method only checks for the existence of the policy and does not validate its contents.
+     * @param policyId  The ID of the policy to check for existence.
+     * @return true if the policy exists, false otherwise.
+     */
+    private boolean isPolicyExisting(String policyId) {
+        try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", policyId))) {
+            return policyExists.isSuccessful();
+        } catch(Exception e) {
+            log.error("Failed to check if policy definition already exists", e);
+            return false;
+        }
     }
 }

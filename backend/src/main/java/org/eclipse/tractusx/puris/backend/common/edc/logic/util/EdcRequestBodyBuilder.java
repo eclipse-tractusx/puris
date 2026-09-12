@@ -321,7 +321,7 @@ public class EdcRequestBodyBuilder {
      * @param partner the partner
      * @return the policy-id
      */
-    private String getBpnPolicyId(Partner partner) {
+    public String getBpnPolicyId(Partner partner) {
         return partner.getBpnl() + "_policy";
     }
 
