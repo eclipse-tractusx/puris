@@ -48,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class AggregatedMaterialDataNodeMapper {
+    private static final String CHAIN_OPENING_REJECTED = "CHAIN_OPENING_REJECTED";
+
     @Autowired
     private MaterialService materialService;
 
@@ -72,24 +74,33 @@ public class AggregatedMaterialDataNodeMapper {
             .build();
 
         for (JsonNode childNode : elements(json.path("result").get("childItems"))) {
-            aggregatedData.getChildMaterialData().add(mapNode(childNode, aggregatedData, null));
+            var node = mapNode(childNode, aggregatedData, null);
+            if (node != null) {
+                aggregatedData.getChildMaterialData().add(node);
+            }
         }
 
         return aggregatedData;
     }
 
+    /**
+     * Maps a childItems entry to a node, or returns {@code null} if the branch was rejected
+     * by the partner (tombstone reason {@code CHAIN_OPENING_REJECTED}) and must be fully
+     * dismissed. Any other missing data is mapped as-is; the frontend is responsible for displaying gaps.
+     */
     private AggregatedMaterialDataNode mapNode(JsonNode json, AggregatedMaterialData root, AggregatedMaterialDataNode parent) {
-        var quantity = readQuantity(json);
-        if (quantity == null) {
-            throw new IllegalArgumentException("Missing quantity for node " + getText(json, "materialNumber"));
+        if (isChainOpeningRejected(json)) {
+            log.warn("Skipping node with rejected chain opening grant: {}", json);
+            return null;
         }
+        var quantity = readQuantity(json);
         var node = AggregatedMaterialDataNode.builder()
             .aggregatedMaterialData(root)
             .parentNode(parent)
             .externalMaterialNumber(getText(json, "materialNumber"))
             .externalMaterialName(getText(json, "materialName"))
-            .quantity(quantity.getValue())
-            .measurementUnit(quantity.getUnit())
+            .quantity(quantity != null ? quantity.getValue() : null)
+            .measurementUnit(quantity != null ? quantity.getUnit() : null)
             .productions(new HashSet<>())
             .deliveries(new HashSet<>())
             .stocks(new HashSet<>())
@@ -99,7 +110,10 @@ public class AggregatedMaterialDataNodeMapper {
         mapAspectItems(json.get("items"), node);
 
         for (JsonNode childNode : elements(json.get("childItems"))) {
-            node.getChildMaterialData().add(mapNode(childNode, root, node));
+            var childMaterialNode = mapNode(childNode, root, node);
+            if (childMaterialNode != null) {
+                node.getChildMaterialData().add(childMaterialNode);
+            }
         }
 
         return node;
@@ -181,6 +195,15 @@ public class AggregatedMaterialDataNodeMapper {
                 .build());
         }
         return productions;
+    }
+
+    private static boolean isChainOpeningRejected(JsonNode json) {
+        for (JsonNode tombstone : elements(json.get("tombstones"))) {
+            if (CHAIN_OPENING_REJECTED.equals(getText(tombstone, "reason"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ItemQuantityEntity readQuantity(JsonNode json) {

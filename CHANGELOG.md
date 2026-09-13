@@ -51,6 +51,7 @@ The **need for configuration updates** is **marked bold**.
 - Renamed "validUntil" to "validTo" in chain opening grants ([#1226](https://github.com/eclipse-tractusx/puris/pull/1226))
 - Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
 - Ignore parent object when converting aggregated data nodes to json ([#1228](https://github.com/eclipse-tractusx/puris/pull/1228))
+- Handle partial IRS job failures gracefully ([#1234](https://github.com/eclipse-tractusx/puris/pull/1234))
 
 ### Version Bumps
 
