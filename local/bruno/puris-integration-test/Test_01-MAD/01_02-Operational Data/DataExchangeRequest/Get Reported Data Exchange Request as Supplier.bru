@@ -15,8 +15,8 @@ headers {
 }
 
 script:pre-request {
-  console.log("Waiting 5 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 5000)));
+  console.log("Waiting 10 seconds");
+  await (new Promise(resolve => setTimeout(resolve, 10000)));
 }
 
 tests {

@@ -24,6 +24,7 @@ import java.util.UUID;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,10 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
 
     public OwnDataExchangeRequestService(OwnDataExchangeRequestRepository repository) {
         super(repository);
+    }
+
+    public final List<OwnDataExchangeRequest> findByRelatedDataExchangeRequest(ReportedDataExchangeRequest origin) {
+        return repository.findByRelatedDataExchangeRequest_Uuid(origin.getUuid());
     }
 
     public final OwnDataExchangeRequest create(OwnDataExchangeRequest ownDataExchangeRequest) {

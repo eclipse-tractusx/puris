@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBu
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsPolicyStoreService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
@@ -67,6 +68,9 @@ public class EdcAdapterService {
 
     @Autowired
     private JsonLdUtils jsonLdUtils;
+
+    @Autowired
+    private IrsPolicyStoreService irsPolicyStoreService;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
@@ -248,7 +252,17 @@ public class EdcAdapterService {
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of PartTypeInformation 1.0.0 submodel successful {}", (assetRegistration = registerPartTypeInfoSubmodelAsset()));
+        log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getPartTypeLegacySubmodelApiAssetId(),
+            variablesService.getParttypeInformationLegacyServerendpoint(),
+            AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
+        log.info("Registration of PartTypeInformation 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getPartTypeSubmodelApiAssetId(),
+            variablesService.getParttypeInformationServerendpoint(),
+            AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID
+        )));
         result &= assetRegistration;
         log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
@@ -275,38 +289,67 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
-        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner) && result;
+        createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner);
+        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeLegacySubmodelApiAssetId(), partner) && result;
     }
 
     /**
      * Register contract definitions for assets that should only be accessible by the own organization.
      * Creates access policy restricted to own BPNL (with membership credential requirement).
      * Contract policy uses standard Framework Agreement terms.
-     * 
+     *
+     * Registers self-contract definitions for every supported {@link PolicyProfileVersionEnumeration}.
+     * Profile 2405 is always supported for compatibility. Profile 2509 is only added if the
+     * app's configured profile is 2509, since not every partner's EDC can negotiate that profile.
+     *
+     * The access policy itself is not profile-specific (it is always built for the app's
+     * configured profile, see {@link EdcRequestBodyBuilder#buildBpnAndMembershipRestrictedPolicy}),
+     * so it only needs to be registered once, outside the loop, and shared by every profile's
+     * contract definitions.
+     *
      * @return true if all registrations were successful, otherwise false
      */
     private boolean createPolicyAndContractDefForOwnPartner() {
         Partner ownPartner = new Partner();
-        ownPartner.setPolicyProfileVersion(variablesService.getEdcProfileVersion());
         ownPartner.setBpnl(variablesService.getOwnBpnl());
-        
+
         boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
         log.info("Self policy definition registration {}", result ? "successful" : "failed");
-        
-        boolean contractReg = createSubmodelContractDefinitionForPartner(
-            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
-            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
-            ownPartner
-        );
-        log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
-        
-        return result && contractReg;
+
+        for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
+            ownPartner.setPolicyProfileVersion(profileVersion);
+
+            result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
+                variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL, "ItemStockAnonymized",
+                variablesService.getItemStockAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.DELIVERY_ANONYMIZED_SUBMODEL, "DeliveryInformationAnonymized",
+                variablesService.getDeliveryAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL, "PlannedProductionOutputAnonymized",
+                variablesService.getProductionAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_SUBMODEL, "PartTypeInformation",
+                variablesService.getPartTypeSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "PartTypeInformationLegacy",
+                variablesService.getPartTypeLegacySubmodelApiAssetId(), ownPartner);
+        }
+
+        return result;
+    }
+
+    private boolean createSelfContractDefinition(AssetType assetType, String logName, String assetId, Partner ownPartner) {
+        boolean contractReg = createSubmodelContractDefinitionForPartner(assetType.URN_SEMANTIC_ID, assetId, ownPartner);
+        log.info("Self-contract for {} (profile {}) {}", logName, ownPartner.getPolicyProfileVersion().getValue(), contractReg ? "successful" : "failed");
+        return contractReg;
     }
 
     private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -324,6 +367,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and DTR");
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR");
                 return false;
             }
@@ -346,6 +393,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildBpnAndMembershipRestrictedPolicy(partner);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(edcRequestBodyBuilder.getBpnPolicyId(partner))) {
+                    log.info("Policy definition already exists for partner " + partner.getBpnl());
+                    return true;
+                }
                 log.warn("Policy Registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -368,15 +419,22 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                if (response.code() == 409 || isPolicyExisting(profileVersion.CONTRACT_POLICY_ID)) {
+                        log.info("PURIS Framework agreement policy definition already existed");
+                } else {
+                    log.warn("Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createPurisFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
@@ -394,15 +452,22 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                if (response.code() == 409 || isPolicyExisting(profileVersion.DTR_CONTRACT_POLICY_ID)) {
+                        log.info("DTR Framework agreement policy definition already existed");
+                } else {
+                    log.warn("DTR Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the DTR framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createDtrFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
@@ -414,11 +479,6 @@ public class EdcAdapterService {
     private boolean registerDtrAsset() {
         var body = edcRequestBodyBuilder.buildDtrRegistrationBody();
         return sendAssetRegistrationRequest(body, "DTR");
-    }
-
-    private boolean registerPartTypeInfoSubmodelAsset() {
-        var body = edcRequestBodyBuilder.buildPartTypeInfoSubmodelRegistrationBody();
-        return sendAssetRegistrationRequest(body, variablesService.getPartTypeSubmodelApiAssetId());
     }
 
     private boolean registerSubmodelAsset(String assetId, String endpoint, String semanticId) {
@@ -856,7 +916,8 @@ public class EdcAdapterService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+            case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
         };
         boolean failed = true;
         try {
@@ -1042,11 +1103,6 @@ public class EdcAdapterService {
             case OUTBOUND -> mpr.getPartner().getBpnl();
         };
         return fetchSubmodelData(mpr, semanticId, manufacturerPartId, manufacturerId);
-    }
-
-    private SubmodelData fetchPartTypeSubmodelData(MaterialPartnerRelation mpr) {
-        return fetchSubmodelData(mpr, "urn:samm:io.catenax.part_type_information:1.0.0#PartTypeInformation",
-            mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
     }
 
     private record SubmodelData(String assetId, String dspUrl, String href) {
@@ -1302,7 +1358,8 @@ public class EdcAdapterService {
             case ITEM_STOCK_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
-            case PART_TYPE_INFORMATION_SUBMODEL -> fetchPartTypeSubmodelData(mpr);
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->  fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
+            case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
@@ -1411,18 +1468,42 @@ public class EdcAdapterService {
     }
 
     /**
-     * This method will return the partnerCXId from the supplier partner and
-     * for the material that are contained in the given MaterialPartnerRelation.
+     * Returns the partner's CatenaX-Id for the material in the given MaterialPartnerRelation.
      * <p>
-     * If the partner is not a supplier for that material, we can't expect to find a
-     * result a that partner's PartType Submodel API.
+     * PartTypeInformation 2.0.0 is attempted first, since it is the version used by default.
+     * Only if the partner does not offer it, the legacy version 1.0.0 is used as a fallback.
      *
      * @param mpr the MaterialPartnerRelation
-     * @return the partner's CXid for that material
+     * @return the partner's CX Id for that material, or null if it could not be obtained
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
-        var data = getSubmodelFromPartner(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL, null, 1);
-        return data.get("catenaXId").asText();
+        String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL);
+        if (cxId != null) return cxId;
+        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0", mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
+        cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
+        if (cxId == null) {
+            log.error("Could not obtain partner CX id for {} from {} via either PartTypeInformation version", mpr.getMaterial().getOwnMaterialNumber(), mpr.getPartner().getBpnl());
+        }
+        return cxId;
+    }
+
+    private String fetchCxId(MaterialPartnerRelation mpr, AssetType type) {
+        String cxIdProperty = switch (type) {
+            case PART_TYPE_INFORMATION_SUBMODEL -> "globalAssetId";
+            case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> "catenaXId";
+            default -> throw new IllegalArgumentException("Unsupported type for PartTypeInformation: " + type);
+        };
+        try {
+            var data = getSubmodelFromPartner(mpr, type, null, 1);
+            if (data == null) {
+                return null;
+            }
+            var cxIdNode = data.get(cxIdProperty);
+            return cxIdNode == null ? null : cxIdNode.asText();
+        } catch (Exception e) {
+            log.warn("Could not obtain {} for {} from partner {}", cxIdProperty, type, mpr.getPartner().getBpnl());
+            return null;
+        }
     }
 
     /**
@@ -1555,5 +1636,24 @@ public class EdcAdapterService {
         log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
 
         return true;
+    }
+
+    /**
+     * This method checks if a policy with the given ID already exists in the EDC.
+     * It sends a GET request to the EDC to verify the existence of the policy.
+     * If the request is successful, it returns true, indicating that the policy exists.
+     * If the request fails or an exception occurs, it returns false.
+     * 
+     * NOTE: This method only checks for the existence of the policy and does not validate its contents.
+     * @param policyId  The ID of the policy to check for existence.
+     * @return true if the policy exists, false otherwise.
+     */
+    private boolean isPolicyExisting(String policyId) {
+        try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", policyId))) {
+            return policyExists.isSuccessful();
+        } catch(Exception e) {
+            log.error("Failed to check if policy definition already exists", e);
+            return false;
+        }
     }
 }
