@@ -36,7 +36,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -76,17 +75,13 @@ public class AggregatedMaterialDataNode {
     @ToString.Exclude
     protected List<AggregatedMaterialDataNode> childMaterialData;
 
-    @NotNull
-    protected double quantity;
+    protected Double quantity;
 
-    @NotNull
     protected ItemUnitEnumeration measurementUnit;
 
-    @NotNull
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     protected String externalMaterialNumber;
 
-    @NotNull
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
     protected String externalMaterialName;
 

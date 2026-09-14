@@ -329,6 +329,85 @@ public class AggregatedMaterialDataNodeMapperTest {
     }
 
     @Test
+    void jsonToAggregatedMaterialData_timeoutTombstoneChildItem_isMappedWithMissingMaterialInfo() throws Exception {
+        JsonNode json = objectMapper.readTree("""
+            {
+              "job": { "globalAssetId": "%s" },
+              "result": {
+                "childItems": [
+                  {
+                    "materialNumber": "PARTNER-MNR",
+                    "materialName": "Central Control Unit",
+                    "quantity": { "value": 1.0, "unit": "unit:piece" },
+                    "items": [],
+                    "childItems": [
+                      {
+                        "materialNumber": null,
+                        "materialName": null,
+                        "quantity": null,
+                        "items": [],
+                        "tombstones": [ { "type": "RECURSIVE_TOMBSTONE", "reason": "CHILD_RESPONSE_TIMEOUT" } ],
+                        "childItems": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+            """.formatted(GLOBAL_ASSET_ID));
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(MATERIAL);
+
+        AggregatedMaterialData result = mapper.jsonToAggregatedMaterialData(json);
+
+        assertNotNull(result);
+        assertEquals(1, result.getChildMaterialData().size());
+        var rootNode = result.getChildMaterialData().get(0);
+        assertEquals("PARTNER-MNR", rootNode.getExternalMaterialNumber());
+        assertEquals(1, rootNode.getChildMaterialData().size());
+        var timedOutChild = rootNode.getChildMaterialData().get(0);
+        assertNull(timedOutChild.getExternalMaterialNumber());
+        assertNull(timedOutChild.getExternalMaterialName());
+        assertNull(timedOutChild.getQuantity());
+        assertNull(timedOutChild.getMeasurementUnit());
+    }
+
+    @Test
+    void jsonToAggregatedMaterialData_chainOpeningRejectedTombstone_isSkipped() throws Exception {
+        JsonNode json = objectMapper.readTree("""
+            {
+              "job": { "globalAssetId": "%s" },
+              "result": {
+                "childItems": [
+                  {
+                    "materialNumber": "PARTNER-MNR",
+                    "materialName": "Central Control Unit",
+                    "quantity": { "value": 1.0, "unit": "unit:piece" },
+                    "items": [],
+                    "childItems": []
+                  },
+                  {
+                    "materialNumber": null,
+                    "materialName": null,
+                    "quantity": { "value": 1.0, "unit": "unit:piece" },
+                    "items": [],
+                    "tombstones": [ { "type": "RECURSIVE_TOMBSTONE", "reason": "CHAIN_OPENING_REJECTED" } ],
+                    "childItems": []
+                  }
+                ]
+              }
+            }
+            """.formatted(GLOBAL_ASSET_ID));
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(MATERIAL);
+
+        AggregatedMaterialData result = mapper.jsonToAggregatedMaterialData(json);
+
+        assertNotNull(result);
+        assertEquals(1, result.getChildMaterialData().size());
+        var rootNode = result.getChildMaterialData().get(0);
+        assertEquals("PARTNER-MNR", rootNode.getExternalMaterialNumber());
+    }
+
+    @Test
     void jsonToAggregatedMaterialData_missingChildItems_returnsEmptyChildren() throws Exception {
         JsonNode json = objectMapper.readTree("""
             {
