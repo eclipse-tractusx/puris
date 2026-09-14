@@ -28,7 +28,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- Fixed master data material relations showing always the same, most recent entry in the table ([]())
+- Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
 
 ### Version Bumps
 
