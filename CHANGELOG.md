@@ -28,7 +28,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Fixed master data material relations showing always the same, most recent entry in the table ([]())
 
 ### Version Bumps
 
