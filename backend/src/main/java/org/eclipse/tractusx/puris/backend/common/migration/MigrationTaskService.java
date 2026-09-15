@@ -33,6 +33,18 @@ public class MigrationTaskService {
     private final MigrationTaskRepository migrationTaskRepository;
 
     /**
+     * Finds all migration tasks that are currently in progress and resets their status to pending.
+     * This is useful for handling tasks that may have been left in an inconsistent state due to unexpected interruptions.
+     */
+    public void resetStuckInProgressTasks() {
+        List<MigrationTask> inProgressTasks = migrationTaskRepository.findByStatus(MigrationTaskStatusEnumeration.IN_PROGRESS);
+        for (MigrationTask task : inProgressTasks) {
+            task.setStatus(MigrationTaskStatusEnumeration.PENDING);
+            saveMigrationTask(task);
+        }
+    }
+
+    /**
      * Finds the pending migration task with the highest target version.
      * If multiple tasks have the same target version, the one that was created first is returned.
      * @return the latest pending migration task, or null if there are no pending tasks
