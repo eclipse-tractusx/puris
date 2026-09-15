@@ -50,6 +50,7 @@ const createParnerColumns = () => {
     return [
         { headerName: 'Partner Name', field: 'name', flex: 1 },
         { headerName: 'BPNL', field: 'bpnl', flex: 1.5 },
+        { headerName: 'EDC URL', field: 'edcUrl', flex: 1.5 },
         {
             field: 'addresses',
             headerName: 'Addresses',
@@ -244,6 +245,18 @@ export const MasterDataView = () => {
                     title="Material Partner Relations"
                     columns={[
                         { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1 },
+                        {
+                            headerName: 'Global Asset Id',
+                            field: 'globalAssetId',
+                            flex: 1,
+                            valueGetter: (params) => {
+                                if (params.row.partnerSuppliesMaterial) {
+                                    return params.row.partnerCXNumber ?? '-';
+                                }
+                                const material = materials.find((m) => m.ownMaterialNumber === params.row.ownMaterialNumber);
+                                return material?.materialNumberCx ?? '-';
+                            },
+                        },
                         { headerName: 'Partner BPNL', field: 'partnerBpnl', flex: 1 },
                         { headerName: 'Partner Material Number', field: 'partnerMaterialNumber', flex: 1 },
                         {

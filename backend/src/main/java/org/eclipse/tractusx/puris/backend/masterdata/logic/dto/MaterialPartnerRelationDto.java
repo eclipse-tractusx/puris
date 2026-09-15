@@ -40,4 +40,6 @@ public class MaterialPartnerRelationDto {
 
     private boolean partnerSuppliesMaterial;
     private boolean partnerBuysMaterial;
+
+    private String partnerCXNumber;
 }
