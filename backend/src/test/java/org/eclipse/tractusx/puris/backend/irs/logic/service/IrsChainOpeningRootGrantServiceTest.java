@@ -74,7 +74,7 @@ class IrsChainOpeningRootGrantServiceTest {
     private static final String ALLOWED_BPNL = "BPNLXXSUPPLIERXX";
     private static final UUID SOURCE_DISRUPTION_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final Instant VALID_FROM = Instant.now().minusSeconds(7 * 24 * 3600L);
-    private static final Instant VALID_UNTIL = Instant.now().plusSeconds(7 * 24 * 3600L);
+    private static final Instant VALID_TO = Instant.now().plusSeconds(7 * 24 * 3600L);
     private static final String PARENT_MATERIAL_NUMBER = "MNR-001";
     private static final String CHILD_MATERIAL_NUMBER = "MNR-002";
     private static final String OWN_BPNL = "BPNLXXOWNCOMPANYX";
@@ -125,7 +125,7 @@ class IrsChainOpeningRootGrantServiceTest {
             .requesterBpn(OWN_BPNL)
             .reportedNotifications(notificationsFor(allowedBpnls))
             .validFrom(VALID_FROM)
-            .validUntil(VALID_UNTIL)
+            .validTo(VALID_TO)
             .build();
     }
 
@@ -205,7 +205,7 @@ class IrsChainOpeningRootGrantServiceTest {
         notification.setPartner(partner);
         notification.setStatus(StatusEnumeration.OPEN);
         notification.setStartDateOfEffect(Date.from(VALID_FROM));
-        notification.setExpectedEndDateOfEffect(Date.from(VALID_UNTIL));
+        notification.setExpectedEndDateOfEffect(Date.from(VALID_TO));
         notification.setMaterials(materials);
         return notification;
     }
@@ -415,7 +415,7 @@ class IrsChainOpeningRootGrantServiceTest {
         notification.setPartner(partner);
         notification.setStatus(StatusEnumeration.OPEN);
         notification.setStartDateOfEffect(Date.from(VALID_FROM));
-        notification.setExpectedEndDateOfEffect(Date.from(VALID_UNTIL));
+        notification.setExpectedEndDateOfEffect(Date.from(VALID_TO));
         notification.setMaterials(List.of(childMaterial));
         return notification;
     }
@@ -454,7 +454,7 @@ class IrsChainOpeningRootGrantServiceTest {
             .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
             .reportedNotifications(notificationsFor(new HashSet<>(Set.of("BPNLXXOTHERSUPPLIER"))))
             .validFrom(VALID_FROM)
-            .validUntil(VALID_UNTIL)
+            .validTo(VALID_TO)
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .build();
 
