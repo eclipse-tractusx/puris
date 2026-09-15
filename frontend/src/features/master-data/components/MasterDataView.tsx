@@ -23,6 +23,7 @@ import { Table } from '@catena-x/portal-shared-components';
 import { useTitle } from '@contexts/titleProvider';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { useCallback, useEffect, useState } from 'react';
+import { InfoButton } from '@components/ui/InfoButton';
 import { MaterialInformationModal } from './MaterialModal';
 import { Material } from '@models/types/data/stock';
 import { getAllMaterials, postMaterial } from '@services/materials-service';
@@ -205,7 +206,27 @@ export const MasterDataView = () => {
                     columns={[
                         { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1 },
                         { headerName: 'Name', field: 'name', flex: 1.5 },
-                        { headerName: 'Global Asset Id', field: 'materialNumberCx', flex: 1 },
+                        {
+                            headerName: 'Global Asset Id',
+                            field: 'materialNumberCx',
+                            flex: 1,
+                            renderCell: (data: { row: Material }) => {
+                                const direction = getDirectionLabel(data.row);
+                                if (direction === 'Inbound' || direction === 'Unknown') {
+                                    return (
+                                        <Box display="flex" alignItems="center" gap={0.5} width="100%" height="100%">
+                                            <span>-</span>
+                                            <InfoButton text="For inbound materials, Global Asset Id depends on the material partner relation." />
+                                        </Box>
+                                    );
+                                }
+                                return (
+                                    <Box display="flex" alignItems="center" width="100%" height="100%">
+                                        {data.row.materialNumberCx ?? '-'}
+                                    </Box>
+                                );
+                            },
+                        },
                         { headerName: 'Direction', field: 'direction', flex: 1, valueGetter: (params) => getDirectionLabel(params.row) },
                     ]}
                     rows={materials ?? []}
