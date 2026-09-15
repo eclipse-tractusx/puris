@@ -1551,9 +1551,7 @@ public class EdcAdapterService {
         }
 
         // For the sake of uniformity we will embed a single object in an array.
-        ArrayNode policies = hasPolicy.isArray()
-            ? (ArrayNode) hasPolicy
-            : objectMapper.createArrayNode().add(hasPolicy);
+        ArrayNode policies = hasPolicy.isArray() ? (ArrayNode) hasPolicy : objectMapper.createArrayNode().add(hasPolicy);
 
         for (JsonNode policy : policies) {
             if (testSinglePolicy(policy, profileVersion)) {
@@ -1600,17 +1598,14 @@ public class EdcAdapterService {
         }
 
         if (!constraint.get().isArray() || constraint.get().size() != 2) {
-            log.debug(
-                "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
-                constraint.get().size()
-            );
+            log.debug("2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.", constraint.get().size());
             return false;
         }
 
         Optional<JsonNode> frameworkAgreementConstraint = Optional.empty();
         Optional<JsonNode> purposeConstraint = Optional.empty();
 
-        for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
+        for (JsonNode con : constraint.get()) {
             JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
             leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get(0);
             leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
@@ -1627,8 +1622,7 @@ public class EdcAdapterService {
 
         if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
             log.debug(
-                "Not all constraints have been found: FrameworkAgreement constraint found: {}, " +
-                    "UsagePurpose constraint found: {}",
+                "Not all constraints have been found: FrameworkAgreement constraint found: {}, " + "UsagePurpose constraint found: {}",
                 frameworkAgreementConstraint.isPresent(),
                 purposeConstraint.isPresent()
             );
