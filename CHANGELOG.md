@@ -12,6 +12,7 @@ The following Changelog lists the changes. Please refer to the [documentation](d
 The **need for configuration updates** is **marked bold**.
 
 ### Added
+
 - Added IC Notification Message Header integration ([#1143](https://github.com/eclipse-tractusx/puris/pull/1143))
 - Added logic for exchanging Data Exchange Requests and Approvals
   - Added backend implementation for data exchange request ([#1116](https://github.com/eclipse-tractusx/puris/pull/1116))
@@ -20,8 +21,20 @@ The **need for configuration updates** is **marked bold**.
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
   - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
+  - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
 - Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
 - Added submodel implementation for anonymized demand request ([#1210](https://github.com/eclipse-tractusx/puris/pull/1210))
+- Added IRS Adapter to exchange data with an external Item Relationship Service
+  - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195), [#1208](https://github.com/eclipse-tractusx/puris/pull/1208))
+  - Added Logic to manage Irs Grants and keep them in sync with application state ([#1203](https://github.com/eclipse-tractusx/puris/pull/1203))
+  - Added Job Management logic to create jobs and automatically poll for results ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+- Add logic to handle aggregated supply chain data
+  - Added base entities and repositories for Aggregated Supply Chain Data ([#1182](https://github.com/eclipse-tractusx/puris/pull/1182), [#1187](https://github.com/eclipse-tractusx/puris/pull/1187))
+  - Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
+  - Added logic to map and save received irs job data ([#1184](https://github.com/eclipse-tractusx/puris/pull/1184))
+  - Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
+- Added link to affected outgoing material on the material details header, showing open demand/capacity notifications affecting a material via its descendant (child) materials ([#1202](https://github.com/eclipse-tractusx/puris/pull/1202))
+- Added logic to create missing partner contract definitions and policies during migrations ([#1225](https://github.com/eclipse-tractusx/puris/pull/1225))
 
 ### Changed
 
@@ -32,10 +45,31 @@ The **need for configuration updates** is **marked bold**.
 ### Fixes
 
 - Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
+- Create self-contracts for all supported profile versions, and extend self-contracting to the anonymized submodels and PartTypeInformation ([#1216](https://github.com/eclipse-tractusx/puris/pull/1216))
+- improved check for existing policies ([#1220](https://github.com/eclipse-tractusx/puris/pull/1220), [#1221](https://github.com/eclipse-tractusx/puris/pull/1221))
+- allow requests with own bpnl in part type controller for irs ([#1222](https://github.com/eclipse-tractusx/puris/pull/1222))
+- Fixed validity dates and renamed allowedBpnls property to allowedBpnlSet for Chain Opening Grants ([#1224](https://github.com/eclipse-tractusx/puris/pull/1224))
+- Renamed "validUntil" to "validTo" in chain opening grants ([#1226](https://github.com/eclipse-tractusx/puris/pull/1226))
+- Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
+- Ignore parent object when converting aggregated data nodes to json ([#1228](https://github.com/eclipse-tractusx/puris/pull/1228))
+- Handle partial IRS job failures gracefully ([#1234](https://github.com/eclipse-tractusx/puris/pull/1234))
 
 ### Version Bumps
 
-- /
+- update frontend dependencies ([#1212](https://github.com/eclipse-tractusx/puris/pull/1212))
+  - bump browserslist from 4.28.1 to 4.28.9
+  - bump caniuse-lite from 1.0.30001777 to 1.0.30001810
+  - bump electron-to-chromium from 1.5.307 to 1.5.423
+  - bump js-yaml from 4.2.0 to 4.3.2
+  - bump brace-expansion from 1.1.15 to 1.1.18 and from 2.1.1 to 2.1.4
+  - bump nanoid from 3.3.12 to 3.3.18
+  - bump node-releases from 2.0.36 to 2.0.54
+  - bump postcss from 8.5.15 to 8.5.28
+  - bump update-browserslist-db from 1.2.3 to 1.3.2
+  - bump websocket-driver from 0.7.4 to 0.7.5
+  - bump baseline-browser-mapping from 2.10.0 to 2.11.21
+  - remove unused yaml@2.9.0
+- bump `org.postgresql:postgresql` from `42.7.11` to `42.7.12` ([#1213](https://github.com/eclipse-tractusx/puris/pull/1213))
 
 ### Known Knowns
 

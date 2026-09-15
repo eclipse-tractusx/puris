@@ -18,14 +18,18 @@
  */
 package org.eclipse.tractusx.puris.backend;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
+import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.migration.MigrationTaskService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -47,9 +51,14 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
     private MaterialPartnerRelationService materialPartnerRelationService;
     @Autowired
     private MigrationTaskService migrationTaskService;
+    @Autowired
+    private PartnerService partnerService;
+    @Autowired
+    private EdcAdapterService edcAdapterService;
  
     @Override
     public void run(String... args) throws Exception {
+        migrationTaskService.resetStuckInProgressTasks();
         var latestTask = migrationTaskService.getLatestPendingMigrationTask();
         if (latestTask == null) {
             log.info("No pending migration task found, skipping migration");
@@ -59,7 +68,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
         migrationTaskService.markTaskInProgress(latestTask);
 
         List<String> errors = updateDigitalTwins();
-
+        errors.addAll(createMissingPartnerContractDefinitions());
         if (errors.isEmpty()) {
             migrationTaskService.markTaskCompleted(latestTask);
             log.info("Migration task for target version {} completed successfully", latestTask.getTargetVersion());
@@ -69,8 +78,16 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
         }
     }
 
+    /**
+     * Updates the digital twins at the DTR for all materials in the database.
+     * For each material, it attempts to update the corresponding material twin at the DTR.
+     * Any errors encountered during this process are collected and returned.
+     *
+     * @return A list of error messages encountered during the update of digital twins.
+     * If no errors occurred, the list will be empty.
+     */
     private List<String> updateDigitalTwins() {
-        List<String> errors = List.of();
+        List<String> errors = new ArrayList<>();
         List<Material> materials = materialService.findAll();
         if (materials.isEmpty()) {
             log.info("No materials found in database, skipping digital twin update at DTR");
@@ -121,6 +138,29 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
             } catch (Exception e) {
                 String error = String.format("Error while updating digital twins at dDTR for material %s: %s", material.getOwnMaterialNumber(), e.getMessage());
                 log.error(error);
+                errors.add(error);
+            }
+        }
+        return errors;
+    }
+
+    /**
+     * Creates missing policies and contract definitions for all partners except the own partner.
+     * This method iterates over all partners except the own partner and ensures that each has the necessary
+     * policies and contract definitions in place. Existing policies and contract definitions are not modified.
+     * Any errors encountered during this process are collected and returned.
+     * 
+     * @return A list of error messages encountered during the creation of missing policies and contract definitions.
+     * If no errors occurred, the list will be empty.
+     */
+    private List<String> createMissingPartnerContractDefinitions() {
+        List<String> errors = new ArrayList<>();
+        List<Partner> partners = partnerService.findAll().stream().filter(partner -> !partnerService.getOwnPartnerEntity().equals(partner)).toList();
+        for (Partner partner : partners) {
+            boolean result = edcAdapterService.createPolicyAndContractDefForPartner(partner);
+            if (!result) {
+                String error = String.format("Failed to create policy and contract definition for partner %s.", partner.getBpnl());
+                log.warn(error);
                 errors.add(error);
             }
         }

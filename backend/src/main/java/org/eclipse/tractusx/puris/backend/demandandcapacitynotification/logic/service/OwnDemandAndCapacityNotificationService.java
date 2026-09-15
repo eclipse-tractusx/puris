@@ -21,11 +21,14 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,15 +36,33 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<OwnDemandAndCapacityNotification, OwnDemandAndCapacityNotificationRepository>{
+    /*
+     * Uses the repository directly (not ReportedDemandAndCapacityNotificationService) to avoid a
+     * circular bean dependency: ReportedDemandAndCapacityNotificationService depends on
+     * IrsChainOpeningPartnerGrantService, which depends on this class.
+     */
     @Autowired
-    private ReportedDemandAndCapacityNotificationService reportedNotificationService;
+    private ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository;
 
-    public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService, MaterialPartnerRelationService mpr) {
+    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+
+    public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService,
+            MaterialPartnerRelationService mpr, IrsChainOpeningPartnerGrantService irsChainOpeningGrantService) {
         super(ownNotificationRepository, partnerService, mpr);
+        this.irsChainOpeningGrantService = irsChainOpeningGrantService;
+    }
+
+    @Override
+    protected void afterUpdate(OwnDemandAndCapacityNotification previous, OwnDemandAndCapacityNotification updated) {
+        irsChainOpeningGrantService.onOwnNotificationUpdated(previous, updated);
     }
 
     public List<OwnDemandAndCapacityNotification>  findAllByPartnerBpnl(String bpnl) {
         return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl)).toList();
+    }
+
+    public List<OwnDemandAndCapacityNotification> findBySourceDisruptionIdAndPartnerBpnl(UUID sourceDisruptionId, String bpnl) {
+        return repository.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, bpnl);
     }
 
     @Override
@@ -85,7 +106,7 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
             return true;
         }
         for (var relatedNotificationId : notification.getRelatedNotificationIds()) {
-            ReportedDemandAndCapacityNotification relatedNotification = reportedNotificationService.findByNotificationId(relatedNotificationId);
+            ReportedDemandAndCapacityNotification relatedNotification = reportedNotificationRepository.findByNotificationId(relatedNotificationId).orElse(null);
             if (relatedNotification == null) {
                 return false;
             }

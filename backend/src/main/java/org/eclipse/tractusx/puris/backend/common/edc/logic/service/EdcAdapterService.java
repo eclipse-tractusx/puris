@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBu
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsPolicyStoreService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
@@ -67,6 +68,9 @@ public class EdcAdapterService {
 
     @Autowired
     private JsonLdUtils jsonLdUtils;
+
+    @Autowired
+    private IrsPolicyStoreService irsPolicyStoreService;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
@@ -299,31 +303,59 @@ public class EdcAdapterService {
      * Register contract definitions for assets that should only be accessible by the own organization.
      * Creates access policy restricted to own BPNL (with membership credential requirement).
      * Contract policy uses standard Framework Agreement terms.
-     * 
+     *
+     * Registers self-contract definitions for every supported {@link PolicyProfileVersionEnumeration}.
+     * Profile 2405 is always supported for compatibility. Profile 2509 is only added if the
+     * app's configured profile is 2509, since not every partner's EDC can negotiate that profile.
+     *
+     * The access policy itself is not profile-specific (it is always built for the app's
+     * configured profile, see {@link EdcRequestBodyBuilder#buildBpnAndMembershipRestrictedPolicy}),
+     * so it only needs to be registered once, outside the loop, and shared by every profile's
+     * contract definitions.
+     *
      * @return true if all registrations were successful, otherwise false
      */
     private boolean createPolicyAndContractDefForOwnPartner() {
         Partner ownPartner = new Partner();
-        ownPartner.setPolicyProfileVersion(variablesService.getEdcProfileVersion());
         ownPartner.setBpnl(variablesService.getOwnBpnl());
-        
+
         boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
         log.info("Self policy definition registration {}", result ? "successful" : "failed");
-        
-        boolean contractReg = createSubmodelContractDefinitionForPartner(
-            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
-            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
-            ownPartner
-        );
-        log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
-        
-        return result && contractReg;
+
+        for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
+            ownPartner.setPolicyProfileVersion(profileVersion);
+
+            result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
+                variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL, "ItemStockAnonymized",
+                variablesService.getItemStockAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.DELIVERY_ANONYMIZED_SUBMODEL, "DeliveryInformationAnonymized",
+                variablesService.getDeliveryAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL, "PlannedProductionOutputAnonymized",
+                variablesService.getProductionAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_SUBMODEL, "PartTypeInformation",
+                variablesService.getPartTypeSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "PartTypeInformationLegacy",
+                variablesService.getPartTypeLegacySubmodelApiAssetId(), ownPartner);
+        }
+
+        return result;
+    }
+
+    private boolean createSelfContractDefinition(AssetType assetType, String logName, String assetId, Partner ownPartner) {
+        boolean contractReg = createSubmodelContractDefinitionForPartner(assetType.URN_SEMANTIC_ID, assetId, ownPartner);
+        log.info("Self-contract for {} (profile {}) {}", logName, ownPartner.getPolicyProfileVersion().getValue(), contractReg ? "successful" : "failed");
+        return contractReg;
     }
 
     private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -341,6 +373,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and DTR");
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR");
                 return false;
             }
@@ -363,6 +399,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildBpnAndMembershipRestrictedPolicy(partner);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(edcRequestBodyBuilder.getBpnPolicyId(partner))) {
+                    log.info("Policy definition already exists for partner " + partner.getBpnl());
+                    return true;
+                }
                 log.warn("Policy Registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -385,15 +425,22 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                if (response.code() == 409 || isPolicyExisting(profileVersion.CONTRACT_POLICY_ID)) {
+                        log.info("PURIS Framework agreement policy definition already existed");
+                } else {
+                    log.warn("Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createPurisFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
@@ -411,15 +458,22 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                if (response.code() == 409 || isPolicyExisting(profileVersion.DTR_CONTRACT_POLICY_ID)) {
+                        log.info("DTR Framework agreement policy definition already existed");
+                } else {
+                    log.warn("DTR Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the DTR framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createDtrFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
@@ -1590,5 +1644,24 @@ public class EdcAdapterService {
         log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
 
         return true;
+    }
+
+    /**
+     * This method checks if a policy with the given ID already exists in the EDC.
+     * It sends a GET request to the EDC to verify the existence of the policy.
+     * If the request is successful, it returns true, indicating that the policy exists.
+     * If the request fails or an exception occurs, it returns false.
+     * 
+     * NOTE: This method only checks for the existence of the policy and does not validate its contents.
+     * @param policyId  The ID of the policy to check for existence.
+     * @return true if the policy exists, false otherwise.
+     */
+    private boolean isPolicyExisting(String policyId) {
+        try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", policyId))) {
+            return policyExists.isSuccessful();
+        } catch(Exception e) {
+            log.error("Failed to check if policy definition already exists", e);
+            return false;
+        }
     }
 }
