@@ -22,10 +22,11 @@ import { CRITICALITY } from "@models/constants/criticality";
 import { DataExchangeRequest } from "@models/types/data/data-exchange-request";
 import { DemandCapacityNotification } from "@models/types/data/demand-capacity-notification";
 import { Partner } from "@models/types/edc/partner";
-import { Visibility, FactCheck, Close } from "@mui/icons-material";
 import { Box, Button, Dialog, DialogTitle, Stack, Tooltip, Typography } from "@mui/material";
 import { Table } from "@catena-x/portal-shared-components";
 import { getDataExchangeStatus } from "./DataExchangeRequestModal";
+import { Visibility, FactCheck, Close, Send } from "@mui/icons-material";
+import { canCreateRequest } from "@features/notifications/components/CollapsibleNotification";
 
 type DataExchangeRequestListModalProps = {
     open: boolean;
@@ -56,11 +57,13 @@ export const DataExchangeRequestListModal = ({
     onViewRequestClicked,
     onCreateApprovalClicked,
     onViewApprovalClicked,
+    onCreateRequestClicked,
 }: DataExchangeRequestListModalProps) => {
     if (!demandCapacityNotification) {
         return null;
     }
     const isOutgoing = demandCapacityNotification.reported === true;
+    const canCreateRootRequest = canCreateRequest(demandCapacityNotification, dataExchangeRequests);
 
     const rows = [...dataExchangeRequests].sort((a, b) => {
         const openFirst = Number(!!a.dataExchangeApproval) - Number(!!b.dataExchangeApproval);
@@ -157,6 +160,11 @@ export const DataExchangeRequestListModal = ({
                     <Button variant="outlined" color="primary" sx={{ display: 'flex', gap: '.25rem' }} onClick={onClose}>
                         <Close /> Close
                     </Button>
+                    {canCreateRootRequest && (
+                        <Button variant="contained" sx={{ display: 'flex', gap: '.25rem' }} onClick={() => onCreateRequestClicked(demandCapacityNotification)}>
+                            <Send /> New Request
+                        </Button>
+                    )}
                 </Box>
             </Stack>
         </Dialog>
