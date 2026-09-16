@@ -102,7 +102,7 @@ public class DemandRequestApiService {
             mprService.triggerPartTypeRetrievalTask(partner);
             mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
         }
- 
+
         if (mpr == null || mpr.getMaterial() == null) {
             log.error("Unknown Material");
             return null;
@@ -113,7 +113,6 @@ public class DemandRequestApiService {
             log.error("Partner with BPNL {} is not registered as supplier for material {}", bpnl, materialNumberCx);
             return null;
         }
- 
         Material material = mpr.getMaterial();
         var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
         return new DemandRequestData(partner, material, currentDemands);
@@ -132,7 +131,7 @@ public class DemandRequestApiService {
             var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionEnum.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);
- 
+
             for (var demand : demands) {
                 var demandPartner = demand.getPartner();
                 var demandMaterial = demand.getMaterial();
@@ -145,19 +144,19 @@ public class DemandRequestApiService {
                     ))));
                     continue;
                 }
- 
+
                 List<String> validationErrors = reportedDemandService.validateWithDetails(demand);
                 if (!validationErrors.isEmpty()) {
                     errors.add(new RefreshError(validationErrors));
                 }
             }
- 
+
             if (!errors.isEmpty()) {
                 log.warn("Validation errors found for ReportedDemand request from partner {} for material {}: {}", 
                         partner.getBpnl(), material.getOwnMaterialNumber(), errors);
                 return new RefreshResult("Validation failed for reported demands", errors);
             }
- 
+
             // delete older data:
             var oldDemands = reportedDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
             for (var oldDemand : oldDemands) {
@@ -168,7 +167,7 @@ public class DemandRequestApiService {
             }
             log.info("Successfully updated ReportedDemand for {} and partner {}", 
                 material.getOwnMaterialNumber(), partner.getBpnl());
-            materialService.updateTimestamp(material.getOwnMaterialNumber());
+                materialService.updateTimestamp(material.getOwnMaterialNumber());
             return new RefreshResult("Successfully processed all reported demands", errors);
         } catch (Exception e) {
             log.error("Error in ReportedDemandRequest for " + material.getOwnMaterialNumber() + " and partner " + partner.getBpnl(), e);

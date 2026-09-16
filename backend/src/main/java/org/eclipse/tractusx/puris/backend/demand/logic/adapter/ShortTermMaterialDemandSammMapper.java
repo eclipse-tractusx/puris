@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 public class ShortTermMaterialDemandSammMapper {
     @Autowired
     private MaterialPartnerRelationService mprService;
- 
+
     @Autowired
     private MaterialService materialService;
  
@@ -61,7 +61,7 @@ public class ShortTermMaterialDemandSammMapper {
             log.warn("Can't map demand list with different partners");
             return null;
         }
- 
+
         if (demandList.stream().anyMatch(prod -> !prod.getMaterial().equals(material))) {
             log.warn("Can't map demand list with different materials");
             return null;
@@ -70,7 +70,7 @@ public class ShortTermMaterialDemandSammMapper {
                 .stream()
                 .collect(Collectors.groupingBy(demand -> new DemandGroupingHelper(demand.getDemandCategoryCode(), demand.getDemandLocationBpns(), demand.getSupplierLocationBpns())));
         ShortTermMaterialDemand samm = new ShortTermMaterialDemand();
- 
+
         var mpr = mprService.findAll().stream().filter(mr -> mr.getMaterial().equals(material) && mr.getPartner().equals(partner)).findFirst().orElse(null);
         if (mpr == null) {
             log.warn("Could not identify materialPartnerRelation with ownMaterialNumber " + material.getOwnMaterialNumber()
@@ -78,7 +78,7 @@ public class ShortTermMaterialDemandSammMapper {
             return null;
         }
         samm.setMaterialGlobalAssetId(mpr.getPartnerCXNumber());
- 
+
         var demandSeriesList = new HashSet<DemandSeries>();
         samm.setDemandSeries(demandSeriesList);
         for (var mappingHelperListEntry : groupedByCategory.entrySet()) {
@@ -153,13 +153,13 @@ public class ShortTermMaterialDemandSammMapper {
     public List<ReportedDemand> sammToReportedDemand(ShortTermMaterialDemand samm, Partner partner) {
         String matNbrCatenaX = samm.getMaterialGlobalAssetId();
         ArrayList<ReportedDemand> outputList = new ArrayList<>();
- 
+
         var material = materialService.findByMaterialNumberCx(matNbrCatenaX);
         if (material == null) {
             log.warn("Could not identify material with given CatenaXNbr ");
             return outputList;
         }
- 
+
         for (var demandSeries : samm.getDemandSeries()) {
             for (var demand : demandSeries.getDemands()) {
                 var builder = ReportedDemand.builder();
@@ -179,7 +179,7 @@ public class ShortTermMaterialDemandSammMapper {
         }
         return outputList;
     }
- 
+
     private record DemandGroupingHelper(DemandCategoryEnumeration category, String customerLocationBpns, String expectedSupplierLocationBpns) {}
  
     private record AnonymizedDemandGroupingHelper(String customerLocationBpns, String expectedSupplierLocationBpns) {}
@@ -196,7 +196,7 @@ public class ShortTermMaterialDemandSammMapper {
             case DEMAND_EXTRAORDINARY_DEMAND -> DemandCategoryCharacteristic.DEMAND_CATEGORY_EXTRAORDINARY_DEMAND;
         };
     }
- 
+
     private DemandCategoryEnumeration mapDemandCategory(DemandCategoryCharacteristic category) {
         return switch (category) {
             case DEMAND_CATEGORY -> DemandCategoryEnumeration.DEMAND_DEFAULT;

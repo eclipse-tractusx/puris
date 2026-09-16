@@ -146,7 +146,7 @@ spec:
                   name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-api-key"
             - name: PURIS_BASEURL
-                # remove backslash if given and later ensure (must end with trailing slash)
+              # remove backslash if given and later ensure (must end with trailing slash)
               value: "{{- include "puris.backend.baseUrlWithProtocol" . -}}"
             - name: PURIS_ALLOWED-ORIGINS
               {{- $allowedOriginUrls := list }}
