@@ -18,7 +18,7 @@
 #
 databaseChangeLog:
   - changeSet:
-        id: "17"
+        id: "1"
         author: OlgaIvkovic
         changes:
             - createTable:
