@@ -27,7 +27,6 @@ import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { EFFECTS } from '@models/constants/effects';
 import { STATUS } from '@models/constants/status';
 import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
-import { InfoButton } from '@components/ui/InfoButton';
 
 type CollapsibleDemandNotificationProps = {
     disruptionId: string;
@@ -49,7 +48,6 @@ type CollapsibleDemandNotificationProps = {
 type ExchangeDirection = 'incoming' | 'outgoing';
  
 type ExchangeStatusDescriptor =
-    | { kind: 'info'; text: string }
     | { kind: 'status'; label: string; color?: string; direction?: ExchangeDirection; onClick?: () => void; request?: DataExchangeRequest; }
     | { kind: 'multiple'; count: number; direction: ExchangeDirection; onClick: () => void; };
  
@@ -124,14 +122,6 @@ type ExchangeStatusCellProps = {
 };
  
 const ExchangeStatusCell: React.FC<ExchangeStatusCellProps> = ({ status, onCreateRequest }) => {
-    if (status.kind === 'info') {
-        return (
-            <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
-                - <InfoButton text={status.text} />
-            </Stack>
-        );
-    }
- 
     const createButton = onCreateRequest ? (
         <Tooltip title="Create your own data exchange request" arrow>
             <IconButton

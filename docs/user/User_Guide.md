@@ -356,11 +356,11 @@ Possible status options are the following:
   - `Approved, finalized` (a data exchange request has been approved and finalized)
   - `Approved, not finalized` (a data exchange request has been approved, but one or more forwarded requests are pending approval.)
 
-If a notification has more than one data exchange related to it then the Status column shows the number of related data exchange requests. Clicking on it will open a modal with the table and all related requests listed along with their most important information. Clicking the `Action` button will open the Data exchange Detail Modal which displays all the relevant information for that request and approval.
+If a notification has more than one data exchange request related to it then the Status column shows the number of related data exchange requests. Clicking on it will open a modal with the table and all related requests listed along with their most important information. Clicking the `Action` button will open the Data exchange Detail Modal which displays all the relevant information for that request and approval.
 
 ![Data Exchange Request List Modal](img/data_exchange_list.png)
 
-A customer may create a data exchange request for incoming notifications.
+A customer may create a data exchange request for any incoming notifications.
 
 ### Send Data Exchange Request
 
