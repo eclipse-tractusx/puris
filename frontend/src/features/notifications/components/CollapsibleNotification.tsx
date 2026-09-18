@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 import { useState } from 'react';
 import { Box, Button, IconButton, Stack, Tooltip, Typography, useTheme } from '@mui/material';
-import { AddBoxOutlined, CallMade, CallReceived, Check, ChevronRightOutlined, Edit, FactCheck, Visibility } from '@mui/icons-material';
+import { AddBoxOutlined, CallMade, CallReceived, Check, ChevronRightOutlined, Edit, FactCheck, FormatListBulleted, Visibility } from '@mui/icons-material';
 import { DemandCapacityNotification, EffectType } from '@models/types/data/demand-capacity-notification';
 import { Partner } from '@models/types/edc/partner';
 import { Table } from '@catena-x/portal-shared-components';
@@ -43,46 +43,94 @@ type CollapsibleDemandNotificationProps = {
     onCreateApprovalClicked?: (request: DataExchangeRequest) => void;
     onViewApprovalClicked?: (request: DataExchangeRequest) => void;
     onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
+    onViewRequestListClicked?: (notification: DemandCapacityNotification, requests: DataExchangeRequest[]) => void;
 };
-
+ 
 type ExchangeDirection = 'incoming' | 'outgoing';
-
+ 
 type ExchangeStatusDescriptor =
     | { kind: 'info'; text: string }
-    | { kind: 'status'; label: string; color?: string; direction?: ExchangeDirection; onClick?: () => void; request?: DataExchangeRequest; };
+    | { kind: 'status'; label: string; color?: string; direction?: ExchangeDirection; onClick?: () => void; request?: DataExchangeRequest; }
+    | { kind: 'multiple'; count: number; direction: ExchangeDirection; onClick: () => void; };
+ 
+type ExchangeStatusCallbacks = Pick<NotificationTableProps, 'onCreateRequestClicked' | 'onViewRequestClicked' | 'onCreateApprovalClicked' | 'onViewApprovalClicked' | 'onViewRequestListClicked'>;
+ 
+const isDemandEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
 
-const getExchangeStatus = (
+export const canCreateRequest = (notification: DemandCapacityNotification, requests: DataExchangeRequest[]) =>
+    notification.reported === true
+    && notification.status !== 'resolved'
+    && isDemandEffect(notification.effect)
+    && !requests.some((request) => !request.relatedDataExchangeRequests?.length || request.relatedDataExchangeRequests.some((r) => r.notificationId === notification.notificationId));
+ 
+const getSingleExchangeStatus = (
     notification: DemandCapacityNotification,
-    request: DataExchangeRequest | undefined,
-    callbacks: Pick<NotificationTableProps, 'onCreateRequestClicked' | 'onViewRequestClicked' | 'onCreateApprovalClicked' | 'onViewApprovalClicked'>,
+    request: DataExchangeRequest,
+    direction: ExchangeDirection,
+    callbacks: ExchangeStatusCallbacks,
 ): ExchangeStatusDescriptor => {
-    const { onCreateRequestClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked } = callbacks;
-
-    if (!isDemandEffect(notification.effect)) {
-        return { kind: 'info', text: 'Requesting data exchange is currently not supported for the specified effect of the notification.' };
-    }
-    if (!request) {
-        return { kind: 'status', label: 'Not Requested', onClick: notification.reported ? () => onCreateRequestClicked?.(notification) : undefined };
-    }
-
-    const direction: ExchangeDirection = notification.reported ? 'outgoing' : 'incoming';
+    const { onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked } = callbacks;
     const status = (label: string, onClick: () => void, color?: string) => ({ kind: 'status' as const, label, color, direction, request, onClick });
-
+ 
     if (notification.status === 'resolved') return status('Terminated', () => onViewApprovalClicked?.(request));
     if (!request.dataExchangeApproval) return direction === 'outgoing'
         ? status('Request Pending', () => onViewRequestClicked?.(request))
         : status('Approval Pending', () => onCreateApprovalClicked?.(request));
     if (request.desiredEndDateTime && new Date(request.desiredEndDateTime) < new Date()) return status('Expired', () => onViewApprovalClicked?.(request), 'text.disabled');
+    if (request.dataExchangeApproval.isFinalized === false) return status('Approved, not finalized', () => onViewApprovalClicked?.(request), 'warning.main');
     return status('Approved', () => onViewApprovalClicked?.(request), 'success.main');
 };
-const isDemandEffect = (effect: EffectType): boolean => effect === 'capacity-reduction' || effect === 'capacity-increase';
+ 
+const getExchangeStatus = (
+    notification: DemandCapacityNotification,
+    requests: DataExchangeRequest[],
+    callbacks: ExchangeStatusCallbacks,
+): ExchangeStatusDescriptor => {
+    const { onCreateRequestClicked, onViewRequestListClicked } = callbacks;
+ 
+    if (!isDemandEffect(notification.effect)) {
+        return { kind: 'info', text: 'Requesting data exchange is currently not supported for the specified effect of the notification.' };
+    }
+    if (requests.length === 0) {
+        return { kind: 'status', label: 'Not Requested', onClick: notification.reported ? () => onCreateRequestClicked?.(notification) : undefined };
+    }
+ 
+    const direction: ExchangeDirection = notification.reported ? 'outgoing' : 'incoming';
 
+    if (requests.length > 1) {
+        return {
+            kind: 'multiple',
+            direction,
+            count: requests.length,
+            onClick: () => onViewRequestListClicked?.(notification, requests),
+        };
+    }
+    return getSingleExchangeStatus(notification, requests[0], direction, callbacks);
+};
+ 
 const DIRECTION_META: Record<ExchangeDirection, { icon: React.ReactElement; label: string }> = {
     outgoing: { icon: <CallMade fontSize="inherit" />, label: 'Outgoing request' },
     incoming: { icon: <CallReceived fontSize="inherit" />, label: 'Incoming request' },
 };
-
-const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor }> = ({ status }) => {
+ 
+const DirectionIcon: React.FC<{ direction?: ExchangeDirection }> = ({ direction }) => {
+    const meta = direction && DIRECTION_META[direction];
+    if (!meta) return null;
+    return (
+        <Tooltip title={meta.label} arrow>
+            <Box component="span" role="img" aria-label={meta.label} sx={{ display: 'inline-flex', color: 'text.secondary' }}>
+                {meta.icon}
+            </Box>
+        </Tooltip>
+    );
+};
+ 
+type ExchangeStatusCellProps = {
+    status: ExchangeStatusDescriptor;
+    onCreateRequest?: () => void;
+};
+ 
+const ExchangeStatusCell: React.FC<ExchangeStatusCellProps> = ({ status, onCreateRequest }) => {
     if (status.kind === 'info') {
         return (
             <Stack direction="row" alignItems="center" gap={0.75} flexGrow={1} padding=".75rem .5rem">
@@ -90,36 +138,67 @@ const ExchangeStatusCell: React.FC<{ status: ExchangeStatusDescriptor }> = ({ st
             </Stack>
         );
     }
-
-    const meta = status.direction && DIRECTION_META[status.direction];
+ 
+    const createButton = onCreateRequest ? (
+        <Tooltip title="Create your own data exchange request" arrow>
+            <IconButton
+                color="primary"
+                size="small"
+                aria-label="create data exchange request"
+                onClick={(e) => { e.stopPropagation(); onCreateRequest(); }}
+            >
+                <AddBoxOutlined fontSize="small" />
+            </IconButton>
+        </Tooltip>
+    ) : null;
+ 
+    if (status.kind === 'multiple') {
+        return (
+            <Stack direction="row" alignItems="center">
+                <Button
+                    variant="text"
+                    sx={{ textTransform: 'none' }}
+                    onClick={(e) => { e.stopPropagation(); status.onClick(); }}
+                    startIcon={<FormatListBulleted />}
+                    aria-label={`Show ${status.count} data exchange requests`}
+                >
+                    <Stack direction="row" alignItems="center" gap={0.5}>
+                        <DirectionIcon direction={status.direction} />
+                        <Typography color="inherit"><b>{status.count}</b> Requests</Typography>
+                    </Stack>
+                </Button>
+                {createButton}
+            </Stack>
+        );
+    }
+ 
     const label = (
         <Stack direction="row" alignItems="center" gap={0.5} sx={{ color: status.color }}>
-            {meta && (
-                <Tooltip title={meta.label} arrow>
-                    <Box component="span" role="img" aria-label={meta.label} sx={{ display: 'inline-flex', color: 'text.secondary' }}>
-                        {meta.icon}
-                    </Box>
-                </Tooltip>
-            )}
+            <DirectionIcon direction={status.direction} />
             <Typography color="inherit">{status.label}</Typography>
         </Stack>
     );
-
-    if (!status.onClick) return label;
-
+ 
+    if (!status.onClick) {
+        return <Stack direction="row" alignItems="center" gap={0.5}>{label}{createButton}</Stack>;
+    }
+ 
     const actionIcon = !status.request
         ? <AddBoxOutlined />
         : !status.request.dataExchangeApproval && status.direction === 'incoming'
             ? <FactCheck />
             : <Visibility />;
-
+ 
     return (
-        <Button variant="text" sx={{ textTransform: 'none', color: status.color, '&:hover': { color: status.color } }} onClick={(e) => { e.stopPropagation(); status.onClick?.(); }} startIcon={actionIcon}>
-            {label}
-        </Button>
+        <Stack direction="row" alignItems="center">
+            <Button variant="text" sx={{ textTransform: 'none', color: status.color, '&:hover': { color: status.color } }} onClick={(e) => { e.stopPropagation(); status.onClick?.(); }} startIcon={actionIcon}>
+                {label}
+            </Button>
+            {createButton}
+        </Stack>
     );
 };
-
+ 
 export function CollapsibleDisruptionPanel({
         disruptionId,
         notifications,
@@ -133,19 +212,20 @@ export function CollapsibleDisruptionPanel({
         onViewRequestClicked,
         onCreateApprovalClicked,
         onViewApprovalClicked,
-        onCreateRequestClicked
+        onCreateRequestClicked,
+        onViewRequestListClicked
     }: CollapsibleDemandNotificationProps) {
     const theme = useTheme();
     const [isExpanded, setIsExpanded] = useState(false);
-
+ 
     const incomingCount = notifications.filter(n => n.reported === true).length;
     const outgoingCount = notifications.filter(n => n.reported === false).length;
     const resolvedCount = notifications.filter(n => n.status === 'resolved').length;
-
+ 
     const pendingOutgoingCount = dataExchangeRequests.filter((request) =>
         !request.dataExchangeApproval && notifications.some((n) => n.notificationId === request.notificationId && n.reported === true)
     ).length;
-
+ 
     const pendingIncomingCount = dataExchangeRequests.filter((request) =>
         !request.dataExchangeApproval && notifications.some((n) => n.notificationId === request.notificationId && n.reported === false)
     ).length;
@@ -196,7 +276,7 @@ export function CollapsibleDisruptionPanel({
                         </Box>
                     </Stack>
                 </Button>
-
+ 
                 {!isResolved && (
                     <Box sx={{ position: 'absolute', top: '50%', right: '1rem', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 1.5, zIndex: 1 }} >
                         {isDemandEffect(notifications[0].effect) && pendingOutgoingCount > 0 && (
@@ -221,7 +301,7 @@ export function CollapsibleDisruptionPanel({
                     </Box>
                 )}
             </Box>
-
+ 
             {isExpanded && (
                 <DemandCapacityNotificationTable
                     notifications={notifications}
@@ -234,6 +314,7 @@ export function CollapsibleDisruptionPanel({
                     onCreateApprovalClicked={onCreateApprovalClicked}
                     onViewApprovalClicked={onViewApprovalClicked}
                     onCreateRequestClicked={onCreateRequestClicked}
+                    onViewRequestListClicked={onViewRequestListClicked}
                     showActionsColumn={!isResolved}
                     incomingCount={incomingCount}
                 />
@@ -241,7 +322,7 @@ export function CollapsibleDisruptionPanel({
         </>
     );
 }
-
+ 
 type NotificationTableProps = {
     notifications: DemandCapacityNotification[],
     dataExchangeRequests: DataExchangeRequest[];
@@ -255,9 +336,10 @@ type NotificationTableProps = {
     onCreateApprovalClicked?: (request: DataExchangeRequest) => void;
     onViewApprovalClicked?: (request: DataExchangeRequest) => void;
     onCreateRequestClicked?: (notification: DemandCapacityNotification) => void;
+    onViewRequestListClicked?: (notification: DemandCapacityNotification, requests: DataExchangeRequest[]) => void;
 }
-
-const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ notifications, dataExchangeRequests, partners, onRowSelected, onCheckClicked, onEditClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked, onCreateRequestClicked, showActionsColumn = true, incomingCount}) => {
+ 
+const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ notifications, dataExchangeRequests, partners, onRowSelected, onCheckClicked, onEditClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked, onCreateRequestClicked, onViewRequestListClicked, showActionsColumn = true, incomingCount}) => {
     return (
         <Box width="100%" className="hide-title">
             <Table
@@ -305,11 +387,12 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                     { headerName: 'Status', field: 'status', valueFormatter: (params) => STATUS.find((status) => status.key === params.value)?.value },
                     { headerName: 'Exchange Status', field: 'exchangeStatus', flex: 1,
                         renderCell: (params) => {
-                            const request = dataExchangeRequests.find((r) => r.notificationId === params.row.notificationId);
-                            const status = getExchangeStatus(params.row, request, {
-                                onCreateRequestClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked,
+                            const requests = dataExchangeRequests.filter((r) => r.notificationId === params.row.notificationId);
+                            const status = getExchangeStatus(params.row, requests, {
+                                onCreateRequestClicked, onViewRequestClicked, onCreateApprovalClicked, onViewApprovalClicked, onViewRequestListClicked,
                             });
-                            return <ExchangeStatusCell status={status} />;
+                            const onCreateRequest = requests.length > 0 && canCreateRequest(params.row, requests) ? () => onCreateRequestClicked?.(params.row) : undefined;
+                            return <ExchangeStatusCell status={status} onCreateRequest={onCreateRequest} />;
                         },
                     },
                     { headerName: 'Note', field: 'text', flex: 1.25, renderCell: (data: { row: DemandCapacityNotification }) => (
@@ -356,7 +439,7 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                             </Box>
                         )
                     }}
-
+ 
                 ]}
                 rows={notifications ?? []}
                 getRowId={(row) => row.uuid}

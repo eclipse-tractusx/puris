@@ -38,13 +38,13 @@ maven/mavencentral/io.smallrye/jandex/3.2.0, Apache-2.0, approved, clearlydefine
 maven/mavencentral/io.swagger.core.v3/swagger-annotations-jakarta/2.2.28, Apache-2.0, approved, #5947
 maven/mavencentral/io.swagger.core.v3/swagger-core-jakarta/2.2.28, Apache-2.0, approved, #5929
 maven/mavencentral/io.swagger.core.v3/swagger-models-jakarta/2.2.28, Apache-2.0, approved, #5919
-maven/mavencentral/jakarta.activation/jakarta.activation-api/2.1.4, EPL-2.0 OR BSD-3-Clause OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.jaf
-maven/mavencentral/jakarta.annotation/jakarta.annotation-api/2.1.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.ca
-maven/mavencentral/jakarta.inject/jakarta.inject-api/2.0.1, Apache-2.0, approved, ee4j.cdi
-maven/mavencentral/jakarta.persistence/jakarta.persistence-api/3.1.0, EPL-2.0 OR BSD-3-Clause, approved, ee4j.jpa
-maven/mavencentral/jakarta.transaction/jakarta.transaction-api/2.0.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.jta
+maven/mavencentral/jakarta.activation/jakarta.activation-api/2.1.4, BSD-3-Clause OR EPL-2.0 OR GPL-2.0-only WITH Classpath-Exception-2.0, approved, #8015
+maven/mavencentral/jakarta.annotation/jakarta.annotation-api/2.1.1, EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0, approved, #8018
+maven/mavencentral/jakarta.inject/jakarta.inject-api/2.0.1, Apache-2.0, approved, #25006
+maven/mavencentral/jakarta.persistence/jakarta.persistence-api/3.1.0, EPL-2.0 OR BSD-3-Clause AND (EPL-2.0 OR BSD-3-Clause AND BSD-3-Clause), approved, #7696
+maven/mavencentral/jakarta.transaction/jakarta.transaction-api/2.0.1, EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0, approved, #7697
 maven/mavencentral/jakarta.validation/jakarta.validation-api/3.0.2, Apache-2.0, approved, ee4j.validation
-maven/mavencentral/jakarta.xml.bind/jakarta.xml.bind-api/4.0.4, BSD-3-Clause, approved, ee4j.jaxb
+maven/mavencentral/jakarta.xml.bind/jakarta.xml.bind-api/4.0.4, BSD-3-Clause, approved, #8016
 maven/mavencentral/javax.xml.bind/jaxb-api/2.3.1, CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0, approved, CQ16911
 maven/mavencentral/junit/junit/4.13.2, EPL-2.0, approved, CQ23636
 maven/mavencentral/net.bytebuddy/byte-buddy-agent/1.17.8, Apache-2.0, approved, #19238
@@ -69,7 +69,7 @@ maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-el/10.1.48, Apache-2.0, 
 maven/mavencentral/org.apache.tomcat.embed/tomcat-embed-websocket/10.1.48, Apache-2.0, approved, #7920
 maven/mavencentral/org.apache.xmlbeans/xmlbeans/5.3.0, Apache-2.0 AND W3C-19980720, approved, #17930
 maven/mavencentral/org.apiguardian/apiguardian-api/1.1.2, Apache-2.0, approved, #17641
-maven/mavencentral/org.aspectj/aspectjweaver/1.9.24, EPL-1.0, approved, tools.aspectj
+maven/mavencentral/org.aspectj/aspectjweaver/1.9.24, Apache-2.0 AND BSD-3-Clause AND EPL-1.0 AND BSD-3-Clause AND Apache-1.1, approved, #15252
 maven/mavencentral/org.assertj/assertj-core/3.27.6, Apache-2.0, approved, #17980
 maven/mavencentral/org.awaitility/awaitility/4.2.2, Apache-2.0, approved, #14178
 maven/mavencentral/org.bouncycastle/bcpkix-jdk18on/1.74, MIT, approved, #9090
@@ -80,7 +80,7 @@ maven/mavencentral/org.eclipse.microprofile.openapi/microprofile-openapi-api/4.0
 maven/mavencentral/org.glassfish.jaxb/jaxb-core/4.0.6, BSD-3-Clause, approved, ee4j.jaxb-impl
 maven/mavencentral/org.glassfish.jaxb/jaxb-runtime/4.0.6, BSD-3-Clause, approved, ee4j.jaxb-impl
 maven/mavencentral/org.glassfish.jaxb/txw2/4.0.6, BSD-3-Clause, approved, ee4j.jaxb-impl
-maven/mavencentral/org.glassfish/jakarta.json/2.0.1, EPL-2.0 OR GPL-2.0-only with Classpath-exception-2.0, approved, ee4j.jsonp
+maven/mavencentral/org.glassfish/jakarta.json/2.0.1, EPL-2.0 OR (GPL-2.0-only WITH Classpath-exception-2.0), approved, #15267
 maven/mavencentral/org.hamcrest/hamcrest-core/3.0, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/org.hamcrest/hamcrest/3.0, BSD-3-Clause, approved, #17661
 maven/mavencentral/org.hdrhistogram/HdrHistogram/2.2.2, BSD-2-Clause AND CC0-1.0 AND CC0-1.0, approved, #14828
@@ -123,7 +123,7 @@ maven/mavencentral/org.modelmapper/modelmapper/3.2.0, Apache-2.0, approved, clea
 maven/mavencentral/org.objenesis/objenesis/3.3, Apache-2.0, approved, #19727
 maven/mavencentral/org.opentest4j/opentest4j/1.3.0, Apache-2.0, approved, #9713
 maven/mavencentral/org.ow2.asm/asm/9.7.1, BSD-3-Clause, approved, #16464
-maven/mavencentral/org.postgresql/postgresql/42.7.11, BSD-2-Clause AND Apache-2.0, approved, #11681
+maven/mavencentral/org.postgresql/postgresql/42.7.12, BSD-2-Clause AND Apache-2.0, approved, #11681
 maven/mavencentral/org.projectlombok/lombok/1.18.42, MIT, approved, #15192
 maven/mavencentral/org.skyscreamer/jsonassert/1.5.3, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.slf4j/jul-to-slf4j/2.0.17, MIT, approved, #7698

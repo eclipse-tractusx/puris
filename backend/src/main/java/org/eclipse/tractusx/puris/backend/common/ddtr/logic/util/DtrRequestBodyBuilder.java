@@ -151,6 +151,7 @@ public class DtrRequestBodyBuilder {
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getDeliveryAnonymizedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, hrefs.anonymizedHref(), variablesService.getProductionAnonymizedSubmodelApiAssetId()));
         submodelDescriptorsArray.add(createSubmodelObject(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, hrefs.href(), variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId()));
+        submodelDescriptorsArray.add(createPartTypeLegacySubmodelObject(material.getOwnMaterialNumber()));
         submodelDescriptorsArray.add(createPartTypeSubmodelObject(material.getOwnMaterialNumber()));
 
         log.debug("Created body for product {}\n{}", material.getOwnMaterialNumber(), body.toPrettyString());
@@ -254,6 +255,14 @@ public class DtrRequestBodyBuilder {
         securityObject.put("key", "NONE");
         securityObject.put("value", "NONE");
         return requestSubmodelObject;
+    }
+
+    private JsonNode createPartTypeLegacySubmodelObject(String materialId) {
+        String href = variablesService.getEdcDataplanePublicUrl();
+        href = href.endsWith("/") ? href : href + "/";
+        href += Base64.getEncoder().encodeToString(materialId.getBytes(StandardCharsets.UTF_8));
+        href += "/submodel";
+        return createSubmodelObject(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, href, variablesService.getPartTypeLegacySubmodelApiAssetId());
     }
 
     private JsonNode createPartTypeSubmodelObject(String materialId) {

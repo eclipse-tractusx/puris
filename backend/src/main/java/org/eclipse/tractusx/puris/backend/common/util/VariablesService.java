@@ -283,11 +283,19 @@ public class VariablesService {
     private boolean registerDtrAssetFlag;
 
     /**
+     * The url under which this application's part type legacy request endpoint can
+     * be reached by external machines.
+     */
+    public String getParttypeInformationLegacyServerendpoint() {
+        return getPurisBaseUrl() + getContextPath() + "parttypeinformation/1-0-0";
+    }
+
+    /**
      * The url under which this application's part type request endpoint can
      * be reached by external machines.
      */
     public String getParttypeInformationServerendpoint() {
-        return getPurisBaseUrl() + getContextPath() + "parttypeinformation";
+        return getPurisBaseUrl() + getContextPath() + "parttypeinformation/2-0-0";
     }
 
     @Value("${puris.generatematerialcatenaxid}")
@@ -414,6 +422,10 @@ public class VariablesService {
 
     public String getDataExchangeRequestApiAssetId() {
         return dataExchangeRequestApi + "@" + ownBpnl;
+    }
+
+    public String getPartTypeLegacySubmodelApiAssetId() {
+        return "PartTypeInformationLegacySubmodelApi@" + getOwnBpnl();
     }
 
     public String getPartTypeSubmodelApiAssetId() {
