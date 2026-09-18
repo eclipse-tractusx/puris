@@ -353,9 +353,14 @@ Possible status options are the following:
   - `Not requested` (the incoming notification doesn't have a data exchange request yet)
   - `-` (Requesting data exchange is currently not supported for the specified effect of the notification.)
   - `Approval Pending` (the data exchange request has been created and is waiting to be approved)
-  - `Approved` (a data exchange request has been approved)
+  - `Approved, finalized` (a data exchange request has been approved and finalized)
+  - `Approved, not finalized` (a data exchange request has been approved, but one or more forwarded requests are pending approval.)
 
-A customer may create a data exchange request for incoming notifications who's effect is 'Capacity reduction' or 'Capacity increase'.
+If a notification has more than one data exchange related to it then the Status column shows the number of related data exchange requests. Clicking on it will open a modal with the table and all related requests listed along with their most important information. Clicking the `Action` button will open the Data exchange Detail Modal which displays all the relevant information for that request and approval.
+
+![Data Exchange Request List Modal](img/data_exchange_list.png)
+
+A customer may create a data exchange request for incoming notifications.
 
 ### Send Data Exchange Request
 
@@ -378,8 +383,10 @@ If a data exchange request has been created the user can view the relevant infor
 
 ![Data Exchange Approval Modal](img/data_exchange_approval.png)
 
-If there is an incoming data exchange request the user can approve it by clicking `Approval Pending` in the status column. This will open the same modal showing all the relevant information. Upon clicking "APPROVE AND CLOSE" the user is prompted with a Dialog to finalize the approval.
-Once approved the status of the data exchange is changed to `Approved`. 
+If there is an incoming data exchange request the user can approve it by clicking `Approval Pending` in the status column. This will open the same modal showing all the relevant information.
+If there is more than one partner who have sent notifications related to the notification for which we have an open data exchange request, the user can check the checkbox "Forward this request to x partners" and approve the request. This will approve the original request and send new requests to the related partners. The status of the data exchange request is changed to `Approved, not finalized` until all requests are approved when it will change to `Approved, finalized`
+If there is only one partner upon clicking "APPROVE AND CLOSE" the user is prompted with a Dialog to finalize the approval.
+Once approved the status of the data exchange is changed to `Approved and finalized`. 
 
 ![Data Exchange Approval Dialog](img/data_exchange_approval_dialog.png)
 
