@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- /
+- Added submodel implementation for anonymized demand request ([#1210](https://github.com/eclipse-tractusx/puris/pull/1210))
 
 ### Changed
 
@@ -94,7 +94,6 @@ The **need for configuration updates** is **marked bold**.
   - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
   - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
 - Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
-- Added submodel implementation for anonymized demand request ([#1210](https://github.com/eclipse-tractusx/puris/pull/1210))
 - Added IRS Adapter to exchange data with an external Item Relationship Service
   - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195), [#1208](https://github.com/eclipse-tractusx/puris/pull/1208))
   - Added Logic to manage Irs Grants and keep them in sync with application state ([#1203](https://github.com/eclipse-tractusx/puris/pull/1203))
