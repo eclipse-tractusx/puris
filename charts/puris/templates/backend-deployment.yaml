@@ -146,7 +146,7 @@ spec:
                   name: "{{ .Values.backend.puris.existingSecret }}"
                   key: "puris-api-key"
             - name: PURIS_BASEURL
-                # remove backslash if given and later ensure (must end with trailing slash)
+              # remove backslash if given and later ensure (must end with trailing slash)
               value: "{{- include "puris.backend.baseUrlWithProtocol" . -}}"
             - name: PURIS_ALLOWED-ORIGINS
               {{- $allowedOriginUrls := list }}
@@ -169,6 +169,8 @@ spec:
               value: "{{ .Values.backend.puris.productionsubmodel.apiassetid }}"
             - name: PURIS_DEMANDSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.demandsubmodel.apiassetid }}"
+            - name: PURIS_DEMANDANONYMIZEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.demandanonymizedsubmodel.apiassetid }}"
             - name: PURIS_DELIVERYSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.deliverysubmodel.apiassetid }}"
             - name: PURIS_DAYSOFSUPPLYSUBMODEL_APIASSETID

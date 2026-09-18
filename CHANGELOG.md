@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- /
+- Added submodel implementation for anonymized demand request ([#1210](https://github.com/eclipse-tractusx/puris/pull/1210))
 
 ### Changed
 
