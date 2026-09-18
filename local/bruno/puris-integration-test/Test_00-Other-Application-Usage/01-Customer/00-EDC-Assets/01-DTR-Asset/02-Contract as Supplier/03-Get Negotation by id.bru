@@ -7,6 +7,11 @@ meta {
   ]
 }
 
+script:pre-request {
+  bru.setVar("retryUntilField", "state");
+  bru.setVar("retryUntilValue", "FINALIZED");
+}
+
 get {
   url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractnegotiations/{{DTR_NEGOTIATION_ID}}
   body: none
@@ -19,16 +24,14 @@ auth:apikey {
   placement: header
 }
 
-script:pre-request {
-  console.log("Waiting 5 seconds to let negotiation terminate");
-  await (new Promise(resolve => setTimeout(resolve, 5000)));
-}
-
 tests {
+  if (bru.getVar("__retryPending")) return;
+  console.log("Negotiation body:", JSON.stringify(res.getBody()));
+
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });
-  
+
   var jsonData = res.getBody();
   bru.setVar("DTR_CONTRACT_AGREEMENT_ID", jsonData["contractAgreementId"]);
 }

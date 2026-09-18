@@ -17,7 +17,7 @@ The **need for configuration updates** is **marked bold**
 
 ### Changed
 
--/
+- Update running of bruno collection tests ([#1219](https://github.com/eclipse-tractusx/puris/pull/1219))
 
 ### Fixes
 

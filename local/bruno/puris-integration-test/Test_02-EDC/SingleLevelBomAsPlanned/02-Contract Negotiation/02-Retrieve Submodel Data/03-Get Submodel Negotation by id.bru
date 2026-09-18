@@ -1,10 +1,15 @@
 meta {
-  name: 03-Get Submodel Negotation by id
+  name: 03-Get Submodel Negotation by id (SLBoP)
   type: http
   seq: 3
   tags: [
     single-level-bom-as-planned
   ]
+}
+
+script:pre-request {
+  bru.setVar("retryUntilField", "state");
+  bru.setVar("retryUntilValue", "FINALIZED");
 }
 
 get {
@@ -13,17 +18,13 @@ get {
   auth: inherit
 }
 
-script:pre-request {
-  console.log("Waiting 5 seconds to let negotiation terminate");
-  await (new Promise(resolve => setTimeout(resolve, 5000)));
-}
-
 script:post-response {
   const jsonData = res.getBody();
   bru.setVar("SUBMODEL_CONTRACT_AGREEMENT_ID", jsonData.contractAgreementId);
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });
