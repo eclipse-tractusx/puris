@@ -248,7 +248,7 @@ public class EdcRequestBodyBuilder {
      * @return the request body
      */
     public JsonNode buildDtrFrameworkPolicy(PolicyProfileVersionEnumeration profileVersion) {
-        return buildFrameworkPolicy("cx.core.digitalTwinRegistry:1", profileVersion.DTR_CONTRACT_POLICY_ID, profileVersion);
+        return buildFrameworkPolicy(JsonLdConstants.DTR_USAGE_PURPOSE, profileVersion.DTR_CONTRACT_POLICY_ID, profileVersion);
     }
 
     private JsonNode buildFrameworkPolicy(String purpose, String policyId, PolicyProfileVersionEnumeration profileVersion) {
@@ -329,25 +329,14 @@ public class EdcRequestBodyBuilder {
      * Creates the request body for initiating a negotiation in DSP protocol.
      * Will use the policy terms as specified in the catalog item.
      *
-     * @param dcatCatalogItem     The catalog entry that describes the target asset
+     * @param assetId             The id of the target asset, as stated by the provider's catalog
+     * @param policy              The offer to negotiate, expanded; taken from the catalog item's odrl:hasPolicy
      * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The request body
      */
-    public JsonNode buildAssetNegotiationBody(JsonNode dcatCatalogItem, DspaceVersionParams dspaceVersionParams) {
-        JsonNode policyNode = dcatCatalogItem.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
-        if (policyNode != null && policyNode.isArray()) {
-            if (policyNode.size() > 1) {
-                log.warn("Dataset {} carries {} offers, negotiating the first one without validation",
-                    dcatCatalogItem.path("@id").asText(), policyNode.size());
-            }
-            policyNode = policyNode.get(0);
-        }
-        return buildAssetNegotiationBody(dcatCatalogItem, policyNode, dspaceVersionParams);
-    }
-
-    public JsonNode buildAssetNegotiationBody(JsonNode dcatCatalogItem, JsonNode policyNode, DspaceVersionParams dspaceVersionParams) {
-        if (policyNode == null || !policyNode.isObject()) {
-            throw new IllegalArgumentException("Expected a single policy object, got: " + policyNode);
+    public JsonNode buildAssetNegotiationBody(String assetId, JsonNode policy, DspaceVersionParams dspaceVersionParams) {
+        if (policy == null || !policy.isObject()) {
+            throw new IllegalArgumentException("Expected a single policy object, got: " + policy);
         }
 
         ObjectNode body = MAPPER.createObjectNode();
@@ -359,9 +348,8 @@ public class EdcRequestBodyBuilder {
         body.put("counterPartyAddress", dspaceVersionParams.counterPartyAddress());
         body.put("protocol", dspaceVersionParams.protocol().getVersion());
 
-        String assetId = dcatCatalogItem.get("@id").asText();
-
-        ObjectNode offer = (ObjectNode) policyNode;
+        // framework agreement and co have been checked during the catalog request
+        ObjectNode offer = (ObjectNode) policy;
         ObjectNode targetIdObject = MAPPER.createObjectNode();
         targetIdObject.put("@id", assetId);
         offer.put("@context", "http://www.w3.org/ns/odrl.jsonld");

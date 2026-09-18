@@ -643,44 +643,49 @@ public class EdcAdapterService {
     /**
      * Helper method for contracting a certain asset as specified in the catalog item from
      * a specific Partner.
-     * <p>
-     * Uses the dspUrl of the partner.
      *
-     * @param partner     The Partner to negotiate with
-     * @param catalogItem An excerpt from a catalog.
+     * @param assetId             The id of the target asset, as stated by the provider's catalog
+     * @param policy              The offer to negotiate, expanded
+     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The JSON response to your contract offer.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
-        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
-        return initiateNegotiation(catalogItem, dspaceVersionParams);
+    private JsonNode initiateNegotiation(String assetId, JsonNode policy, DspaceVersionParams dspaceVersionParams) throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(assetId, policy, dspaceVersionParams);
+        try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
+            JsonNode responseNode = objectMapper.readTree(response.body().string());
+            log.debug("Result from negotiation {}", responseNode.toPrettyString());
+            return responseNode;
+        }
     }
 
     /**
      * Helper method for negotiating a contract for a specific catalog item using
      * already resolved DSP version parameters.
      *
-     * @param catalogItem         An excerpt from a catalog
-     * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
+     * @param partner The Partner to negotiate with
+     * @param assetId The id of the target asset, as stated by the partner's catalog
+     * @param policy  The offer to negotiate, expanded
      * @return The JSON response to your contract offer.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode initiateNegotiation(JsonNode catalogItem, DspaceVersionParams dspaceVersionParams) throws IOException {
-        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogItem, dspaceVersionParams);
-        try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
-            JsonNode responseNode = objectMapper.readTree(response.body().string());
-            log.debug("Result from negotiation {}", responseNode.toPrettyString());
-            return responseNode;
-        }
+    private JsonNode initiateNegotiation(Partner partner, String assetId, JsonNode policy) throws IOException {
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
+        return initiateNegotiation(assetId, policy, dspaceVersionParams);
     }
 
-    private JsonNode initiateNegotiation(JsonNode catalogItem, JsonNode policy, DspaceVersionParams dspaceVersionParams) throws IOException {
-        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogItem, policy, dspaceVersionParams);
-        try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
-            JsonNode responseNode = objectMapper.readTree(response.body().string());
-            log.debug("Result from negotiation {}", responseNode.toPrettyString());
-            return responseNode;
-        }
+    /**
+     * The usage purposes we accept in a contract offer for our own submodel and api assets.
+     */
+    private List<String> purisAcceptedPurposes() {
+        return List.of(variablesService.getPurisPurposeWithVersion());
+    }
+
+    /**
+     * The usage purposes we accept in a contract offer for a partner's DTR.
+     */
+    private List<String> dtrAcceptedPurposes() {
+        return List.of(JsonLdConstants.DTR_USAGE_PURPOSE, variablesService.getPurisPurposeWithVersion());
     }
 
     /**
@@ -1066,14 +1071,26 @@ public class EdcAdapterService {
                 log.warn("Ambiguous catalog entries found! Will take the first\n" + catalogArray.toPrettyString());
                 // potential constraint check in future
             }
-            JsonNode targetCatalogEntry = catalogArray.get(0);
+            JsonNode targetCatalogEntry = null;
+            JsonNode targetPolicy = null;
+            for (JsonNode entry : catalogArray) {
+                Optional<JsonNode> acceptablePolicy = findAcceptablePolicy(entry, partner.getPolicyProfileVersion(), dtrAcceptedPurposes());
+                if (acceptablePolicy.isPresent()) {
+                    targetCatalogEntry = entry;
+                    targetPolicy = acceptablePolicy.get();
+                    break;
+                }
+                log.info("DTR contract offer did not match our policy:\n{}", entry.toPrettyString());
+            }
+
             if (targetCatalogEntry == null) {
                 log.error("Could not find asset for DigitalTwinRegistry at partner " + partner.getBpnl() + "'s catalog");
+                log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
             String assetId = targetCatalogEntry.get("@id").asText();
             log.debug("Found contract offer for asset {}", assetId);
-            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            JsonNode negotiationResponse = initiateNegotiation(partner, assetId, targetPolicy);
             String negotiationId = negotiationResponse.get("@id").asText();
             log.info("Started negotiation with id {}", negotiationId);
             // Await confirmation of contract and contractId
@@ -1430,7 +1447,7 @@ public class EdcAdapterService {
                 }
 
                 for (JsonNode entry : catalogArray) {
-                    Optional<JsonNode> acceptablePolicy = findAcceptablePolicy(entry, partner.getPolicyProfileVersion());
+                    Optional<JsonNode> acceptablePolicy = findAcceptablePolicy(entry, partner.getPolicyProfileVersion(), purisAcceptedPurposes());
                     if (acceptablePolicy.isPresent()) {
                         targetCatalogEntry = entry;
                         targetPolicy = acceptablePolicy.get();
@@ -1450,7 +1467,8 @@ public class EdcAdapterService {
                 log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
-            JsonNode negotiationResponse = initiateNegotiation(targetCatalogEntry, targetPolicy, dspaceVersionParams);
+            String catalogAssetId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(catalogAssetId, targetPolicy, dspaceVersionParams);
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
             String contractId = null;
@@ -1527,21 +1545,21 @@ public class EdcAdapterService {
      * @return true, if at least one of the offered policies matches yours, otherwise false
      */
     public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
-        return findAcceptablePolicy(catalogEntry, profileVersion).isPresent();
+        return findAcceptablePolicy(catalogEntry, profileVersion, purisAcceptedPurposes()).isPresent();
     }
 
     /**
      * Returns the first policy of the given (expanded) catalog entry that this application can fulfill.
      * <p>
      * A dataset may carry more than one offer if several contract definitions target the same asset;
-     * it is sufficient that one of them matches. The returned node is the one that must be negotiated,
-     * see {@link EdcRequestBodyBuilder#buildAssetNegotiationBody(JsonNode, JsonNode, DspaceVersionParams)}.
+    * it is sufficient that one of them matches. The returned node is the one that must be negotiated,
      *
-     * @param catalogEntry   the catalog item containing the desired api asset in expanded form
-     * @param profileVersion the policy profile version to validate against
+     * @param catalogEntry     the catalog item containing the desired asset in expanded form
+     * @param profileVersion   the policy profile version to validate against
+     * @param acceptedPurposes the usage purposes we accept, any one of which satisfies the offer
      * @return the matching offer, or empty if none of them can be fulfilled
      */
-    public Optional<JsonNode> findAcceptablePolicy(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
+    public Optional<JsonNode> findAcceptablePolicy(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion, List<String> acceptedPurposes) {
         log.debug("Testing constraints in the following catalogEntry: \n{}", catalogEntry.toPrettyString());
 
         JsonNode hasPolicy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
@@ -1554,7 +1572,7 @@ public class EdcAdapterService {
         ArrayNode policies = hasPolicy.isArray() ? (ArrayNode) hasPolicy : objectMapper.createArrayNode().add(hasPolicy);
 
         for (JsonNode policy : policies) {
-            if (testSinglePolicy(policy, profileVersion)) {
+            if (testSinglePolicy(policy, profileVersion, acceptedPurposes)) {
                 log.info("Contract offer constraints can be fulfilled by PURIS FOSS application (passed).");
                 return Optional.of(policy);
             }
@@ -1572,9 +1590,10 @@ public class EdcAdapterService {
      *
      * @param policy         a single expanded odrl:hasPolicy entry
      * @param profileVersion the policy profile version to validate against
+     * @param acceptedPurposes the usage purposes we accept, any one of which satisfies the offer
      * @return true, if the offer matches yours, otherwise false
      */
-    private boolean testSinglePolicy(JsonNode policy, PolicyProfileVersionEnumeration profileVersion) {
+    private boolean testSinglePolicy(JsonNode policy, PolicyProfileVersionEnumeration profileVersion, List<String> acceptedPurposes) {
         var constraint = Optional.ofNullable(policy.get(JsonLdConstants.ODRL_NAMESPACE + "permission"))
             .filter(permission -> permission.isArray() && permission.size() == 1)
             .map(permission -> permission.get(0))
@@ -1622,7 +1641,8 @@ public class EdcAdapterService {
 
         if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
             log.debug(
-                "Not all constraints have been found: FrameworkAgreement constraint found: {}, " + "UsagePurpose constraint found: {}",
+                "Not all constraints have been found: FrameworkAgreement constraint found: {}, " +
+                    "UsagePurpose constraint found: {}",
                 frameworkAgreementConstraint.isPresent(),
                 purposeConstraint.isPresent()
             );
@@ -1633,20 +1653,20 @@ public class EdcAdapterService {
             frameworkAgreementConstraint,
             profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement",
             JsonLdConstants.ODRL_NAMESPACE + "eq",
-            variablesService.getPurisFrameworkAgreementWithVersion()
+            List.of(variablesService.getPurisFrameworkAgreementWithVersion())
         );
 
         result = result && testSingleConstraint(
             purposeConstraint,
             profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose",
             JsonLdConstants.ODRL_NAMESPACE + (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
-            variablesService.getPurisPurposeWithVersion()
+            acceptedPurposes
         );
 
         return result;
     }
 
-    private boolean testSingleConstraint(Optional<JsonNode> constraintToTest, String targetLeftOperand, String targetOperator, String targetRightOperand) {
+    private boolean testSingleConstraint(Optional<JsonNode> constraintToTest, String targetLeftOperand, String targetOperator, List<String> acceptedRightOperands) {
 
         if (constraintToTest.isEmpty()) return false;
 
@@ -1657,7 +1677,7 @@ public class EdcAdapterService {
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
             String leftOperand = leftOperandNode == null ? "null" : leftOperandNode.asText();
-            log.info("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
+            log.debug("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
             return false;
         }
 
@@ -1673,9 +1693,9 @@ public class EdcAdapterService {
         JsonNode rightOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "rightOperand");
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get(0);
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get("@value");
-        if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
+        if (rightOperandNode == null || !acceptedRightOperands.contains(rightOperandNode.asText())) {
             String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
-            log.info("Right operand '{}' does not equal expected value '{}'.", rightOperand, targetRightOperand);
+            log.info("Right operand '{}' is none of the accepted values {}.", rightOperand, acceptedRightOperands);
             return false;
         }
 

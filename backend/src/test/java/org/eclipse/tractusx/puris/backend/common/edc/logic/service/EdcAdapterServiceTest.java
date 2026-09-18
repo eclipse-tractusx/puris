@@ -46,6 +46,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -232,6 +233,7 @@ public class EdcAdapterServiceTest {
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -286,6 +288,8 @@ public class EdcAdapterServiceTest {
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
+        // when
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -305,6 +309,9 @@ public class EdcAdapterServiceTest {
         JsonNode invalidJsonNode = objectMapper.readTree(input);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
         System.out.println(invalidJsonNode.toPrettyString());
+
+        // when
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -328,10 +335,9 @@ public class EdcAdapterServiceTest {
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
-        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(catalogEntry, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(catalogEntry, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1"));
 
         assertTrue(result.isPresent());
         assertEquals("urn:offer:valid", result.get().get("@id").asText());
@@ -355,7 +361,7 @@ public class EdcAdapterServiceTest {
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:9.9");
 
         // then
-        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(catalogEntry, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(catalogEntry, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1"));
 
         assertFalse(result.isPresent());
     }
@@ -374,6 +380,7 @@ public class EdcAdapterServiceTest {
         if (catalogEntry.isArray()) {
             catalogEntry = catalogEntry.get(0);
         }
+        String assetId = catalogEntry.get("@id").asText();
         JsonNode secondOffer = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy").get(1);
 
         DspaceVersionParams dspaceVersionParams = new DspaceVersionParams(
@@ -383,9 +390,10 @@ public class EdcAdapterServiceTest {
         );
 
         // then
-        JsonNode body = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogEntry, secondOffer, dspaceVersionParams);
+        JsonNode body = edcRequestBodyBuilder.buildAssetNegotiationBody(assetId, secondOffer, dspaceVersionParams);
 
         assertEquals("urn:offer:valid", body.get("policy").get("@id").asText());
+        assertEquals(assetId, body.get("policy").get("target").get("@id").asText());
     }
 
     /**
