@@ -1067,10 +1067,6 @@ public class EdcAdapterService {
             if (catalogArray.isObject()) {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
-            if (catalogArray.size() > 1) {
-                log.warn("Ambiguous catalog entries found! Will take the first\n" + catalogArray.toPrettyString());
-                // potential constraint check in future
-            }
             JsonNode targetCatalogEntry = null;
             JsonNode targetPolicy = null;
             for (JsonNode entry : catalogArray) {
@@ -1080,12 +1076,11 @@ public class EdcAdapterService {
                     targetPolicy = acceptablePolicy.get();
                     break;
                 }
-                log.info("DTR contract offer did not match our policy:\n{}", entry.toPrettyString());
             }
 
             if (targetCatalogEntry == null) {
                 log.error("Could not find asset for DigitalTwinRegistry at partner " + partner.getBpnl() + "'s catalog");
-                log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
+                log.warn("Could not find DTR asset with acceptable policy");
                 return false;
             }
             String assetId = targetCatalogEntry.get("@id").asText();
@@ -1537,18 +1532,6 @@ public class EdcAdapterService {
     }
 
     /**
-     * Helper method to check whether you and the contract offer from the other party have the
-     * same framework agreement policy. The given catalogEntry must be expanded!
-     *
-     * @param catalogEntry   the catalog item containing the desired api asset in expanded form
-     * @param profileVersion the policy profile version to validate against
-     * @return true, if at least one of the offered policies matches yours, otherwise false
-     */
-    public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
-        return findAcceptablePolicy(catalogEntry, profileVersion, purisAcceptedPurposes()).isPresent();
-    }
-
-    /**
      * Returns the first policy of the given (expanded) catalog entry that this application can fulfill.
      * <p>
      * A dataset may carry more than one offer if several contract definitions target the same asset;
@@ -1616,8 +1599,8 @@ public class EdcAdapterService {
             }
         }
 
-        if (!constraint.get().isArray() || constraint.get().size() != 2) {
-            log.debug("2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.", constraint.get().size());
+        if (!constraint.get().isArray()) {
+            log.debug("Constraint mismatch: expected a list of constraints, got: {}", constraint.get());
             return false;
         }
 
@@ -1641,7 +1624,7 @@ public class EdcAdapterService {
 
         if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
             log.debug(
-                "Not all constraints have been found: FrameworkAgreement constraint found: {}, " +
+                "Mandatory constraints missing: FrameworkAgreement constraint found: {}, " +
                     "UsagePurpose constraint found: {}",
                 frameworkAgreementConstraint.isPresent(),
                 purposeConstraint.isPresent()

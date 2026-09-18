@@ -106,7 +106,7 @@ public class EdcAdapterServiceTest {
      * @throws JsonProcessingException if json is invalid
      */
     @Test
-    public void correctConstraints_testContractPolicyConstraints_succeed() throws JsonProcessingException {
+    public void correctConstraints_findAcceptablePolicy_succeeds() throws JsonProcessingException {
         // given
         String validJson = "{\n" +
             "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL00000007RXRX\",\n" +
@@ -161,12 +161,15 @@ public class EdcAdapterServiceTest {
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(validJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(
+            validJsonNode,
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2509,
+            List.of("cx.puris.base:1")
+        );
 
-        assertTrue(result);
+        assertTrue(result.isPresent());
     }
 
     /**
@@ -175,7 +178,7 @@ public class EdcAdapterServiceTest {
      * @throws JsonProcessingException if json is invalid
      */
     @Test
-    public void wrongConstraints_testContractPolicyConstraints_fails() throws JsonProcessingException {
+    public void wrongConstraints_findAcceptablePolicy_returnsEmpty() throws JsonProcessingException {
         // given
         String invalidJson = "{\n" +
             "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL1234567890ZZ\",\n" +
@@ -233,12 +236,12 @@ public class EdcAdapterServiceTest {
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1")
+        );
 
-        assertFalse(result);
+        assertFalse(result.isPresent());
     }
 
     /**
@@ -247,7 +250,7 @@ public class EdcAdapterServiceTest {
      * @throws JsonProcessingException if json is invalid
      */
     @Test
-    public void oneConstraint_testContractPolicyConstraints_fails() throws JsonProcessingException {
+    public void oneConstraint_findAcceptablePolicy_returnsEmpty() throws JsonProcessingException {
         // given
         String invalidJson = "{\n" +
             "    \"@id\" : \"PartTypeInformationSubmodelApi@BPNL1234567890ZZ\",\n" +
@@ -288,13 +291,10 @@ public class EdcAdapterServiceTest {
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
-        // when
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
-
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1"));
 
-        assertFalse(result);
+        assertFalse(result.isPresent());
     }
 
     /**
@@ -304,18 +304,16 @@ public class EdcAdapterServiceTest {
      */
     @ParameterizedTest
     @ValueSource(strings = {unexpectedObligation, unexpectedProhibition})
-    public void unexpectedRule_testContractPolicyConstraints_fails(String input) throws JsonProcessingException {
+    public void unexpectedRule_findAcceptablePolicy_returnsEmpty(String input) throws JsonProcessingException {
         // given
         JsonNode invalidJsonNode = objectMapper.readTree(input);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
         System.out.println(invalidJsonNode.toPrettyString());
 
-        // when
-        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
-
         // then
-        boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
-        assertFalse(result);
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1"));
+
+        assertFalse(result.isPresent());
     }
 
     /**

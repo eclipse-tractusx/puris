@@ -22,6 +22,7 @@ The **need for configuration updates** is **marked bold**
 ### Fixes
 
 - Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
+- Fix and allow multiple valid contracts to exist for an asset negotiation ([#1247](https://github.com/eclipse-tractusx/puris/pull/1247))
 
 ### Version Bumps
 
@@ -124,7 +125,6 @@ The **need for configuration updates** is **marked bold**.
 - Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
 - Ignore parent object when converting aggregated data nodes to json ([#1228](https://github.com/eclipse-tractusx/puris/pull/1228))
 - Handle partial IRS job failures gracefully ([#1234](https://github.com/eclipse-tractusx/puris/pull/1234))
-- Fix and allow multiple valid contracts to exist for an asset negotiation ([#1247](https://github.com/eclipse-tractusx/puris/pull/1247))
 
 ### Version Bumps
 
