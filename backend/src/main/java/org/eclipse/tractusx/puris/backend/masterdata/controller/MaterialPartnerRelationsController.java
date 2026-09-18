@@ -81,7 +81,8 @@ public class MaterialPartnerRelationsController {
                     mpr.getPartner().getBpnl(),
                     mpr.getPartnerMaterialNumber(),
                     mpr.isPartnerSuppliesMaterial(),
-                    mpr.isPartnerBuysMaterial()
+                    mpr.isPartnerBuysMaterial(),
+                    mpr.getPartnerCXNumber()
                 ))
                 .collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
