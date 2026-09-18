@@ -30,6 +30,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBuilder;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
@@ -45,6 +46,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -230,6 +233,7 @@ public class EdcAdapterServiceTest {
 
         // when
         when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -284,6 +288,8 @@ public class EdcAdapterServiceTest {
 
         JsonNode invalidJsonNode = objectMapper.readTree(invalidJson);
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
+        // when
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
 
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
@@ -304,9 +310,90 @@ public class EdcAdapterServiceTest {
         invalidJsonNode = jsonLdUtils.expand(invalidJsonNode, variableService.getEdcProfileVersion());
         System.out.println(invalidJsonNode.toPrettyString());
 
+        // when
+        when(variablesService.getPurisPurposeWithVersion()).thenReturn("cx.puris.base:1");
+
         // then
         boolean result = edcAdapterService.testContractPolicyConstraints(invalidJsonNode, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509);
         assertFalse(result);
+    }
+
+    /**
+     * A dataset may carry more than one offer if several contract definitions target the same asset.
+     * The matching offer must be found regardless of its position in the array.
+     *
+     * @throws JsonProcessingException if json is invalid
+     */
+    @Test
+    public void twoOffersSecondValid_findAcceptablePolicy_returnsTheValidOne() throws JsonProcessingException {
+        // given
+        JsonNode catalogEntry = objectMapper.readTree(twoOffersSecondValid);
+        catalogEntry = jsonLdUtils.expand(catalogEntry, variableService.getEdcProfileVersion());
+        if (catalogEntry.isArray()) {
+            catalogEntry = catalogEntry.get(0);
+        }
+
+        // when
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:1.0");
+
+        // then
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(catalogEntry, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1"));
+
+        assertTrue(result.isPresent());
+        assertEquals("urn:offer:valid", result.get().get("@id").asText());
+    }
+
+    /**
+     * If none of the offered policies can be fulfilled, no offer must be returned.
+     *
+     * @throws JsonProcessingException if json is invalid
+     */
+    @Test
+    public void twoOffersNoneValid_findAcceptablePolicy_returnsEmpty() throws JsonProcessingException {
+        // given
+        JsonNode catalogEntry = objectMapper.readTree(twoOffersSecondValid);
+        catalogEntry = jsonLdUtils.expand(catalogEntry, variableService.getEdcProfileVersion());
+        if (catalogEntry.isArray()) {
+            catalogEntry = catalogEntry.get(0);
+        }
+
+        // when: demand a framework agreement version that neither offer carries
+        when(variablesService.getPurisFrameworkAgreementWithVersion()).thenReturn("DataExchangeGovernance:9.9");
+
+        // then
+        Optional<JsonNode> result = edcAdapterService.findAcceptablePolicy(catalogEntry, PolicyProfileVersionEnumeration.POLICY_PROFILE_2509, List.of("cx.puris.base:1"));
+
+        assertFalse(result.isPresent());
+    }
+
+    /**
+     * The offer selected during validation must be the one that is actually negotiated,
+     * not simply the first one of the dataset.
+     *
+     * @throws JsonProcessingException if json is invalid
+     */
+    @Test
+    public void secondOfferChosen_buildAssetNegotiationBody_negotiatesThatOffer() throws JsonProcessingException {
+        // given
+        JsonNode catalogEntry = objectMapper.readTree(twoOffersSecondValid);
+        catalogEntry = jsonLdUtils.expand(catalogEntry, variableService.getEdcProfileVersion());
+        if (catalogEntry.isArray()) {
+            catalogEntry = catalogEntry.get(0);
+        }
+        String assetId = catalogEntry.get("@id").asText();
+        JsonNode secondOffer = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy").get(1);
+
+        DspaceVersionParams dspaceVersionParams = new DspaceVersionParams(
+            "did:web:partner.example",
+            "https://partner.example/api/dsp/2025-1",
+            DspProtocolVersionEnum.V_0_8
+        );
+
+        // then
+        JsonNode body = edcRequestBodyBuilder.buildAssetNegotiationBody(assetId, secondOffer, dspaceVersionParams);
+
+        assertEquals("urn:offer:valid", body.get("policy").get("@id").asText());
+        assertEquals(assetId, body.get("policy").get("target").get("@id").asText());
     }
 
     /**
@@ -507,6 +594,77 @@ public class EdcAdapterServiceTest {
         "      \"odrl:prohibition\" : [ ],\n" +
         "      \"odrl:obligation\" : [ {\"foo\": \"bar\"} ]\n" +
         "    }," +
+        "    \"@context\": {\n" +
+        "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+        "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
+        "        \"tx\": \"https://w3id.org/tractusx/v0.0.1/ns/\",\n" +
+        "        \"tx-auth\": \"https://w3id.org/tractusx/auth/\",\n" +
+        "        \"cx-policy\": \"https://w3id.org/catenax/2025/9/policy/\",\n" +
+        "        \"dcat\": \"http://www.w3.org/ns/dcat#\",\n" +
+        "        \"dct\": \"http://purl.org/dc/terms/\",\n" +
+        "        \"odrl\": \"http://www.w3.org/ns/odrl/2/\",\n" +
+        "        \"dspace\": \"https://w3id.org/dspace/v0.8/\"\n" +
+        "    }" +
+        "}";
+
+    /**
+     * A dataset carrying two offers, as produced when two contract definitions target the same asset.
+     * The first offer demands a framework agreement version we do not hold, the second one matches.
+     */
+    private final static String twoOffersSecondValid = "{\n" +
+        "    \"@id\" : \"NotificationApi@BPNL00000007RXRX\",\n" +
+        "    \"@type\" : \"dcat:Dataset\",\n" +
+        "    \"odrl:hasPolicy\" : [ {\n" +
+        "      \"@id\" : \"urn:offer:invalid\",\n" +
+        "      \"@type\" : \"odrl:Offer\",\n" +
+        "      \"odrl:permission\" : {\n" +
+        "        \"odrl:action\" : {\n" +
+        "          \"@id\" : \"odrl:use\"\n" +
+        "        },\n" +
+        "        \"odrl:constraint\" : {\n" +
+        "          \"odrl:and\" : [ {\n" +
+        "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:FrameworkAgreement\"},\n" +
+        "            \"odrl:operator\" : {\n" +
+        "              \"@id\" : \"odrl:eq\"\n" +
+        "            },\n" +
+        "            \"odrl:rightOperand\" : \"DataExchangeGovernance:0.1\"\n" +
+        "          }, {\n" +
+        "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
+        "            \"odrl:operator\" : {\n" +
+        "              \"@id\" : \"odrl:isAnyOf\"\n" +
+        "            },\n" +
+        "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
+        "          } ]\n" +
+        "        }\n" +
+        "      },\n" +
+        "      \"odrl:prohibition\" : [ ],\n" +
+        "      \"odrl:obligation\" : [ ]\n" +
+        "    }, {\n" +
+        "      \"@id\" : \"urn:offer:valid\",\n" +
+        "      \"@type\" : \"odrl:Offer\",\n" +
+        "      \"odrl:permission\" : {\n" +
+        "        \"odrl:action\" : {\n" +
+        "          \"@id\" : \"odrl:use\"\n" +
+        "        },\n" +
+        "        \"odrl:constraint\" : {\n" +
+        "          \"odrl:and\" : [ {\n" +
+        "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:FrameworkAgreement\"},\n" +
+        "            \"odrl:operator\" : {\n" +
+        "              \"@id\" : \"odrl:eq\"\n" +
+        "            },\n" +
+        "            \"odrl:rightOperand\" : \"DataExchangeGovernance:1.0\"\n" +
+        "          }, {\n" +
+        "            \"odrl:leftOperand\" : { \"@id\": \"cx-policy:UsagePurpose\"},\n" +
+        "            \"odrl:operator\" : {\n" +
+        "              \"@id\" : \"odrl:isAnyOf\"\n" +
+        "            },\n" +
+        "            \"odrl:rightOperand\" : \"cx.puris.base:1\"\n" +
+        "          } ]\n" +
+        "        }\n" +
+        "      },\n" +
+        "      \"odrl:prohibition\" : [ ],\n" +
+        "      \"odrl:obligation\" : [ ]\n" +
+        "    } ]," +
         "    \"@context\": {\n" +
         "        \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
         "        \"edc\": \"https://w3id.org/edc/v0.0.1/ns/\",\n" +
