@@ -246,7 +246,7 @@ public class EdcAdapterService {
             AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
-        log.info("Registration of Anonymized Demand Information 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+        log.info("Registration of Short Term Material Demand 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getDemandAnonymizedSubmodelApiAssetId(),
             variablesService.getDemandAnonymizedSubmodelEndpoint(),
             AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID

@@ -950,17 +950,3 @@ databaseChangeLog:
             tableName: aggregated_material_data_node
             columnName: measurement_unit
             columnDataType: SMALLINT
-  - changeSet:
-      id: "17"
-      author: OlgaIvkovic
-      changes:
-          - createTable:
-              columns:
-                - column:
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: demand_anonymized_contract_mapping_pkey
-                    name: partner_bpnl
-                    type: VARCHAR(255)
-              tableName: demand_anonymized_contract_mapping
