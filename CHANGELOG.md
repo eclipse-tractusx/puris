@@ -15,6 +15,7 @@ The **need for configuration updates** is **marked bold**
 
 - Updated user guide with data exchange forwarding feature ([#1214](https://github.com/eclipse-tractusx/puris/pull/1214))
 - Updated frontend to allow data exchange requests for demand-based effects ([#1214](https://github.com/eclipse-tractusx/puris/pull/1214))
+- Added submodel implementation for anonymized demand request ([#1210](https://github.com/eclipse-tractusx/puris/pull/1210))
 
 ### Changed
 

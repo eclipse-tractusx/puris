@@ -201,6 +201,21 @@ public class VariablesService {
     private String productionAnonymizedSubmodelApiAssetId;
 
     /**
+     * The url under which this application's anonymized demand request endpoint can
+     * be reached by external machines.
+     */
+    public String getDemandAnonymizedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "demand/anonymized/request";
+    }
+
+    @Value("${puris.demandanonymizedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Anonymized Demand request API
+     * during asset creation.
+     */
+    private String demandAnonymizedSubmodelApiAssetId;
+
+    /**
      * The url under which this application's single level bom as planned request endpoint can
      * be reached by external machines.
      */
@@ -410,6 +425,10 @@ public class VariablesService {
 
     public String getProductionAnonymizedSubmodelApiAssetId() {
         return productionAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
+    }
+
+    public String getDemandAnonymizedSubmodelApiAssetId() {
+        return demandAnonymizedSubmodelApiAssetId + "@" + ownBpnl;
     }
 
     public String getSingleLevelBomAsPlannedSubmodelApiAssetId() {
