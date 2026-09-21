@@ -861,6 +861,43 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
+    IrsJob:
+      additionalProperties: false
+      properties:
+        jobId:
+          format: uuid
+          maxItems: 50
+          type: string
+        material:
+          $ref: '#/components/schemas/Material'
+        requestStatus:
+          enum:
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          maxItems: 50
+          type: string
+        sourceDisruptionId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        state:
+          enum:
+          - UNSAVED
+          - INITIAL
+          - RUNNING
+          - TRANSFERS_FINISHED
+          - COMPLETED
+          - CANCELED
+          - ERROR
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      type: object
     ItemQuantityEntity:
       additionalProperties: false
       properties:
@@ -3873,6 +3910,24 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
+  /irs/jobs:
+    get:
+      description: Get all IRS jobs.
+      operationId: getAllJobs
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/IrsJob'
+                maxItems: 50
+                type: array
+          description: OK
+      summary: Get all IRS jobs -- ADMIN ONLY
+      tags:
+      - irs-job-controller
   /item-stock/anonymized/request/{materialnumber}/{partnerBpnl}/{direction}/submodel/{representation}:
     get:
       operationId: getAnonymizedItemStockMapping
