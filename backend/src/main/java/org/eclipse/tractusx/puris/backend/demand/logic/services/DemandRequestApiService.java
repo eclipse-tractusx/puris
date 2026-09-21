@@ -24,9 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.demand.domain.model.OwnDemand;
 import org.eclipse.tractusx.puris.backend.demand.logic.adapter.ShortTermMaterialDemandSammMapper;
-import org.eclipse.tractusx.puris.backend.demand.logic.dto.anonymizeddamandsamm.ShortTermMaterialDemandAnonymized;
 import org.eclipse.tractusx.puris.backend.demand.logic.dto.demandsamm.ShortTermMaterialDemand;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -67,32 +65,14 @@ public class DemandRequestApiService {
     private ObjectMapper objectMapper;
 
     public ShortTermMaterialDemand handleDemandSubmodelRequest(String bpnl, String materialNumberCx) {
-        DemandRequestData data = getDemandRequestData(bpnl, materialNumberCx);
-        if (data == null) {
-            return null;
-        }
-        return sammMapper.ownDemandToSamm(data.demands(), data.partner(), data.material());
-    }
- 
-    public ShortTermMaterialDemandAnonymized handleDemandAnonymizedSubmodelRequest(String bpnl, String materialNumberCx, String contractAgreementId) {
-        DemandRequestData data = getDemandRequestData(bpnl, materialNumberCx);
-        if (data == null) {
-            return null;
-        }
-        // the contract agreement id serves as the salt for the anonymization
-        return sammMapper.ownDemandToAnonymizedSamm(data.demands(), data.partner(), data.material(), contractAgreementId);
-    }
- 
-    private DemandRequestData getDemandRequestData(String bpnl, String materialNumberCx) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL");
             return null;
         }
+        Material material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
 
-        var mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
- 
-        if (mpr == null) {
+        if (material == null) {
             // Could not identify partner cx number. I.e. we do not have that partner's
             // CX id in one of our MaterialPartnerRelation entities. Try to fix this by
             // looking for MPR's, where that partner is a supplier and where we don't have
@@ -100,26 +80,23 @@ public class DemandRequestApiService {
             // created, but for some unforeseen reason, the initial PartTypeRetrieval didn't succeed.
             log.warn("Could not find " + materialNumberCx + " from partner " + partner.getBpnl());
             mprService.triggerPartTypeRetrievalTask(partner);
-            mpr = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx);
+            material = mprService.findByPartnerAndPartnerCXNumber(partner, materialNumberCx).getMaterial();
         }
 
-        if (mpr == null || mpr.getMaterial() == null) {
+        if (material == null) {
             log.error("Unknown Material");
             return null;
         }
- 
-        if (!mpr.isPartnerSuppliesMaterial()) {
+        var mpr = mprService.find(material,partner);
+        if (mpr == null || !mpr.isPartnerSuppliesMaterial()) {
             // only send an answer if partner is registered as supplier
-            log.error("Partner with BPNL {} is not registered as supplier for material {}", bpnl, materialNumberCx);
             return null;
         }
-        Material material = mpr.getMaterial();
+
         var currentDemands = ownDemandService.findAllByFilters(Optional.of(material.getOwnMaterialNumber()), Optional.of(partner.getBpnl()), Optional.empty());
-        return new DemandRequestData(partner, material, currentDemands);
+        return sammMapper.ownDemandToSamm(currentDemands, partner, material);
     }
- 
-    private record DemandRequestData(Partner partner, Material material, List<OwnDemand> demands) {}
- 
+
     public RefreshResult doReportedDemandRequest(Partner partner, Material material) {
         List<RefreshError> errors = new ArrayList<>();
         try {
@@ -131,7 +108,7 @@ public class DemandRequestApiService {
             var data = edcAdapterService.doSubmodelRequest(AssetType.DEMAND_SUBMODEL, mpr, DirectionEnum.INBOUND, 1);
             var samm = objectMapper.treeToValue(data, ShortTermMaterialDemand.class);
             var demands = sammMapper.sammToReportedDemand(samm, partner);
-
+            
             for (var demand : demands) {
                 var demandPartner = demand.getPartner();
                 var demandMaterial = demand.getMaterial();

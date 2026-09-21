@@ -14,7 +14,6 @@ The **need for configuration updates** is **marked bold**
 ## Added
 
 - Added controller for irs queue requests ([#1251](https://github.com/eclipse-tractusx/puris/pull/1251))
-- Added submodel implementation for anonymized demand request ([#1210](https://github.com/eclipse-tractusx/puris/pull/1210))
 
 ### Changed
 
