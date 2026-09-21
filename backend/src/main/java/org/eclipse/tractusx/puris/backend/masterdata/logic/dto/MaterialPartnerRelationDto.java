@@ -41,5 +41,6 @@ public class MaterialPartnerRelationDto {
     private boolean partnerSuppliesMaterial;
     private boolean partnerBuysMaterial;
 
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String partnerCXNumber;
 }
