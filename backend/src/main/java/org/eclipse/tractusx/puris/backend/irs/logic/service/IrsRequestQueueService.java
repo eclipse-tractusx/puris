@@ -105,6 +105,10 @@ public class IrsRequestQueueService {
 		return irsQueuedRequestRepository.save(request);
 	}
 
+	public List<IrsQueuedRequest> findAll() {
+		return irsQueuedRequestRepository.findAll();
+	}
+
 	private void cancelPending(IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid) {
 		if (linkedEntityUuid == null) {
 			return;

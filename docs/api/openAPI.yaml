@@ -861,6 +861,81 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
+    IrsQueuedRequestDto:
+      additionalProperties: false
+      properties:
+        attemptCount:
+          format: int32
+          type: integer
+        body:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        createdAt:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastAttemptAt:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastErrorMessage:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        linkedEntityUuid:
+          format: uuid
+          maxItems: 50
+          type: string
+        maxAttempts:
+          format: int32
+          type: integer
+        method:
+          enum:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          maxItems: 50
+          type: string
+        nextAttemptAt:
+          format: date-time
+          maxItems: 50
+          type: string
+        path:
+          maxItems: 50
+          pattern: ^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*(/[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*)*$
+          type: string
+        queryParams:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        status:
+          enum:
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          maxItems: 50
+          type: string
+        type:
+          enum:
+          - POLICY_CREATE
+          - CHAIN_OPENING_ROOT_GRANT_CREATE
+          - CHAIN_OPENING_ROOT_GRANT_UPDATE
+          - CHAIN_OPENING_ROOT_GRANT_DELETE
+          - CHAIN_OPENING_PARTNER_GRANT_CREATE
+          - CHAIN_OPENING_PARTNER_GRANT_UPDATE
+          - CHAIN_OPENING_PARTNER_GRANT_DELETE
+          - JOB_CREATE
+          - JOB_GET
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      type: object
     ItemQuantityEntity:
       additionalProperties: false
       properties:
@@ -3873,6 +3948,32 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
+  /irs/requests:
+    get:
+      description: Get all queued IRS requests regardless of their status (PENDING,
+        SUCCEEDED, FAILED, CANCELLED), newest first. Only available if the IRS adapter
+        is enabled.
+      operationId: getAllQueuedRequests
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/IrsQueuedRequestDto'
+                maxItems: 50
+                type: array
+          description: Queued requests were returned.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Caller is not an admin or the IRS adapter is disabled.
+        '500':
+          description: Internal Server Error.
+      summary: Get all queued IRS requests -- ADMIN ONLY
+      tags:
+      - irs-queued-request-controller
   /item-stock/anonymized/request/{materialnumber}/{partnerBpnl}/{direction}/submodel/{representation}:
     get:
       operationId: getAnonymizedItemStockMapping
