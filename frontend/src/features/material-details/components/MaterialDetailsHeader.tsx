@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Material } from '@models/types/data/stock';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { Add, ChevronLeftOutlined, Refresh, Schedule } from '@mui/icons-material';
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
