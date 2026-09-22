@@ -20,11 +20,11 @@ package org.eclipse.tractusx.puris.backend.irs.controller;
 
 import java.util.List;
 
-import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
-import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.logic.dto.IrsJobDto;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,12 +47,11 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasRole('PURIS_ADMIN')")
 public class IrsJobController {
 
-    private final IrsJobRepository irsJobRepository;
+    private final IrsJobService irsJobService;
 
-    private final IrsAdapterConfiguration irsAdapterConfiguration;
+    private final IrsRequestService irsRequestService;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     @GetMapping
     @ResponseBody
@@ -65,13 +64,21 @@ public class IrsJobController {
     })
     public List<IrsJobDto> getAllJobs() {
         assertIrsAdapterEnabled();
-        return irsJobRepository.findAll().stream()
-            .map(job -> modelMapper.map(job, IrsJobDto.class))
+        return irsJobService.findAll().stream()
+            .map(this::convertToDto)
             .toList();
     }
 
+    private IrsJobDto convertToDto(IrsJob job) {
+        IrsJobDto dto = modelMapper.map(job, IrsJobDto.class);
+        if (job.getMaterial() != null) {
+            dto.setOwnMaterialNumber(job.getMaterial().getOwnMaterialNumber());
+        }
+        return dto;
+    }
+
     private void assertIrsAdapterEnabled() {
-        if (!irsAdapterConfiguration.isIrsAdapterEnabled()) {
+        if (!irsRequestService.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "IRS adapter is disabled.");
         }
     }

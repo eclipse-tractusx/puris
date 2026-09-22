@@ -61,6 +61,15 @@ public class IrsJobService {
 	private final MaterialService materialService;
 
 	/**
+	 * Returns all IRS jobs.
+	 *
+	 * @return all persisted IRS jobs
+	 */
+	public List<IrsJob> findAll() {
+		return irsJobRepository.findAll();
+	}
+
+	/**
 	 * Persists the given IRS job locally and sends a
 	 * job-creation request to the IRS. The local job's request status is updated to
 	 * reflect the outcome of the outbound call. The job id and state are left to be

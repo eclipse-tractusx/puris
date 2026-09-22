@@ -28,11 +28,12 @@ import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJobStateEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
-import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -55,10 +56,10 @@ public class IrsJobControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private IrsJobRepository irsJobRepository;
+    private IrsJobService irsJobService;
 
     @MockitoBean
-    private IrsAdapterConfiguration irsAdapterConfiguration;
+    private IrsRequestService irsRequestService;
 
     @Test
     @WithMockApiKey
@@ -68,27 +69,31 @@ public class IrsJobControllerTest {
         job.setJobId(UUID.randomUUID());
         job.setState(IrsJobStateEnumeration.RUNNING);
         job.setRequestStatus(IrsQueuedRequestStatusEnumeration.PENDING);
+        Material material = new Material();
+        material.setOwnMaterialNumber("MAT-123");
+        job.setMaterial(material);
 
-        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(true);
-        when(irsJobRepository.findAll()).thenReturn(List.of(job));
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(irsJobService.findAll()).thenReturn(List.of(job));
 
         mockMvc.perform(get("/irs/jobs"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].uuid").value(job.getUuid().toString()))
-            .andExpect(jsonPath("$[0].state").value("RUNNING"));
+            .andExpect(jsonPath("$[0].state").value("RUNNING"))
+            .andExpect(jsonPath("$[0].ownMaterialNumber").value("MAT-123"));
 
-        verify(irsJobRepository).findAll();
+        verify(irsJobService).findAll();
     }
 
     @Test
     @WithMockApiKey
     void getAllJobs_adapterDisabled_returnsForbiddenAndSkipsRepository() throws Exception {
-        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
+        when(irsRequestService.isEnabled()).thenReturn(false);
 
         mockMvc.perform(get("/irs/jobs"))
             .andExpect(status().isForbidden());
 
-        verifyNoInteractions(irsJobRepository);
+        verifyNoInteractions(irsJobService);
     }
 
     @Test
@@ -96,8 +101,8 @@ public class IrsJobControllerTest {
         mockMvc.perform(get("/irs/jobs"))
             .andExpect(status().isUnauthorized());
 
-        verifyNoInteractions(irsJobRepository);
-        verifyNoInteractions(irsAdapterConfiguration);
+        verifyNoInteractions(irsJobService);
+        verifyNoInteractions(irsRequestService);
     }
 
     @Test
@@ -106,8 +111,8 @@ public class IrsJobControllerTest {
         mockMvc.perform(get("/irs/jobs"))
             .andExpect(status().isForbidden());
 
-        verifyNoInteractions(irsJobRepository);
-        verifyNoInteractions(irsAdapterConfiguration);
+        verifyNoInteractions(irsJobService);
+        verifyNoInteractions(irsRequestService);
     }
 
 }

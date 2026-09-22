@@ -21,9 +21,11 @@ package org.eclipse.tractusx.puris.backend.irs.logic.dto;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJobStateEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -44,5 +46,7 @@ public class IrsJobDto implements Serializable {
 
     private String ownMaterialNumber;
 
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    
     private String sourceDisruptionId;
 }
