@@ -51,6 +51,7 @@ const app = {
     ENDPOINT_DATA_EXCHANGE_APPROVAL: import.meta.env.VITE_ENDPOINT_DATA_EXCHANGE_APPROVAL.trim() as string,
     ENDPOINT_MATERIAL_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_RELATIONS.trim() as string,
     ENDPOINT_AGGREGATED_DATA: import.meta.env.VITE_ENDPOINT_AGGREGATED_DATA.trim() as string,
+    ENDPOINT_IRS_JOBS: import.meta.env.VITE_ENDPOINT_IRS_JOBS.trim() as string,
 };
 
 const auth = {

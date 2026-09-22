@@ -21,8 +21,10 @@ package org.eclipse.tractusx.puris.backend.irs.controller;
 import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
+import org.eclipse.tractusx.puris.backend.irs.logic.dto.IrsJobDto;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,17 +51,23 @@ public class IrsJobController {
 
     private final IrsAdapterConfiguration irsAdapterConfiguration;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @GetMapping
     @ResponseBody
     @Operation(summary = "Get all IRS jobs -- ADMIN ONLY", description = "Get all IRS jobs.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Returns all IRS jobs."),
-            @ApiResponse(responseCode = "403", description = "IRS adapter is disabled.", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Missing API key.", content = @Content),
+            @ApiResponse(responseCode = "403", description = "IRS adapter is disabled, or the provided API key is invalid.", content = @Content),
             @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
     })
-    public List<IrsJob> getAllJobs() {
+    public List<IrsJobDto> getAllJobs() {
         assertIrsAdapterEnabled();
-        return irsJobRepository.findAll();
+        return irsJobRepository.findAll().stream()
+            .map(job -> modelMapper.map(job, IrsJobDto.class))
+            .toList();
     }
 
     private void assertIrsAdapterEnabled() {

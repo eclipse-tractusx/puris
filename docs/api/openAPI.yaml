@@ -861,15 +861,16 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
-    IrsJob:
+    IrsJobDto:
       additionalProperties: false
       properties:
         jobId:
           format: uuid
           maxItems: 50
           type: string
-        material:
-          $ref: '#/components/schemas/Material'
+        ownMaterialNumber:
+          maxItems: 50
+          type: string
         requestStatus:
           enum:
           - PENDING
@@ -880,7 +881,6 @@ components:
           type: string
         sourceDisruptionId:
           maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         state:
           enum:
@@ -3921,10 +3921,16 @@ paths:
               schema:
                 additionalProperties: false
                 items:
-                  $ref: '#/components/schemas/IrsJob'
+                  $ref: '#/components/schemas/IrsJobDto'
                 maxItems: 50
                 type: array
-          description: OK
+          description: Returns all IRS jobs.
+        '401':
+          description: Missing API key.
+        '403':
+          description: IRS adapter is disabled, or the provided API key is invalid.
+        '500':
+          description: Internal Server Error.
       summary: Get all IRS jobs -- ADMIN ONLY
       tags:
       - irs-job-controller

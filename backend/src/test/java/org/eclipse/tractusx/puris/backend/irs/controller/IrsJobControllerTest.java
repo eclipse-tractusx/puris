@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.irs.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.ModelMapperConfig;
 import org.eclipse.tractusx.puris.backend.common.TestConfig;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
@@ -47,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(IrsJobController.class)
-@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class, TestConfig.class})
+@Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class, TestConfig.class, ModelMapperConfig.class})
 public class IrsJobControllerTest {
 
     @Autowired

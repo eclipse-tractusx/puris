@@ -59,6 +59,7 @@ services:
       - ENDPOINT_PARTNER_DATA_UPDATE_BATCH=batch/partner-data-update
       - ENDPOINT_MATERIAL_RELATIONS=material-relations
       - ENDPOINT_AGGREGATED_DATA=aggregated-data
+      - ENDPOINT_IRS_JOBS=irs/jobs
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
