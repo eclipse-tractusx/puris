@@ -237,6 +237,8 @@ frontend:
     endpointMaterialRelations: material-relations
     # -- The endpoint for interfacing with aggregated material data
     endpointAggregatedData: aggregated-data
+    # -- The endpoint for interfacing with aggregated material data
+    endpointIrsJobs: irs/jobs
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m

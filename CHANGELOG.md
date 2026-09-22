@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- /
+- Added Irs jobs controller for getting all jobs and unit tests for the same ([#1250](https://github.com/eclipse-tractusx/puris/pull/1250))
 
 ### Changed
 

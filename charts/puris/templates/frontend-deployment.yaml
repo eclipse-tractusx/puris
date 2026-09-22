@@ -115,6 +115,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointMaterialRelations | default "material-relations" }}"
             - name: ENDPOINT_AGGREGATED_DATA
               value: "{{ .Values.frontend.puris.endpointAggregatedData }}"
+            - name: ENDPOINT_IRS_JOBS
+              value: "{{ .Values.frontend.puris.endpointIrsJobs }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
             - name: IDP_REALM
