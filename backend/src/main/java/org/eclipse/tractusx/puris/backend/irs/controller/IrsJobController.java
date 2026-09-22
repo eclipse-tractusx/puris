@@ -32,6 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +52,11 @@ public class IrsJobController {
     @GetMapping
     @ResponseBody
     @Operation(summary = "Get all IRS jobs -- ADMIN ONLY", description = "Get all IRS jobs.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Returns all IRS jobs."),
+            @ApiResponse(responseCode = "403", description = "IRS adapter is disabled.", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
+    })
     public List<IrsJob> getAllJobs() {
         assertIrsAdapterEnabled();
         return irsJobRepository.findAll();
