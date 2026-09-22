@@ -1,6 +1,6 @@
 # puris
 
-![Version: 7.2.0](https://img.shields.io/badge/Version-7.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 6.2.0](https://img.shields.io/badge/AppVersion-6.2.0-informational?style=flat-square)
+![Version: 7.3.0](https://img.shields.io/badge/Version-7.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 6.3.0](https://img.shields.io/badge/AppVersion-6.3.0-informational?style=flat-square)
 
 A helm chart for Kubernetes deployment of PURIS
 
@@ -247,6 +247,12 @@ Results in one secret (`existing`) that will be updated with the `postgres-passw
 | backend.puris.edc.controlplane.management.url | string | `"https://your-edc-address:8181/management"` | Url to the EDC controlplane management of the edc. Must contain protocol (http/https). |
 | backend.puris.edc.controlplane.protocol.url | string | `"https://your-edc-address:8184/api/v1/dsp"` | Url to the EDC controlplane protocol API of the edc. Must contain protocol (http/https). |
 | backend.puris.edc.dataplane.public.url | string | `"https://your-data-plane:8285/api/public/"` | Url of one of your data plane's public api. Must contain protocol (http/https). |
+| backend.puris.erpadapter.authkey | string | `"x-api-key"` | The auth key to be used on your ERP adapter's request api |
+| backend.puris.erpadapter.authsecret | string | `""` | The auth secret to be used on your ERP adapter's request api. Reused from existing secret. Secret key "puris-erpadapter-authsecret". |
+| backend.puris.erpadapter.enabled | bool | `false` | Toggles usage of the ERP adapter |
+| backend.puris.erpadapter.refreshinterval | int | `720` | Interval between two requests to the erp adapter for the same issue (minutes) |
+| backend.puris.erpadapter.timelimit | int | `7` | Period since last received partner request after which no more new update requests to the erp adapter will be sent (days) |
+| backend.puris.erpadapter.url | string | `"https://my-erpadapter:8080"` | The url of your ERP adapter's request api. Must contain protocol (http/https). |
 | backend.puris.existingSecret | string | `"secret-puris-backend"` | Secret for backend passwords. For more information look into 'backend-secrets.yaml' file. |
 | backend.puris.frameworkagreement.credential | string | `"DataExchangeGovernance"` | The name of the framework agreement. Starting with Uppercase and using CamelCase. |
 | backend.puris.frameworkagreement.version | string | `"1.0"` | The version of the framework agreement, NEEDS TO BE PUT AS "STRING"! |
@@ -331,6 +337,7 @@ Results in one secret (`existing`) that will be updated with the `postgres-passw
 | frontend.puris.appName | string | `"PURIS"` | The name of the app displayed in the frontend |
 | frontend.puris.baseUrl | string | `"your-backend-host-address.com"` | The base URL for the backend base URL without further endpoints. Must contain protocol (http/https). If protocol is missing, it's defaulted based on ingress configuration. |
 | frontend.puris.defaultProductionTime | string | `"23:59"` | The default production time for production creation |
+| frontend.puris.endpointAggregatedData | string | `"aggregated-data"` | The endpoint for interfacing with aggregated material data |
 | frontend.puris.endpointAllMaterials | string | `"materials"` | The endpoint for interfacing with all materials |
 | frontend.puris.endpointAllPartners | string | `"partners"` | The endpoint for interfacing with all partners |
 | frontend.puris.endpointCustomer | string | `"stockView/customer?ownMaterialNumber="` | The endpoint for the customers who buy a material identified via the own material number for the stock view |
@@ -341,6 +348,7 @@ Results in one secret (`existing`) that will be updated with the `postgres-passw
 | frontend.puris.endpointDemand | string | `"demand"` | The endpoint for the demand submodel |
 | frontend.puris.endpointDemandAndCapacityNotification | string | `"demand-and-capacity-notification"` | The endpoint for demand and capacity notifications |
 | frontend.puris.endpointImportFiles | string | `"files"` | The endpoint for importing excel files |
+| frontend.puris.endpointMaterialNumbersMapping | string | `"stockView/materialnumbers-mapping?ownMaterialNumber="` | The endpoint for mapping own material numbers to the material numbers used by partners |
 | frontend.puris.endpointMaterialPartnerRelations | string | `"materialpartnerrelations"` | The endpoint for interfacing with material partner relations |
 | frontend.puris.endpointMaterialRelations | string | `"material-relations"` | The endpoint for interfacing with material relations |
 | frontend.puris.endpointMaterialStocks | string | `"stockView/material-stocks"` | The endpoint for material stocks for the stock view |
