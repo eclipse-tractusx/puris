@@ -17,7 +17,7 @@ The **need for configuration updates** is **marked bold**
 
 ### Changed
 
--/
+- Update misleading global asset id in materials table and add EDC URL do partners table and global asset ID to MPR table ([#1248](https://github.com/eclipse-tractusx/puris/pull/1248))
 
 ### Fixes
 
