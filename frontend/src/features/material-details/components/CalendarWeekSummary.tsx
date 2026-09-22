@@ -23,7 +23,7 @@ import { CalendarWeek, incrementDate } from '@util/date-helpers';
 import { useMemo } from 'react';
 import { Summary, SummaryType } from '../util/summary-service';
 import { useDataModal } from '@contexts/dataModalContext';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { Demand } from '@models/types/data/demand';
 import { Production } from '@models/types/data/production';
 import { Delivery } from '@models/types/data/delivery';

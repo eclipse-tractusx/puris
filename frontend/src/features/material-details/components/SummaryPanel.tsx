@@ -25,7 +25,7 @@ import { useCalendarWeeks } from '@contexts/calendarWeekContext';
 import { InfoButton } from '@components/ui/InfoButton';
 import { BPNL, BPNS } from '@models/types/edc/bpn';
 import { useDaysOfSupply } from '../hooks/useDaysOfSupply';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { Supply } from '@models/types/data/supply';
 import { useReportedDaysOfSupply } from '../hooks/useReportedDaysOfSupply';
 import { useEffect } from 'react';

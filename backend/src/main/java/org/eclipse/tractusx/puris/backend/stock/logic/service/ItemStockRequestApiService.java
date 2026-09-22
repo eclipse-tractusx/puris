@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.AssetType;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
-import org.eclipse.tractusx.puris.backend.erpadapter.logic.service.ErpAdapterTriggerService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.RefreshError;
@@ -67,8 +66,6 @@ public class ItemStockRequestApiService {
     @Autowired
     private ReportedMaterialItemStockService reportedMaterialItemStockService;
     @Autowired
-    private ErpAdapterTriggerService erpAdapterTriggerService;
-    @Autowired
     private EdcAdapterService edcAdapterService;
     @Autowired
     private ItemStockSammMapper sammMapper;
@@ -76,7 +73,7 @@ public class ItemStockRequestApiService {
     private ObjectMapper objectMapper;
 
     public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction) {
-        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, true);
+        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction);
         if (data == null) {
             return null;
         }
@@ -90,7 +87,7 @@ public class ItemStockRequestApiService {
     }
 
     public ItemStockAnonymizedSamm handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction, String contractAgreementId) {
-        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, false);
+        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction);
         if (data == null) {
             return null;
         }
@@ -103,7 +100,7 @@ public class ItemStockRequestApiService {
 
     }
 
-    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionEnum direction, boolean notifyPartnerRequest) {
+    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionEnum direction) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL {}", bpnl);
@@ -124,10 +121,6 @@ public class ItemStockRequestApiService {
                 if (mpr == null || !mpr.isPartnerBuysMaterial()) {
                     log.error("Partner with BPNL {} is not registered as customer for material {}", bpnl, materialNumberCx);
                     return null;
-                }
-
-                if (notifyPartnerRequest) {
-                    erpAdapterTriggerService.notifyPartnerRequest(bpnl, material.getOwnMaterialNumber(), AssetType.ITEM_STOCK_SUBMODEL, direction);
                 }
 
                 var currentStocks = productItemStockService.findByPartnerAndMaterial(partner, material);
@@ -156,16 +149,6 @@ public class ItemStockRequestApiService {
                 }
 
                 Material material = mpr.getMaterial();
-
-                if (notifyPartnerRequest) {
-                    // request looks valid
-                    erpAdapterTriggerService.notifyPartnerRequest(
-                            bpnl,
-                            material.getOwnMaterialNumber(),
-                            AssetType.ITEM_STOCK_SUBMODEL,
-                            direction
-                    );
-                }
 
                 var currentStocks = materialItemStockService.findByPartnerAndMaterial(partner, material);
                 return new ItemStockRequestData(partner, material, null, currentStocks);

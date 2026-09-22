@@ -18,7 +18,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 import { config } from '@models/constants/config';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import AuthenticationService from './authentication-service';
 
 export const requestReportedSupply = async (materialNumber: string | null, direction: DirectionType) => {

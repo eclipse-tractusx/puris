@@ -17,6 +17,7 @@ The **need for configuration updates** is **marked bold**
 
 ### Changed
 
+- Removed all files and references connected to ERP Adapter ([#1209](https://github.com/eclipse-tractusx/puris/pull/1209))
 - Update misleading global asset id in materials table and add EDC URL do partners table and global asset ID to MPR table ([#1248](https://github.com/eclipse-tractusx/puris/pull/1248))
 
 ### Fixes

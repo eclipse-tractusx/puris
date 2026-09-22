@@ -34,7 +34,7 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { useSites } from '@features/stock-view/hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { Site } from '@models/types/edc/site';
 import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
 import { UUID } from 'crypto';
