@@ -24,4 +24,5 @@ export type MaterialPartnerRelation = {
     partnerMaterialNumber: string;
     partnerSuppliesMaterial: boolean;
     partnerBuysMaterial: boolean;
+    partnerCXNumber: string | null;
 };
