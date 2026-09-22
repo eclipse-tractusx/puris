@@ -17,7 +17,7 @@ The **need for configuration updates** is **marked bold**
 
 ### Changed
 
--/
+- Removed all files and references connected to ERP Adapter ([#1209](https://github.com/eclipse-tractusx/puris/pull/1209))
 
 ### Fixes
 
@@ -111,7 +111,7 @@ The **need for configuration updates** is **marked bold**.
 - Refactor usage of direction-characteristics ([#1128](https://github.com/eclipse-tractusx/puris/pull/1128))
 - Remove demonstrator data injection via command line runner ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132))
 - Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
-- Removed all files and references connected to ERP Adapter ([#1209](https://github.com/eclipse-tractusx/puris/pull/1209))
+
 ### Fixes
 
 - Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))

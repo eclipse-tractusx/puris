@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { Material } from '@models/types/data/stock';
 import { DirectionType } from '@models/types/erp/directionType';
-import { Add, ChevronLeftOutlined, NotificationsActive, Refresh, Schedule } from '@mui/icons-material';
+import { Add, ChevronLeftOutlined, Refresh, Schedule } from '@mui/icons-material';
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
@@ -141,7 +141,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, onRef
                         </Button>
                     </Stack>
                     <Stack direction="row" gap="0.5rem" justifyContent="end">
-                        <LoadingButton
+                        <LoadingButton 
                             Icon={Schedule}
                             isLoading={isSchedulingUpdate}
                             onClick={onScheduleUpdate}
