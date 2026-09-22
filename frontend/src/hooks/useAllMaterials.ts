@@ -20,11 +20,11 @@ SPDX-License-Identifier: Apache-2.0
 
 import { useFetch } from '@hooks/useFetch';
 import { config } from '@models/constants/config';
-import { MaterialDescriptor } from '@models/types/data/material-descriptor';
+import { Material } from '@models/types/data/stock';
 
 export const useAllMaterials = () => {
-    const endpoint = config.app.ENDPOINT_MATERIALS + "/all";
-    const { data: materials, isLoading: isLoadingMaterials } = useFetch<MaterialDescriptor[]>(
+    const endpoint = config.app.ENDPOINT_ALL_MATERIALS + "/all";
+    const { data: materials, isLoading: isLoadingMaterials } = useFetch<Material[]>(
         `${config.app.BACKEND_BASE_URL}${endpoint}`
     );
     return {

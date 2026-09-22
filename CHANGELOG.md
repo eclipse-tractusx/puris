@@ -5,6 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v6.3.0
+
+The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
+
+The **need for configuration updates** is **marked bold**
+
+## Added
+
+- /
+
+### Changed
+
+-/
+
+### Fixes
+
+- Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
+
+### Version Bumps
+
+- /
+
+### Known Knowns
+
+#### Running With Shared DTR and EDC
+
+PURIS FOSS may not be run on a shared DTR and EDC with full scope. See [Admin Guide](docs/admin/Admin_Guide.md#running-the-puris-foss-application-on-shared-enablement-services) for more information of possible scenarios.
+
+#### Limitations to anonymized submodels
+
+Currently, the anonymized submodels are limited to single customer scenarios, where each Digital Twin is exclusive to one partner.
+
+#### Upgradeability
+
+Data base migrations are performed but assets.
+
+#### Data Sovereignty
+
+For productive use the following enhancements are encouraged
+
+- User FrontEnd available: Role Company Admin is able to query catalogue and see negotiations and transfers But company rules / policies need to be configured upfront in backend (via postman) to enable automatic contract negotiations, responsibility lies with Company Admin role  
+  --> add section in the User Manual describing this and the (legal) importance and responsibility behind defining these rules
+- Currently only one standard policy per reg. connector / customer instance is supported (more precisely one for DTR, one for all submodels), negotiation happens automatically based on this  
+  --> enhance option to select partner and define specific policies (to be planned in context of BPDM Integration)  
+  --> UI for specific configuration by dedicated role (e.g. Comp Admin) and more flexible policy configuration (withoutv code changes) is needed
+- As a non-Admin user I do not have ability to view policies in detail  
+  --> transparency for users when interacting with and requesting / consuming data via dashboard / views on underlying usage policies to be enhanced
+- ContractReference Constraint or configuration of policies specific to one partner only has notnot implemented  
+  --> clarification of potential reference to "PURIS standard contract" and enabling of ContractReference for 24.08.
+- unclear meaning of different stati in negotations  
+  --> add view of successfull contract agreeements wrt which data have been closed
+- current logging only done on info level  
+  --> enhance logging of policies (currently only available at debug level)
+- in case of non-matching policies (tested in various scenarios) no negotiation takes place  
+  --> enhance visualization or specific Error message to user
+- no validation of the Schema "profile": "cx-policy:profile2405" (required to ensure interop with other PURIS apps)
+
+#### Styleguide
+
+##### Overall
+
+- Brief description at the top of each page describing content would be nice for better user experience.
+
+##### Catalog
+
+- No action possible -> unclear to user when and how user will consume an offer
+
+##### Negotiations
+
+- Add filters for transparency (bpnl, state)
+
 ## v6.2.0
 
 The following Changelog lists the changes. Please refer to the [documentation](docs/README.md) for configuration needs and understanding the concept changes.
@@ -12,6 +83,7 @@ The following Changelog lists the changes. Please refer to the [documentation](d
 The **need for configuration updates** is **marked bold**.
 
 ### Added
+
 - Added IC Notification Message Header integration ([#1143](https://github.com/eclipse-tractusx/puris/pull/1143))
 - Added logic for exchanging Data Exchange Requests and Approvals
   - Added backend implementation for data exchange request ([#1116](https://github.com/eclipse-tractusx/puris/pull/1116))
@@ -19,6 +91,20 @@ The **need for configuration updates** is **marked bold**.
   - Added Data exchange approval edc integration ([#1173](https://github.com/eclipse-tractusx/puris/pull/1173))
   - Added frontend implementation of data exhcange requests and approvals ([#1175](https://github.com/eclipse-tractusx/puris/pull/1175))
   - Updated documentation files with new feature information ([#1190](https://github.com/eclipse-tractusx/puris/pull/1190))
+  - Updated backend implementation with forwarding and tests ([#1198](https://github.com/eclipse-tractusx/puris/pull/1198))
+  - Added frontend implementation of data exchange forwarding ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+- Implement support for PartTypeInformation 2.0.0 submodel ([#1199](https://github.com/eclipse-tractusx/puris/pull/1199))
+- Added IRS Adapter to exchange data with an external Item Relationship Service
+  - Added PolicyStoreService and IrsRequestQueue to register policies on startup ([#1195](https://github.com/eclipse-tractusx/puris/pull/1195), [#1208](https://github.com/eclipse-tractusx/puris/pull/1208))
+  - Added Logic to manage Irs Grants and keep them in sync with application state ([#1203](https://github.com/eclipse-tractusx/puris/pull/1203))
+  - Added Job Management logic to create jobs and automatically poll for results ([#1205](https://github.com/eclipse-tractusx/puris/pull/1205))
+- Add logic to handle aggregated supply chain data
+  - Added base entities and repositories for Aggregated Supply Chain Data ([#1182](https://github.com/eclipse-tractusx/puris/pull/1182), [#1187](https://github.com/eclipse-tractusx/puris/pull/1187))
+  - Added service and controller for Aggregated Supply Chain Data ([#1183](https://github.com/eclipse-tractusx/puris/pull/1183))
+  - Added logic to map and save received irs job data ([#1184](https://github.com/eclipse-tractusx/puris/pull/1184))
+  - Added frontend for Aggregated Supply Chain Data ([#1201](https://github.com/eclipse-tractusx/puris/pull/1201))
+- Added link to affected outgoing material on the material details header, showing open demand/capacity notifications affecting a material via its descendant (child) materials ([#1202](https://github.com/eclipse-tractusx/puris/pull/1202))
+- Added logic to create missing partner contract definitions and policies during migrations ([#1225](https://github.com/eclipse-tractusx/puris/pull/1225))
 
 ### Changed
 
@@ -29,11 +115,33 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
+- Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
+- Create self-contracts for all supported profile versions, and extend self-contracting to the anonymized submodels and PartTypeInformation ([#1216](https://github.com/eclipse-tractusx/puris/pull/1216))
+- improved check for existing policies ([#1220](https://github.com/eclipse-tractusx/puris/pull/1220), [#1221](https://github.com/eclipse-tractusx/puris/pull/1221))
+- allow requests with own bpnl in part type controller for irs ([#1222](https://github.com/eclipse-tractusx/puris/pull/1222))
+- Fixed validity dates and renamed allowedBpnls property to allowedBpnlSet for Chain Opening Grants ([#1224](https://github.com/eclipse-tractusx/puris/pull/1224))
+- Renamed "validUntil" to "validTo" in chain opening grants ([#1226](https://github.com/eclipse-tractusx/puris/pull/1226))
+- Updated AggregatedMaterialDataNode and its children to allow for proper mapping of job data ([#1227](https://github.com/eclipse-tractusx/puris/pull/1227))
+- Ignore parent object when converting aggregated data nodes to json ([#1228](https://github.com/eclipse-tractusx/puris/pull/1228))
+- Handle partial IRS job failures gracefully ([#1234](https://github.com/eclipse-tractusx/puris/pull/1234))
 
 ### Version Bumps
 
-- /
+- update frontend dependencies ([#1212](https://github.com/eclipse-tractusx/puris/pull/1212))
+  - bump browserslist from 4.28.1 to 4.28.9
+  - bump caniuse-lite from 1.0.30001777 to 1.0.30001810
+  - bump electron-to-chromium from 1.5.307 to 1.5.423
+  - bump js-yaml from 4.2.0 to 4.3.2
+  - bump brace-expansion from 1.1.15 to 1.1.18 and from 2.1.1 to 2.1.4
+  - bump nanoid from 3.3.12 to 3.3.18
+  - bump node-releases from 2.0.36 to 2.0.54
+  - bump postcss from 8.5.15 to 8.5.28
+  - bump update-browserslist-db from 1.2.3 to 1.3.2
+  - bump websocket-driver from 0.7.4 to 0.7.5
+  - bump baseline-browser-mapping from 2.10.0 to 2.11.21
+  - remove unused yaml@2.9.0
+- bump `org.postgresql:postgresql` from `42.7.11` to `42.7.12` ([#1213](https://github.com/eclipse-tractusx/puris/pull/1213))
 
 ### Known Knowns
 

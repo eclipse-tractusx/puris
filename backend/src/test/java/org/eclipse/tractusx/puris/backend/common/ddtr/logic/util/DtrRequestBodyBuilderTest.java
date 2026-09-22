@@ -362,6 +362,8 @@ class DtrRequestBodyBuilderTest {
                     assertSubmodelDescriptor(submodelDescriptor, AssetType.DELIVERY_SUBMODEL, DirectionEnum.OUTBOUND, MATERIAL.getMaterialNumberCx());
                 case AssetType.DAYS_OF_SUPPLY ->
                     assertSubmodelDescriptor(submodelDescriptor, AssetType.DAYS_OF_SUPPLY, DirectionEnum.OUTBOUND, MATERIAL.getMaterialNumberCx());
+                case AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->
+                    assertSubmodelDescriptor(submodelDescriptor, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, DirectionEnum.OUTBOUND, Base64.getEncoder().encodeToString(MATERIAL.getOwnMaterialNumber().getBytes(StandardCharsets.UTF_8)));
                 case AssetType.PART_TYPE_INFORMATION_SUBMODEL ->
                     assertSubmodelDescriptor(submodelDescriptor, AssetType.PART_TYPE_INFORMATION_SUBMODEL, DirectionEnum.OUTBOUND, Base64.getEncoder().encodeToString(MATERIAL.getOwnMaterialNumber().getBytes(StandardCharsets.UTF_8)));
             }
