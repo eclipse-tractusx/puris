@@ -17,7 +17,7 @@ The **need for configuration updates** is **marked bold**
 
 ### Changed
 
--/
+- Removed DashboardView and StockView because they are not used anymore ([#1217](https://github.com/eclipse-tractusx/puris/pull/1217))
 
 ### Fixes
 
