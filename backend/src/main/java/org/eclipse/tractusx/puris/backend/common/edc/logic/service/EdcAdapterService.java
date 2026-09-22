@@ -660,8 +660,10 @@ public class EdcAdapterService {
     }
 
     /**
-     * Helper method for negotiating a contract for a specific catalog item using
-     * already resolved DSP version parameters.
+     * Helper method for contracting a certain asset as specified in the catalog item from
+     * a specific Partner.
+     * <p>
+     * Uses the dspUrl of the partner.
      *
      * @param partner The Partner to negotiate with
      * @param assetId The id of the target asset, as stated by the partner's catalog
