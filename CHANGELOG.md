@@ -18,10 +18,13 @@ The **need for configuration updates** is **marked bold**
 ### Changed
 
 - Removed DashboardView and StockView because they are not used anymore ([#1217](https://github.com/eclipse-tractusx/puris/pull/1217))
+- Update misleading global asset id in materials table and add EDC URL do partners table and global asset ID to MPR table ([#1248](https://github.com/eclipse-tractusx/puris/pull/1248))
 
 ### Fixes
 
 - Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
+- Fix and allow multiple valid contracts to exist for an asset negotiation ([#1247](https://github.com/eclipse-tractusx/puris/pull/1247))
+- Allow creating Root Data Exchange Request for notification with forwarded requests ([#1249](https://github.com/eclipse-tractusx/puris/pull/1249))
 
 ### Version Bumps
 
