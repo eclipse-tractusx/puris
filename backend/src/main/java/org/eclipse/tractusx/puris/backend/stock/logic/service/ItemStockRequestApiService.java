@@ -73,7 +73,7 @@ public class ItemStockRequestApiService {
     private ObjectMapper objectMapper;
 
     public ItemStockSamm handleItemStockSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction) {
-        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, true);
+        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction);
         if (data == null) {
             return null;
         }
@@ -87,7 +87,7 @@ public class ItemStockRequestApiService {
     }
 
     public ItemStockAnonymizedSamm handleItemStockAnonymizedSubmodelRequest(String bpnl, String materialNumber, DirectionEnum direction, String contractAgreementId) {
-        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction, false);
+        ItemStockRequestData data = getItemStockRequestData(bpnl, materialNumber, direction);
         if (data == null) {
             return null;
         }
@@ -100,7 +100,7 @@ public class ItemStockRequestApiService {
 
     }
 
-    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionEnum direction, boolean notifyPartnerRequest) {
+    private ItemStockRequestData getItemStockRequestData(String bpnl, String materialNumberCx, DirectionEnum direction) {
         Partner partner = partnerService.findByBpnl(bpnl);
         if (partner == null) {
             log.error("Unknown Partner BPNL {}", bpnl);
