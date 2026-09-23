@@ -1043,6 +1043,9 @@ components:
           type: string
         partnerBuysMaterial:
           type: boolean
+        partnerCXNumber:
+          maxItems: 50
+          type: string
         partnerMaterialNumber:
           maxItems: 50
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
