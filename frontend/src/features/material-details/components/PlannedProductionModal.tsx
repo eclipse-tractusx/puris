@@ -27,7 +27,7 @@ import { Box, Button, Dialog, DialogTitle, Stack } from '@mui/material';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { deleteProduction } from '@services/productions-service';
 import { Close, Delete, Edit } from '@mui/icons-material';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSites } from '@hooks/useSites';
 import { useDataModal } from '@contexts/dataModalContext';
 import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';

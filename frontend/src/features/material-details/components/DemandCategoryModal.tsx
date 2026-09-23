@@ -28,7 +28,7 @@ import { useMemo } from 'react';
 import { useDataModal } from '@contexts/dataModalContext';
 import { deleteDemand } from '@services/demands-service';
 import { Table } from '@catena-x/portal-shared-components';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSites } from '@hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 
