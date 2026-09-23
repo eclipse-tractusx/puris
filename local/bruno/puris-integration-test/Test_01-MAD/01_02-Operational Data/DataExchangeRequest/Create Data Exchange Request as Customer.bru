@@ -16,9 +16,7 @@ headers {
 }
 
 script:pre-request {
-  console.log("Waiting 5 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 5000)));
-
+  bru.setVar("extraRetryStatuses", [400]);
   const notificationStart = bru.getVar("notificationStartDateOfEffect") ? new Date(bru.getVar("notificationStartDateOfEffect")) : new Date(Date.now() - 24 * 60 * 60 * 1000);
   const notificationEnd = bru.getVar("notificationExpectedEndDateOfEffect") ? new Date(bru.getVar("notificationExpectedEndDateOfEffect")) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
@@ -44,6 +42,7 @@ body:json {
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("response is created", function() {
     expect(res.getStatus()).to.equal(201);
   });
