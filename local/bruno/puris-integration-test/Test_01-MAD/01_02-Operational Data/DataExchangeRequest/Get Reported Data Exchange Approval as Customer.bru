@@ -14,12 +14,8 @@ headers {
   X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
 }
 
-script:pre-request {
-  console.log("Waiting 10 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 10000)));
-}
-
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("response is ok", function() {
       expect(res.getStatus()).to.equal(200);
   })
