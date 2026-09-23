@@ -123,6 +123,7 @@ public class SecurityConfig {
                         "/single-level-bom-as-planned/**",
                         "/edc/**",
                         "/erp-adapter/**",
+                        "/irs/requests/**",
                         "/parttypeinformation/**",
                         "/files/**",
                         "/batch/**",
