@@ -26,7 +26,6 @@ auth:apikey {
 
 tests {
   if (bru.getVar("__retryPending")) return;
-  console.log("Negotiation body:", JSON.stringify(res.getBody()));
 
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
