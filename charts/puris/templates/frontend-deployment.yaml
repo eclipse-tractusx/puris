@@ -83,6 +83,10 @@ spec:
               value: "{{ .Values.frontend.puris.endpointUpdateReportedProductStocks }}"
             - name: ENDPOINT_ERP_SCHEDULE_UPDATE
               value: "{{ .Values.frontend.puris.endpointErpScheduleUpdate }}"
+            - name: ENDPOINT_IRS_ROOT_GRANTS
+              value: "{{ .Values.frontend.puris.endpointIrsRootGrants }}"
+            - name: ENDPOINT_IRS_PARTNER_GRANTS
+              value: "{{ .Values.frontend.puris.endpointIrsPartnerGrants }}"
             - name: ENDPOINT_PARTNER
               value: "{{ .Values.frontend.puris.endpointPartners }}"
             - name: ENDPOINT_DEMAND

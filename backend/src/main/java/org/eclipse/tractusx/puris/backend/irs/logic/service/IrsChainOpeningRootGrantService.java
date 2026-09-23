@@ -114,6 +114,10 @@ public class IrsChainOpeningRootGrantService {
 		return queuedRequest;
 	}
 
+	public List<IrsChainOpeningRootGrant> findAll() {
+		return irsChainOpeningRootGrantRepository.findAll();
+	}
+
 	/**
 	 * Ensures that, for each material affected by the given reported notification, a Chain
 	 * Opening Root Grant exists (created or updated) covering each currently-valid parent material
