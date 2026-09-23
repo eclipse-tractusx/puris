@@ -47,6 +47,7 @@ services:
       - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
       - ENDPOINT_IRS_ROOT_GRANTS=irs/root-grants
       - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
+      - ENDPOINT_IRS_REQUESTS=irs/requests
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
@@ -250,6 +251,7 @@ services:
       - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
       - ENDPOINT_IRS_ROOT_GRANTS=irs/root-grants
       - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
+      - ENDPOINT_IRS_REQUESTS=irs/requests
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production

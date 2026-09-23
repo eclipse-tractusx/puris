@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- /
+- Added controller for irs queue requests ([#1251](https://github.com/eclipse-tractusx/puris/pull/1251))
 
 ### Changed
 

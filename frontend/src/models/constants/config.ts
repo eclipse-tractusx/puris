@@ -36,6 +36,7 @@ const app = {
     ENDPOINT_ERP_SCHEDULE_UPDATE: import.meta.env.VITE_ENDPOINT_ERP_SCHEDULE_UPDATE.trim() as string,
     ENDPOINT_IRS_ROOT_GRANTS: import.meta.env.VITE_ENDPOINT_IRS_ROOT_GRANTS.trim() as string,
     ENDPOINT_IRS_PARTNER_GRANTS: import.meta.env.VITE_ENDPOINT_IRS_PARTNER_GRANTS.trim() as string,
+    ENDPOINT_IRS_REQUESTS: import.meta.env.VITE_ENDPOINT_IRS_REQUESTS.trim() as string,
     ENDPOINT_PARTNER: import.meta.env.VITE_ENDPOINT_PARTNER.trim() as string,
     ENDPOINT_DEMAND: import.meta.env.VITE_ENDPOINT_DEMAND.trim() as string,
     ENDPOINT_PRODUCTION: import.meta.env.VITE_ENDPOINT_PRODUCTION.trim() as string,

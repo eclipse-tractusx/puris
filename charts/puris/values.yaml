@@ -209,6 +209,8 @@ frontend:
     endpointIrsootGrants: irs/root-grants
     # -- The endpoint for getting partner grants from the IRS adapter
     endpointIrsPartnerGrants: irs/partner-grants
+    # -- The endpoint for getting queued requests from the IRS adapter
+    endpointIrsRequests: irs/requests
     # -- The endpoint for partner information
     endpointPartners: partners
     # -- The endpoint for the demand submodel

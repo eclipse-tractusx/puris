@@ -125,6 +125,7 @@ public class SecurityConfig {
                         "/erp-adapter/**",
                         "/irs/root-grants/**",
                         "/irs/partner-grants/**",
+                        "/irs/requests/**",
                         "/parttypeinformation/**",
                         "/files/**",
                         "/batch/**",
