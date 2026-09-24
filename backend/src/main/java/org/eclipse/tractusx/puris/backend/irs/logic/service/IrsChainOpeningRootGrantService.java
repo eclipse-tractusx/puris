@@ -352,7 +352,7 @@ public class IrsChainOpeningRootGrantService {
 		}
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
-		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnlSet(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
 
 	/**

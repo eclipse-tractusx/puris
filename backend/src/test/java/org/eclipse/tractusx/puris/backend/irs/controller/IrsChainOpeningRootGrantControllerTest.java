@@ -78,8 +78,6 @@ public class IrsChainOpeningRootGrantControllerTest {
     private static final String OWN_BPNL = "BPNL4444444444XX";
     private static final String SUPPLIER_BPNL = "BPNL1234567890ZZ";
  
-    private static final String PURIS_USE_CASE = "PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE";
- 
     private static final Instant VALID_FROM = Instant.parse("2026-09-01T00:00:00Z");
     private static final Instant VALID_TO = Instant.parse("2026-09-30T00:00:00Z");
  
@@ -103,26 +101,10 @@ public class IrsChainOpeningRootGrantControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].requesterBpn").value(OWN_BPNL))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validFrom").value(VALID_FROM.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validTo").value(VALID_TO.toString()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].useCase").value(PURIS_USE_CASE))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].syncStatus").value("SYNCED"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnls", Matchers.contains(SUPPLIER_BPNL)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].reportedNotificationIds",
-                Matchers.contains(NOTIFICATION_ID.toString())));
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnlSet", Matchers.contains(SUPPLIER_BPNL)));
  
         verify(irsChainOpeningRootGrantService).findAll();
-    }
- 
-    @Test
-    @WithMockApiKey
-    void getAllRootGrants_ReferencesNotifications() throws Exception {
-        // when
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        when(irsChainOpeningRootGrantService.findAll()).thenReturn(List.of(getSyncedRootGrant()));
- 
-        // then
-        mockMvc.perform(MockMvcRequestBuilders.get(ROOT_GRANTS_PATH))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].reportedNotificationIds", Matchers.not(Matchers.hasItem(NOTIFICATION_UUID.toString()))));
     }
  
     @Test
@@ -162,7 +144,6 @@ public class IrsChainOpeningRootGrantControllerTest {
             .requesterBpn(OWN_BPNL)
             .validFrom(VALID_FROM)
             .validTo(VALID_TO)
-            .useCase(PURIS_USE_CASE)
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .reportedNotifications(notifications)
             .build();

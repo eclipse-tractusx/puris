@@ -79,8 +79,6 @@ public class IrsChainOpeningPartnerGrantControllerTest {
  
     private static final String UPSTREAM_SUPPLIER_BPNL = "BPNL2222222222RR";
  
-    private static final String PURIS_USE_CASE = "PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE";
- 
     private static final Instant VALID_FROM = Instant.parse("2026-09-01T00:00:00Z");
     private static final Instant VALID_TO = Instant.parse("2026-09-30T00:00:00Z");
  
@@ -104,26 +102,10 @@ public class IrsChainOpeningPartnerGrantControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].requesterBpn").value(CUSTOMER_BPNL))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validFrom").value(VALID_FROM.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validTo").value(VALID_TO.toString()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].useCase").value(PURIS_USE_CASE))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].syncStatus").value("SYNCED"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnls", Matchers.contains(UPSTREAM_SUPPLIER_BPNL)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].reportedNotificationIds",
-                Matchers.contains(NOTIFICATION_ID.toString())));
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnlSet", Matchers.contains(UPSTREAM_SUPPLIER_BPNL)));
  
         verify(irsChainOpeningPartnerGrantService).findAll();
-    }
-
-    @Test
-    @WithMockApiKey
-    void getAllPartnerGrants_ReferencesNotifications() throws Exception {
-        // when
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        when(irsChainOpeningPartnerGrantService.findAll()).thenReturn(List.of(getSyncedPartnerGrant()));
- 
-        // then
-        mockMvc.perform(MockMvcRequestBuilders.get(PARTNER_GRANTS_PATH))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].reportedNotificationIds", Matchers.not(Matchers.hasItem(NOTIFICATION_UUID.toString()))));
     }
  
     @Test
@@ -163,7 +145,6 @@ public class IrsChainOpeningPartnerGrantControllerTest {
             .requesterBpn(CUSTOMER_BPNL)
             .validFrom(VALID_FROM)
             .validTo(VALID_TO)
-            .useCase(PURIS_USE_CASE)
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .reportedNotifications(notifications)
             .build();

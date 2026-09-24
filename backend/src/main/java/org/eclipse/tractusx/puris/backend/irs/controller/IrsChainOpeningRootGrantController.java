@@ -20,7 +20,6 @@ package org.eclipse.tractusx.puris.backend.irs.controller;
 
 import java.util.List;
 
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.logic.dto.IrsChainOpeningGrantDto;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
@@ -42,6 +41,7 @@ import org.springframework.web.server.ResponseStatusException;
  * The class level {@code @PreAuthorize} applies so all endpoints are admin-only.
  */
 @RestController
+@PreAuthorize("hasRole('PURIS_ADMIN')")
 @RequestMapping("irs/root-grants")
 @Slf4j
 public class IrsChainOpeningRootGrantController {
@@ -54,7 +54,6 @@ public class IrsChainOpeningRootGrantController {
     @Autowired
     private ModelMapper modelMapper;
  
-    @PreAuthorize("hasRole('PURIS_ADMIN')")
     @GetMapping()
     @ResponseBody
     @Operation(summary = "Get all chain opening root grants -- ADMIN ONLY",
@@ -77,8 +76,7 @@ public class IrsChainOpeningRootGrantController {
     private IrsChainOpeningGrantDto convertToDto(IrsChainOpeningRootGrant entity) {
         IrsChainOpeningGrantDto dto = modelMapper.map(entity, IrsChainOpeningGrantDto.class);
         if (entity.getReportedNotifications() != null) {
-            dto.setAllowedBpnls(List.copyOf(entity.getAllowedBpnls()));
-            dto.setReportedNotificationIds(entity.getReportedNotifications().stream().map(ReportedDemandAndCapacityNotification::getNotificationId).toList());
+            dto.setAllowedBpnlSet(List.copyOf(entity.getAllowedBpnlSet()));
         }
         return dto;
     }

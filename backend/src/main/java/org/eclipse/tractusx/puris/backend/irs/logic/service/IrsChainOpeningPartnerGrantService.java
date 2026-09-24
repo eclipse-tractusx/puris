@@ -405,6 +405,6 @@ public class IrsChainOpeningPartnerGrantService {
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();
 
-		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnlSet(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
 }

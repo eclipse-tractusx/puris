@@ -440,7 +440,7 @@ class IrsChainOpeningRootGrantServiceTest {
         assertThat(saved.getRequesterBpn()).isEqualTo(OWN_BPNL);
         assertThat(saved.getGlobalAssetId()).isEqualTo(GLOBAL_ASSET_ID);
         assertThat(saved.getSourceDisruptionId()).isEqualTo(SOURCE_DISRUPTION_ID.toString());
-        assertThat(saved.getAllowedBpnls()).containsExactly(ALLOWED_BPNL);
+        assertThat(saved.getAllowedBpnlSet()).containsExactly(ALLOWED_BPNL);
         assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
     }
 
@@ -471,7 +471,7 @@ class IrsChainOpeningRootGrantServiceTest {
         verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
         IrsChainOpeningRootGrant saved = captor.getValue();
 
-        assertThat(saved.getAllowedBpnls()).containsExactlyInAnyOrder(ALLOWED_BPNL, "BPNLXXOTHERSUPPLIER");
+        assertThat(saved.getAllowedBpnlSet()).containsExactlyInAnyOrder(ALLOWED_BPNL, "BPNLXXOTHERSUPPLIER");
         assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
     }
 

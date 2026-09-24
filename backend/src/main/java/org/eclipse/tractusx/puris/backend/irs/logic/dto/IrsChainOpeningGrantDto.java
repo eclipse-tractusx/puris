@@ -20,7 +20,6 @@ package org.eclipse.tractusx.puris.backend.irs.logic.dto;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
@@ -56,12 +55,7 @@ public class IrsChainOpeningGrantDto {
  
     private Instant validTo;
  
-    @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
-    private String useCase;
- 
     private IrsGrantSyncStatusEnumeration syncStatus;
  
-    private List<@Pattern(regexp = PatternStore.BPNL_STRING) String> allowedBpnls;
-
-    private List<UUID> reportedNotificationIds;
+    private List<@Pattern(regexp = PatternStore.BPNL_STRING) String> allowedBpnlSet;
 }
