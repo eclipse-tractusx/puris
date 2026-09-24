@@ -14,6 +14,7 @@ The **need for configuration updates** is **marked bold**
 ## Added
 
 - Added controller for irs queue requests ([#1251](https://github.com/eclipse-tractusx/puris/pull/1251))
+- Added controller for irs root and partner grants ([#1252](https://github.com/eclipse-tractusx/puris/pull/1252))
 
 ### Changed
 

@@ -861,6 +861,50 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
+    IrsChainOpeningGrantDto:
+      additionalProperties: false
+      properties:
+        allowedBpnlSet:
+          items:
+            maxItems: 50
+            pattern: ^BPNL[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        globalAssetId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        requesterBpn:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        sourceDisruptionId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        syncStatus:
+          enum:
+          - NOT_SYNCED
+          - PENDING
+          - SYNCED
+          - DELETED
+          - OUT_OF_SYNC
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+        validFrom:
+          format: date-time
+          maxItems: 50
+          type: string
+        validTo:
+          format: date-time
+          maxItems: 50
+          type: string
+      type: object
     IrsQueuedRequestDto:
       additionalProperties: false
       properties:
@@ -1120,6 +1164,7 @@ components:
           type: boolean
         partnerCXNumber:
           maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         partnerMaterialNumber:
           maxItems: 50
@@ -3951,6 +3996,32 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
+  /irs/partner-grants:
+    get:
+      description: Get all partner grants regardless of their sync status (NOT_SYNCED,
+        PENDING, SYNCED, OUT_OF_SYNC, DELETED). Only available if the IRS adapter
+        is enabled.
+      operationId: getAllPartnerGrants
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/IrsChainOpeningGrantDto'
+                maxItems: 50
+                type: array
+          description: Chain opening partner grants were returned.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Caller is not an admin or the IRS adapter is disabled.
+        '500':
+          description: Internal Server Error.
+      summary: Get all chain opening partner grants -- ADMIN ONLY
+      tags:
+      - irs-chain-opening-partner-grant-controller
   /irs/requests:
     get:
       description: Get all queued IRS requests regardless of their status (PENDING,
@@ -3977,6 +4048,32 @@ paths:
       summary: Get all queued IRS requests -- ADMIN ONLY
       tags:
       - irs-queued-request-controller
+  /irs/root-grants:
+    get:
+      description: Get all chain opening root grants regardless of their sync status
+        (NOT_SYNCED, PENDING, SYNCED, OUT_OF_SYNC, DELETED). Only available if the
+        IRS adapter is enabled.
+      operationId: getAllRootGrants
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/IrsChainOpeningGrantDto'
+                maxItems: 50
+                type: array
+          description: Chain opening root grants were returned.
+        '401':
+          description: Not authenticated.
+        '403':
+          description: Caller is not an admin or the IRS adapter is disabled.
+        '500':
+          description: Internal Server Error.
+      summary: Get all chain opening root grants -- ADMIN ONLY
+      tags:
+      - irs-chain-opening-root-grant-controller
   /item-stock/anonymized/request/{materialnumber}/{partnerBpnl}/{direction}/submodel/{representation}:
     get:
       operationId: getAnonymizedItemStockMapping

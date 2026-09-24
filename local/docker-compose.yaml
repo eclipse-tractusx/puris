@@ -45,6 +45,8 @@ services:
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
+      - ENDPOINT_IRS_ROOT_GRANTS=irs/root-grants
+      - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
       - ENDPOINT_IRS_REQUESTS=irs/requests
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
@@ -247,6 +249,8 @@ services:
       - ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS=stockView/update-reported-material-stocks?ownMaterialNumber=
       - ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS=stockView/update-reported-product-stocks?ownMaterialNumber=
       - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
+      - ENDPOINT_IRS_ROOT_GRANTS=irs/root-grants
+      - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
       - ENDPOINT_IRS_REQUESTS=irs/requests
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand

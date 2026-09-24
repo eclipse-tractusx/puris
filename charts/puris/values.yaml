@@ -205,6 +205,10 @@ frontend:
     endpointUpdateReportedProductStocks: stockView/update-reported-product-stocks?ownMaterialNumber=
     # -- The endpoint for scheduling an update of erp data (currently only stock supported)
     endpointErpScheduleUpdate: erp-adapter/trigger
+    # -- The endpoint for getting root grants from the IRS adapter
+    endpointIrsootGrants: irs/root-grants
+    # -- The endpoint for getting partner grants from the IRS adapter
+    endpointIrsPartnerGrants: irs/partner-grants
     # -- The endpoint for getting queued requests from the IRS adapter
     endpointIrsRequests: irs/requests
     # -- The endpoint for partner information
