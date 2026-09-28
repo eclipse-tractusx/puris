@@ -503,6 +503,9 @@ backend:
     singlelevelbomasplannedsubmodel:
       # -- Asset ID for SingleLevelBomAsPlannedSubmodel API
       apiassetid: singlelevelbomasplannedsubmodel-api-asset
+    singlelevelusageasplannedsubmodel:
+      # -- Asset ID for SingleLevelUsageAsPlannedSubmodel API
+      apiassetid: singlelevelusageasplannedsubmodel-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset

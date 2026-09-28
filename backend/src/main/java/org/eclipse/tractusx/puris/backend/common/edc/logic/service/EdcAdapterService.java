@@ -258,6 +258,12 @@ public class EdcAdapterService {
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
+        log.info("Registration of Single Level Usage As Planned 3.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getSingleLevelUsageAsPlannedSubmodelApiAssetId(),
+            variablesService.getSingleLevelUsageAsPlannedSubmodelEndpoint(),
+            AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
         log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
             variablesService.getPartTypeLegacySubmodelApiAssetId(),
             variablesService.getParttypeInformationLegacyServerendpoint(),
@@ -327,6 +333,8 @@ public class EdcAdapterService {
 
             result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
                 variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL, "SingleLevelUsageAsPlanned",
+                variablesService.getSingleLevelUsageAsPlannedSubmodelApiAssetId(), ownPartner);
             result &= createSelfContractDefinition(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL, "ItemStockAnonymized",
                 variablesService.getItemStockAnonymizedSubmodelApiAssetId(), ownPartner);
             result &= createSelfContractDefinition(AssetType.DELIVERY_ANONYMIZED_SUBMODEL, "DeliveryInformationAnonymized",
@@ -923,6 +931,7 @@ public class EdcAdapterService {
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DEMAND_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
         };
@@ -1369,6 +1378,7 @@ public class EdcAdapterService {
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->  fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
         // use only assetId and version (previously semanticId, submodel type, no assetId) to follow all conventions:

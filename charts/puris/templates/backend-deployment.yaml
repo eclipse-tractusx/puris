@@ -181,6 +181,8 @@ spec:
               value: "{{ .Values.backend.puris.productionanonymizedsubmodel.apiassetid }}"
             - name: PURIS_SINGLELEVELBOMASPLANNEDSUBMODEL_APIASSETID
               value: "{{ .Values.backend.puris.singlelevelbomasplannedsubmodel.apiassetid }}"
+            - name: PURIS_SINGLELEVELUSAGEASPLANNEDSUBMODEL_APIASSETID
+              value: "{{ .Values.backend.puris.singlelevelusageasplannedsubmodel.apiassetid }}"
             - name: PURIS_NOTIFICATION_APIASSETID
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_DATAEXCHANGEREQUESTAPI_APIASSETID
