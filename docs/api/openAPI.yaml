@@ -3822,6 +3822,7 @@ paths:
           - PRODUCTION_ANONYMIZED_SUBMODEL
           - DEMAND_ANONYMIZED_SUBMODEL
           - SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL
+          - SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
