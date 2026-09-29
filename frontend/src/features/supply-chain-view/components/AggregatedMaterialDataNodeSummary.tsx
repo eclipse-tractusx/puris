@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 import { useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import { AggregatedMaterialDataNode } from '@models/types/data/aggregated-material-data';
-import { usePartners } from '@features/stock-view/hooks/usePartners';
+import { usePartners } from '@hooks/usePartners';
 import { createAnonymizedSummary } from '../util/anonymized-summary';
 import { AnonymizedSummaryPanel } from './AnonymizedSummaryPanel';
 import { SupplyChainRowHeader } from './SupplyChainRowHeader';

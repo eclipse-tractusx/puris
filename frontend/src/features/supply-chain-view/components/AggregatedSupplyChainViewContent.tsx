@@ -30,8 +30,8 @@ import { OwnSummaryPanel } from '@features/material-details/components/SummaryPa
 import { createSummary } from '@features/material-details/util/summary-service';
 import { useProduction } from '@features/material-details/hooks/useProduction';
 import { useDelivery } from '@features/material-details/hooks/useDelivery';
-import { useStocks } from '@features/stock-view/hooks/useStocks';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useStocks } from '@hooks/useStocks';
+import { useSites } from '@hooks/useSites';
 import { useAllMaterials } from '@hooks/useAllMaterials';
 import { useAggregatedMaterialData } from '@hooks/useAggregatedMaterialData';
 import { useMaterialNumbersMapping } from '@hooks/useMaterialNumbersMapping';
