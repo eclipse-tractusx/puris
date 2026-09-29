@@ -44,7 +44,7 @@ type SummaryContainerProps = {
     children: ReactNode;
 };
 
-function SummaryContainer({ children }: SummaryContainerProps) {
+export function SummaryContainer({ children }: SummaryContainerProps) {
     return (
         <Box
             sx={{

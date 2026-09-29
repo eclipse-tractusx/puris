@@ -15,11 +15,16 @@ headers {
   X-Api-Key: {{SUPPLIER_PURIS_BACKEND_API_KEY}}
 }
 
+script:pre-request {
+  const approvalTimestamp = new Date();
+  bru.setVar("approvalTimestamp", approvalTimestamp.toISOString());
+}
+
 body:json {
   {
     "approvalId": "54b1b097-d73c-4d50-83ca-f386d98c4100",
     "isFinalized": true,
-    "timestamp": "2025-12-17T08:00:00+01:00",
+    "timestamp": "{{approvalTimestamp}}",
     "approvedTypes": [
       "n-tier"
     ],
@@ -27,12 +32,8 @@ body:json {
   }
 }
 
-script:pre-request {
-  console.log("Waiting 10 seconds");
-  await (new Promise(resolve => setTimeout(resolve, 10000)));
-}
-
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("response is created", function() {
     expect(res.getStatus()).to.equal(201);
   });

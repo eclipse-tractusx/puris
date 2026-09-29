@@ -18,10 +18,15 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReportedDataExchangeRequestRepository  extends DataExchangeRequestRepository<ReportedDataExchangeRequest> {
-    
+
+    Optional<ReportedDataExchangeRequest> findByNotification_Uuid(UUID notificationUuid);
+
 }

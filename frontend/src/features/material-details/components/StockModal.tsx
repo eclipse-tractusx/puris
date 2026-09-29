@@ -30,7 +30,7 @@ import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { useDataModal } from '@contexts/dataModalContext';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { DirectionType } from '@models/types/erp/directionType';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSites } from '@hooks/useSites';
 
 export type StockModalProps = {
     open: boolean;

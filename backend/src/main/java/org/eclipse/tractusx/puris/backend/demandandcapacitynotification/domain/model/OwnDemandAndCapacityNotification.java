@@ -20,15 +20,33 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model;
 
+import java.util.List;
+import java.util.UUID;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
+@Getter
+@Setter
 @SuperBuilder
 @NoArgsConstructor
 @ToString(callSuper = true)
 public class OwnDemandAndCapacityNotification extends DemandAndCapacityNotification {
 
+    @ElementCollection
+    @CollectionTable(
+        name = "own_notification_related_notification_ids",
+        joinColumns = @JoinColumn(name = "notification_uuid")
+    )
+    @Column(name = "related_notification_id")
+    protected List<UUID> relatedNotificationIds;
 }

@@ -20,26 +20,77 @@ SPDX-License-Identifier: Apache-2.0
 
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.Objects;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class ReportedDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<ReportedDemandAndCapacityNotification, ReportedDemandAndCapacityNotificationRepository> {
 
+    private final IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
+
+    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+
+    private final MaterialRelationService materialRelationService;
+
     public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
-            PartnerService partnerService, MaterialPartnerRelationService mpr) {
+            PartnerService partnerService, MaterialPartnerRelationService mpr, IrsChainOpeningRootGrantService irsChainOpeningRootGrantService,
+            IrsChainOpeningPartnerGrantService irsChainOpeningGrantService, MaterialRelationService materialRelationService) {
         super(reportedNotificationRepository, partnerService, mpr);
+        this.irsChainOpeningRootGrantService = irsChainOpeningRootGrantService;
+        this.irsChainOpeningGrantService = irsChainOpeningGrantService;
+        this.materialRelationService = materialRelationService;
+    }
+
+    @Override
+    protected void afterUpdate(ReportedDemandAndCapacityNotification previous, ReportedDemandAndCapacityNotification updated) {
+        irsChainOpeningRootGrantService.onReportedNotificationUpdated(previous, updated);
+        irsChainOpeningGrantService.onReportedNotificationUpdated(updated);
     }
 
     public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {
         return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl))
                 .toList();
+    }
+
+    public List<ReportedDemandAndCapacityNotification> findByNotificationIdIn(Collection<UUID> ids) {
+        return repository.findByNotificationIdIn(ids);
+    }
+
+    public boolean isAnyChildAffectedByActiveNotifications(Material parent) {
+        Date now = new Date();
+
+		Set<String> validChildMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(parent.getOwnMaterialNumber(), now);
+
+		if (validChildMaterialNumbers.isEmpty()) {
+			log.warn("Material {} is not a parent in any currently-valid material relation", parent.getOwnMaterialNumber());
+            return false;
+		}
+
+		return findAll().stream()
+				.filter(notification -> ReportedDemandAndCapacityNotificationService
+						.isNotificationActiveNow(notification, now))
+				.filter(notification -> notification.getMaterials() != null)
+				.flatMap(notification -> notification.getMaterials().stream())
+				.filter(Objects::nonNull)
+				.map(Material::getOwnMaterialNumber)
+				.anyMatch(validChildMaterialNumbers::contains);
     }
 
     @Override
