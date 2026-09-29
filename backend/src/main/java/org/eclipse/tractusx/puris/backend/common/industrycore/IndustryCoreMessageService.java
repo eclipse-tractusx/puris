@@ -46,18 +46,8 @@ public class IndustryCoreMessageService {
     public JsonNode createMessage(Partner receiver, IndustryCoreMessageContext context, Object samm, UUID relatedMessageId) {
         var body = objectMapper.createObjectNode();
         body.set("header", createHeader(receiver, context, relatedMessageId));
-        body.set("content", buildContent(context, samm));
+        body.set("content", objectMapper.convertValue(samm, JsonNode.class));
         return body;
-    }
-
-    private JsonNode buildContent(IndustryCoreMessageContext context, Object samm) {
-        JsonNode sammNode = objectMapper.convertValue(samm, JsonNode.class);
-        if (context.getContentKey() == null) {
-            return sammNode;
-        }
-        var wrapper = objectMapper.createObjectNode();
-        wrapper.set(context.getContentKey(), sammNode);
-        return wrapper;
     }
 
     public ObjectNode createHeader(Partner receiver, IndustryCoreMessageContext context, UUID relatedMessageId) {
@@ -80,19 +70,15 @@ public class IndustryCoreMessageService {
             throw new IllegalArgumentException("Body is missing");
         }
         validate(body.get("header"), senderBpn, expectedContext);
-        return parseContent(body.get("content"), expectedContext, contentType);
+        return parseContent(body.get("content"), contentType);
     }
 
-    private <T> T parseContent(JsonNode content, IndustryCoreMessageContext context, Class<T> contentType) {
+    private <T> T parseContent(JsonNode content, Class<T> contentType) {
         if (content == null || content.isMissingNode() || content.isNull()) {
             throw new IllegalArgumentException("Content is missing");
         }
-        JsonNode payload = context.getContentKey() == null ? content : content.get(context.getContentKey());
-        if (payload == null || payload.isNull()) {
-            throw new IllegalArgumentException("Missing content payload");
-        }
         try {
-            return objectMapper.treeToValue(payload, contentType);
+            return objectMapper.treeToValue(content, contentType);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid content payload", e);
         }
