@@ -26,13 +26,32 @@ updates:
     directory: "/backend/"
     schedule:
       interval: "daily"
+    groups:
+      backend-security-updates:
+        applies-to: "security-updates"
 
   - package-ecosystem: "npm"
-    directory: "/frontend/"
+    directories: 
+      - "/frontend/"
+      - "/local/"
     schedule:
       interval: "daily"
+    groups:
+      frontend-security-updates:
+        applies-to: "security-updates"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      github-actions-security-updates:
+        applies-to: "security-updates"
+  
+  - package-ecosystem: "pip"
+    directory: "/local/"
+    schedule:
+      interval: "weekly"
+    groups:
+      python-security-updates:
+        applies-to: "security-updates"
