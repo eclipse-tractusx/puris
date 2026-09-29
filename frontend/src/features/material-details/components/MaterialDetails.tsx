@@ -29,10 +29,9 @@ import { useNotifications } from '@contexts/notificationContext';
 import { DataCategory, useDataModal } from '@contexts/dataModalContext';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { groupBy } from '@util/helpers';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { createSummary, PartnerSummary } from '../util/summary-service';
 import { Partner } from '@models/types/edc/partner';
-import { scheduleErpUpdateStocks } from '@services/stocks-service';
 import { NotFoundView } from '@views/errors/NotFoundView';
 import { Material } from '@models/types/data/stock';
 import { BPNS } from '@models/types/edc/bpn';
@@ -121,7 +120,6 @@ type MaterialDetailsProps = {
 
 export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [isSchedulingUpdate, setIsSchedulingUpdate] = useState(false);
     const { notify } = useNotifications();
     const { addOnSaveListener, removeOnSaveListener } = useDataModal();
     const {
@@ -264,39 +262,6 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
             });
     };
         
-    const handleScheduleUpdate = () => {
-        setIsSchedulingUpdate(true);
-        Promise.all(
-            expandablePartners.map((partner) =>
-                scheduleErpUpdateStocks(
-                    direction === DirectionType.Outbound ? 'product' : 'material',
-                    partner.bpnl,
-                    material.ownMaterialNumber
-            )
-        ))
-        .then(() => {
-            notify({
-                title: 'Update requested',
-                description: `Scheduled ERP data update of stocks for ${material?.ownMaterialNumber} in your role as ${
-                        direction === DirectionType.Inbound ? 'Customer' : 'Supplier'
-                    }. Please reload dialog later.`,
-                    severity: 'success',
-                });
-        })
-        .catch((error: unknown) => {
-            const msg =
-            error !== null && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-            ? error.message
-            : 'Unknown Error';
-            notify({
-                title: 'Error scheduling ERP update',
-                description: msg,
-                severity: 'error',
-            });
-        })
-        .finally(() => setIsSchedulingUpdate(false));
-    };
-        
         return (
             <CalendarWeekProvider>
             <Stack spacing={2}>
@@ -305,9 +270,7 @@ export function MaterialDetails({ material, direction }: MaterialDetailsProps) {
                     material={material}
                     direction={direction}
                     isRefreshing={isRefreshing}
-                    isSchedulingUpdate={isSchedulingUpdate}
                     onRefresh={handlePartnerDataRequest}
-                    onScheduleUpdate={handleScheduleUpdate}
                 />
                 <Stack spacing={5}>
                     <SummaryContainer>

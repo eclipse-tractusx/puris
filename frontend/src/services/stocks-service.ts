@@ -21,9 +21,6 @@ SPDX-License-Identifier: Apache-2.0
 
 import { config } from '@models/constants/config';
 import { Stock, StockType } from '@models/types/data/stock';
-import { scheduleErpUpdate } from '@services/erp-service'
-import { AssetType } from "@models/types/erp/assetType.ts";
-import { DirectionType } from "@models/types/erp/directionType.ts";
 import AuthenticationService from './authentication-service';
 
 export const postStocks = async (type: StockType, stock: Partial<Stock>) => {
@@ -105,13 +102,4 @@ export const requestReportedStocks = async (type: StockType, materialNumber: str
     throw await res.json();
   }
   return res.json();
-}
-
-export const scheduleErpUpdateStocks = async (type: StockType, partnerBpnl: string | null, materialNumber: string | null): Promise<void> => {
-  // assetType always ItemStock
-  const assetType = AssetType.ItemStock;
-  // infer product = OUTBOUND, material = INBOUND
-  const direction = type === 'product' ? DirectionType.Outbound : DirectionType.Inbound;
-
-  return scheduleErpUpdate(partnerBpnl, materialNumber, assetType, direction);
 }

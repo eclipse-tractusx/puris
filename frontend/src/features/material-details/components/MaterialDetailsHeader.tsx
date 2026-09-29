@@ -19,8 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { Material } from '@models/types/data/stock';
-import { DirectionType } from '@models/types/erp/directionType';
-import { Add, ChevronLeftOutlined, NotificationsActive, Refresh, Schedule } from '@mui/icons-material';
+import { DirectionType } from '@models/types/data/directionType';
+import { Add, ChevronLeftOutlined, Refresh, Schedule } from '@mui/icons-material';
 import { Box, Button, capitalize, Stack, Typography } from '@mui/material';
 import { useDataModal } from '@contexts/dataModalContext';
 import { Link } from 'react-router-dom';
@@ -38,12 +38,10 @@ type MaterialDetailsHeaderProps = {
     material: Material;
     direction: DirectionType;
     isRefreshing: boolean;
-    isSchedulingUpdate: boolean;
     onRefresh: () => void;
-    onScheduleUpdate: () => void;
 };
 
-export function MaterialDetailsHeader({ material, direction, isRefreshing, isSchedulingUpdate, onRefresh, onScheduleUpdate }: MaterialDetailsHeaderProps) {
+export function MaterialDetailsHeader({ material, direction, isRefreshing, onRefresh }: MaterialDetailsHeaderProps) {
     const { openDialog } = useDataModal();
     const { notifications } = useDemandCapacityNotifications();
     const [materialRelations, setMaterialRelations] = useState<MaterialRelation[]>([]);
@@ -143,7 +141,7 @@ export function MaterialDetailsHeader({ material, direction, isRefreshing, isSch
                         </Button>
                     </Stack>
                     <Stack direction="row" gap="0.5rem" justifyContent="end">
-                        <LoadingButton
+                        <LoadingButton 
                             Icon={Schedule}
                             isLoading={isSchedulingUpdate}
                             onClick={onScheduleUpdate}

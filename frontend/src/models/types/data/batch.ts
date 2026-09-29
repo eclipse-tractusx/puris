@@ -16,7 +16,7 @@ under the License.
 
 SPDX-License-Identifier: Apache-2.0
 */
-import { DirectionType } from '../erp/directionType';
+import { DirectionType } from './directionType';
 
 export enum BatchRunStatus {
     IN_PROGRESS = "IN_PROGRESS",

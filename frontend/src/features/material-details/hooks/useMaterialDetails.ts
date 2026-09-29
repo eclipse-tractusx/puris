@@ -25,7 +25,7 @@ import { usePartners } from '@hooks/usePartners';
 import { useSites } from '@hooks/useSites';
 import { useStocks } from '@hooks/useStocks';
 import { Partner } from '@models/types/edc/partner';
-import { DirectionType } from '@models/types/erp/directionType';
+import { DirectionType } from '@models/types/data/directionType';
 import { useCallback, useEffect, useState } from 'react';
 import { Expandable } from '../models/expandable';
 import { useReportedProduction } from './useReportedProduction';

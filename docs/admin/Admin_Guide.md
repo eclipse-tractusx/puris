@@ -218,26 +218,6 @@ Use the Bruno integration tests for anonymized exchange to validate:
 - contract negotiation + transfer succeed when performed through the **provider's own EDC**, and are rejected (`403`) when attempted through a partner's EDC
 - `$value` pull returns anonymized payloads
 
-## Configure ERP Update
-
-To use an ERP Adapter, you need to configure the information below `backend.puris.erpadapter`:
-
-| Helm                                     | Docker                           |
-| ---------------------------------------- | -------------------------------- |
-| backend.puris.erpadapter.enabled         | PURIS_ERPADAPTER_ENABLED         |
-| backend.puris.erpadapter.url             | PURIS_ERPADAPTER_URL             |
-| backend.puris.erpadapter.authkey         | PURIS_ERPADAPTER_AUTHKEY         |
-| backend.puris.erpadapter.refreshinterval | PURIS_ERPADAPTER_REFRESHINTERVAL |
-| backend.puris.erpadapter.timelimit       | PURIS_ERPADAPTER_TIMELIMIT       |
-
-The configuration of the refreshinterval and the timelimit are considered as follows:
-
-- timelimit: whenever an erp update has been scheduled, then it is scheduled for n days. It gets rescheduled for n days 
-whenever triggered. Thus, no further update will be done after n days of no trigger.
-- refreshinterval: defines in minutes after which time an update is performed for the scheduled updates.
-
-Refer to the [helm chart's README](../../charts/puris/README.md) for further information.
-
 ## Configure Batch Update of Partner Related Data
 
 To use a batch to update the partner related data, you need to configure the information below `backend.puris.batch.partnerdataupdate`:
