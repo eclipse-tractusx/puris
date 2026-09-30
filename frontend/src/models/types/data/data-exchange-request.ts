@@ -32,4 +32,5 @@ export type DataExchangeRequest = {
     timestamp: Date,
     notificationId: string,
     dataExchangeApproval:  DataExchangeApproval | null;
+    relatedDataExchangeRequestId: string | null;
 };

@@ -29,7 +29,7 @@ import { LEADING_ROOT_CAUSE } from '@models/constants/leading-root-causes';
 import { STATUS } from '@models/constants/status';
 import { DemandCapacityNotification, EffectType, LeadingRootCauseType, StatusType } from '@models/types/data/demand-capacity-notification';
 import { Site } from '@models/types/edc/site';
-import { useSites } from '@features/stock-view/hooks/useSites';
+import { useSites } from '@hooks/useSites';
 import { usePartnerMaterials } from '@hooks/usePartnerMaterials';
 import { Partner } from '@models/types/edc/partner';
 import { useNotifications } from '@contexts/notificationContext';

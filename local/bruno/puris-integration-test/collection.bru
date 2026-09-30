@@ -17,7 +17,7 @@ script:pre-request {
     }
 
   };
-  
+
   // in case of mixed versions, use the older version for compatibility
   const commonVersion = (customerProfileVersion === supplierProfileVersion) ? customerProfileVersion : "profile2405";
 
@@ -32,6 +32,73 @@ script:pre-request {
   bru.setVar("COMMON_POLICY_NAMESPACE", policyProfileVersionMapping[commonVersion].namespace)
   bru.setVar("COMMON_POLICY_OPERATOR", policyProfileVersionMapping[commonVersion].operator)
 }
+
+script:post-response {
+  try {
+    const maxWaitMs = 10000;
+    const intervalMs = 2000;
+    const retryableStatuses = [404, 409, 425, 503, ...(bru.getVar("extraRetryStatuses") || [])];
+
+    if (bru.getVar("noRetry")) {
+      bru.deleteVar("__retryPending");
+      return;
+    }
+
+    const status = res.getStatus();
+    const safeName = req.getName().replace(/[^a-zA-Z0-9\-_.]/g, "_");
+    const key = `__retry_${safeName}`;
+
+    const field = bru.getVar("retryUntilField");
+    const expected = bru.getVar("retryUntilValue");
+    const minLength = bru.getVar("retryUntilMinLength");
+
+    let ready;
+    if (status >= 200 && status < 300) {
+      if (field) {
+        const body = res.getBody();
+        ready = String(body?.[field]) === String(expected);
+      } else if (minLength !== undefined && minLength !== null) {
+        const body = res.getBody();
+        ready = Array.isArray(body) && body.length >= Number(minLength);
+      } else {
+        ready = true;
+      }
+    } else {
+      ready = !retryableStatuses.includes(status);
+    }
+
+    const cleanup = () => {
+      bru.deleteVar(`${key}_started`);
+      bru.deleteVar("__retryPending");
+      bru.deleteVar("retryUntilField");
+      bru.deleteVar("retryUntilValue");
+      bru.deleteVar("retryUntilMinLength");
+      bru.deleteVar("extraRetryStatuses");
+    };
+
+    if (ready) {
+      cleanup();
+      return;
+    }
+
+    const startedAt = bru.getVar(`${key}_started`) || Date.now();
+    bru.setVar(`${key}_started`, startedAt);
+
+    if (Date.now() - startedAt < maxWaitMs) {
+      console.log(`"${req.getName()}" not ready yet (status ${status}), retrying in ${intervalMs}ms`);
+      bru.setVar("__retryPending", true);
+      await bru.sleep(intervalMs);
+      bru.setNextRequest(req.getName());
+    } else {
+      console.warn(`"${req.getName()}" still not ready after ${maxWaitMs}ms moving to the next test`);
+      cleanup();
+    }
+  } catch (err) {
+    console.error(`Retry script error for "${req.getName()}":`, err.message);
+    bru.deleteVar("__retryPending");
+  }
+}
+
 vars:pre-request {
   EDC_NAMESPACE: https://w3id.org/edc/v0.0.1/ns/
 }

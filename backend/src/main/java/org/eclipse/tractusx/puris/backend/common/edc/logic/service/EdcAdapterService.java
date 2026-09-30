@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBu
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsPolicyStoreService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.common.domain.model.DirectionEnum;
@@ -67,6 +68,9 @@ public class EdcAdapterService {
 
     @Autowired
     private JsonLdUtils jsonLdUtils;
+
+    @Autowired
+    private IrsPolicyStoreService irsPolicyStoreService;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
@@ -293,31 +297,59 @@ public class EdcAdapterService {
      * Register contract definitions for assets that should only be accessible by the own organization.
      * Creates access policy restricted to own BPNL (with membership credential requirement).
      * Contract policy uses standard Framework Agreement terms.
-     * 
+     *
+     * Registers self-contract definitions for every supported {@link PolicyProfileVersionEnumeration}.
+     * Profile 2405 is always supported for compatibility. Profile 2509 is only added if the
+     * app's configured profile is 2509, since not every partner's EDC can negotiate that profile.
+     *
+     * The access policy itself is not profile-specific (it is always built for the app's
+     * configured profile, see {@link EdcRequestBodyBuilder#buildBpnAndMembershipRestrictedPolicy}),
+     * so it only needs to be registered once, outside the loop, and shared by every profile's
+     * contract definitions.
+     *
      * @return true if all registrations were successful, otherwise false
      */
     private boolean createPolicyAndContractDefForOwnPartner() {
         Partner ownPartner = new Partner();
-        ownPartner.setPolicyProfileVersion(variablesService.getEdcProfileVersion());
         ownPartner.setBpnl(variablesService.getOwnBpnl());
-        
+
         boolean result = createBpnlAndMembershipPolicyDefinitionForPartner(ownPartner);
         log.info("Self policy definition registration {}", result ? "successful" : "failed");
-        
-        boolean contractReg = createSubmodelContractDefinitionForPartner(
-            AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID,
-            variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
-            ownPartner
-        );
-        log.info("Self-contract for SingleLevelBomAsPlanned {}", contractReg ? "successful" : "failed");
-        
-        return result && contractReg;
+
+        for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
+            ownPartner.setPolicyProfileVersion(profileVersion);
+
+            result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
+                variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL, "ItemStockAnonymized",
+                variablesService.getItemStockAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.DELIVERY_ANONYMIZED_SUBMODEL, "DeliveryInformationAnonymized",
+                variablesService.getDeliveryAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL, "PlannedProductionOutputAnonymized",
+                variablesService.getProductionAnonymizedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_SUBMODEL, "PartTypeInformation",
+                variablesService.getPartTypeSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "PartTypeInformationLegacy",
+                variablesService.getPartTypeLegacySubmodelApiAssetId(), ownPartner);
+        }
+
+        return result;
+    }
+
+    private boolean createSelfContractDefinition(AssetType assetType, String logName, String assetId, Partner ownPartner) {
+        boolean contractReg = createSubmodelContractDefinitionForPartner(assetType.URN_SEMANTIC_ID, assetId, ownPartner);
+        log.info("Self-contract for {} (profile {}) {}", logName, ownPartner.getPolicyProfileVersion().getValue(), contractReg ? "successful" : "failed");
+        return contractReg;
     }
 
     private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
         var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -335,6 +367,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrContractDefinitionForPartner(partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and DTR");
+                    return true;
+                }
                 log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and DTR");
                 return false;
             }
@@ -357,6 +393,10 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildBpnAndMembershipRestrictedPolicy(partner);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(edcRequestBodyBuilder.getBpnPolicyId(partner))) {
+                    log.info("Policy definition already exists for partner " + partner.getBpnl());
+                    return true;
+                }
                 log.warn("Policy Registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
@@ -379,15 +419,22 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildPurisFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                if (response.code() == 409 || isPolicyExisting(profileVersion.CONTRACT_POLICY_ID)) {
+                        log.info("PURIS Framework agreement policy definition already existed");
+                } else {
+                    log.warn("Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createPurisFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
@@ -405,15 +452,22 @@ public class EdcAdapterService {
         var body = edcRequestBodyBuilder.buildDtrFrameworkPolicy(profileVersion);
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Framework agreement policy definition already existed");
-                    return true;
+                if (response.code() == 409 || isPolicyExisting(profileVersion.DTR_CONTRACT_POLICY_ID)) {
+                        log.info("DTR Framework agreement policy definition already existed");
+                } else {
+                    log.warn("DTR Framework Policy Registration failed");
+                    if (response.body() != null) {
+                        log.warn("Response: \n" + response.body().string());
+                    }
+                    return false;
                 }
-                log.warn("Framework Policy Registration failed");
-                if (response.body() != null) {
-                    log.warn("Response: \n" + response.body().string());
-                }
-                return false;
+            }
+            /** 
+             * if the IRS adapter is enabled the DTR framework policy for 24.05 should be registered in the policy store
+             * currently policies for 25.09 are not supported in the IRS.
+             */
+            if (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2405) {
+                irsPolicyStoreService.createDtrFrameworkPolicy();
             }
             return true;
         } catch (Exception e) {
@@ -589,35 +643,51 @@ public class EdcAdapterService {
     /**
      * Helper method for contracting a certain asset as specified in the catalog item from
      * a specific Partner.
-     * <p>
-     * Uses the dspUrl of the partner.
      *
-     * @param partner     The Partner to negotiate with
-     * @param catalogItem An excerpt from a catalog.
-     * @return The JSON response to your contract offer.
-     * @throws IOException If the connection to the partners control plane fails
-     */
-    private JsonNode initiateNegotiation(Partner partner, JsonNode catalogItem) throws IOException {
-        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
-        return initiateNegotiation(catalogItem, dspaceVersionParams);
-    }
-
-    /**
-     * Helper method for negotiating a contract for a specific catalog item using
-     * already resolved DSP version parameters.
-     *
-     * @param catalogItem         An excerpt from a catalog
+     * @param assetId             The id of the target asset, as stated by the provider's catalog
+     * @param policy              The offer to negotiate, expanded
      * @param dspaceVersionParams Resolved DSP endpoint, connector id and protocol version of the counterparty
      * @return The JSON response to your contract offer.
      * @throws IOException If the connection to the partners control plane fails
      */
-    private JsonNode initiateNegotiation(JsonNode catalogItem, DspaceVersionParams dspaceVersionParams) throws IOException {
-        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(catalogItem, dspaceVersionParams);
+    private JsonNode initiateNegotiation(String assetId, JsonNode policy, DspaceVersionParams dspaceVersionParams) throws IOException {
+        var requestBody = edcRequestBodyBuilder.buildAssetNegotiationBody(assetId, policy, dspaceVersionParams);
         try (Response response = sendPostRequest(requestBody, List.of("v3", "contractnegotiations"))) {
             JsonNode responseNode = objectMapper.readTree(response.body().string());
             log.debug("Result from negotiation {}", responseNode.toPrettyString());
             return responseNode;
         }
+    }
+
+    /**
+     * Helper method for contracting a certain asset as specified in the catalog item from
+     * a specific Partner.
+     * <p>
+     * Uses the dspUrl of the partner.
+     *
+     * @param partner The Partner to negotiate with
+     * @param assetId The id of the target asset, as stated by the partner's catalog
+     * @param policy  The offer to negotiate, expanded
+     * @return The JSON response to your contract offer.
+     * @throws IOException If the connection to the partners control plane fails
+     */
+    private JsonNode initiateNegotiation(Partner partner, String assetId, JsonNode policy) throws IOException {
+        DspaceVersionParams dspaceVersionParams = getPartnerDspaceVersionParams(partner.getBpnl(), partner.getEdcUrl());
+        return initiateNegotiation(assetId, policy, dspaceVersionParams);
+    }
+
+    /**
+     * The usage purposes we accept in a contract offer for our own submodel and api assets.
+     */
+    private List<String> purisAcceptedPurposes() {
+        return List.of(variablesService.getPurisPurposeWithVersion());
+    }
+
+    /**
+     * The usage purposes we accept in a contract offer for a partner's DTR.
+     */
+    private List<String> dtrAcceptedPurposes() {
+        return List.of(JsonLdConstants.DTR_USAGE_PURPOSE, variablesService.getPurisPurposeWithVersion());
     }
 
     /**
@@ -999,18 +1069,25 @@ public class EdcAdapterService {
             if (catalogArray.isObject()) {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
-            if (catalogArray.size() > 1) {
-                log.warn("Ambiguous catalog entries found! Will take the first\n" + catalogArray.toPrettyString());
-                // potential constraint check in future
+            JsonNode targetCatalogEntry = null;
+            JsonNode targetPolicy = null;
+            for (JsonNode entry : catalogArray) {
+                Optional<JsonNode> acceptablePolicy = findAcceptablePolicy(entry, partner.getPolicyProfileVersion(), dtrAcceptedPurposes());
+                if (acceptablePolicy.isPresent()) {
+                    targetCatalogEntry = entry;
+                    targetPolicy = acceptablePolicy.get();
+                    break;
+                }
             }
-            JsonNode targetCatalogEntry = catalogArray.get(0);
+
             if (targetCatalogEntry == null) {
                 log.error("Could not find asset for DigitalTwinRegistry at partner " + partner.getBpnl() + "'s catalog");
+                log.warn("Could not find DTR asset with acceptable policy");
                 return false;
             }
             String assetId = targetCatalogEntry.get("@id").asText();
             log.debug("Found contract offer for asset {}", assetId);
-            JsonNode negotiationResponse = initiateNegotiation(partner, targetCatalogEntry);
+            JsonNode negotiationResponse = initiateNegotiation(partner, assetId, targetPolicy);
             String negotiationId = negotiationResponse.get("@id").asText();
             log.info("Started negotiation with id {}", negotiationId);
             // Await confirmation of contract and contractId
@@ -1358,24 +1435,27 @@ public class EdcAdapterService {
             if (catalogArray.isObject()) {
                 catalogArray = objectMapper.createArrayNode().add(catalogArray);
             }
+
             JsonNode targetCatalogEntry = null;
+            JsonNode targetPolicy = null;
             if (!catalogArray.isEmpty()) {
                 if (catalogArray.size() > 1) {
                     log.debug("Muliple contract offers found! Will take the first with supported policy \n" + catalogArray.toPrettyString());
                 }
 
                 for (JsonNode entry : catalogArray) {
-                    if (testContractPolicyConstraints(entry, partner.getPolicyProfileVersion())) {
+                    Optional<JsonNode> acceptablePolicy = findAcceptablePolicy(entry, partner.getPolicyProfileVersion(), purisAcceptedPurposes());
+                    if (acceptablePolicy.isPresent()) {
                         targetCatalogEntry = entry;
+                        targetPolicy = acceptablePolicy.get();
                         break;
-                    } else {
-                        log.info(
-                            "Contract offer did not match Framework Policy {} and Contract Policy {}:\n{}",
-                            variablesService.getPurisFrameworkAgreementWithVersion(),
-                            variablesService.getPurisPurposeWithVersion(),
-                            entry.toPrettyString()
-                        );
                     }
+                    log.info(
+                        "Contract offer did not match Framework Policy {} and Contract Policy {}:\n{}",
+                        variablesService.getPurisFrameworkAgreementWithVersion(),
+                        variablesService.getPurisPurposeWithVersion(),
+                        entry.toPrettyString()
+                    );
                 }
             }
 
@@ -1384,7 +1464,8 @@ public class EdcAdapterService {
                 log.warn("CATALOG CONTENT \n" + catalogArray.toPrettyString());
                 return false;
             }
-            JsonNode negotiationResponse = initiateNegotiation(targetCatalogEntry, dspaceVersionParams);
+            String catalogAssetId = targetCatalogEntry.get("@id").asText();
+            JsonNode negotiationResponse = initiateNegotiation(catalogAssetId, targetPolicy, dspaceVersionParams);
             String negotiationId = negotiationResponse.get("@id").asText();
             // Await confirmation of contract and contractId
             String contractId = null;
@@ -1424,12 +1505,13 @@ public class EdcAdapterService {
      */
     public String getCxIdFromPartTypeInformation(MaterialPartnerRelation mpr) {
         String cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL);
-        if (cxId != null) {
-            return cxId;
+        if (cxId != null) return cxId;
+        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0", mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
+        cxId = fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
+        if (cxId == null) {
+            log.error("Could not obtain partner CX id for {} from {} via either PartTypeInformation version", mpr.getMaterial().getOwnMaterialNumber(), mpr.getPartner().getBpnl());
         }
-        log.info("PartTypeInformation 2.0.0 unavailable at partner {} for {}, falling back to 1.0.0",
-            mpr.getPartner().getBpnl(), mpr.getMaterial().getOwnMaterialNumber());
-        return fetchCxId(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL);
+        return cxId;
     }
 
     private String fetchCxId(MaterialPartnerRelation mpr, AssetType type) {
@@ -1452,100 +1534,124 @@ public class EdcAdapterService {
     }
 
     /**
-     * Helper method to check whether you and the contract offer from the other party have the
-     * same framework agreement policy. The given catalogEntry must be expanded!
+     * Returns the first policy of the given (expanded) catalog entry that this application can fulfill.
+     * <p>
+     * A dataset may carry more than one offer if several contract definitions target the same asset;
+    * it is sufficient that one of them matches. The returned node is the one that must be negotiated,
      *
-     * @param catalogEntry   the catalog item containing the desired api asset in expanded form
-     * @param profileVersion the policy profile version to validate against
-     * @return true, if the policy matches yours, otherwise false
+     * @param catalogEntry     the catalog item containing the desired asset in expanded form
+     * @param profileVersion   the policy profile version to validate against
+     * @param acceptedPurposes the usage purposes we accept, any one of which satisfies the offer
+     * @return the matching offer, or empty if none of them can be fulfilled
      */
-    public boolean testContractPolicyConstraints(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion) {
+    public Optional<JsonNode> findAcceptablePolicy(JsonNode catalogEntry, PolicyProfileVersionEnumeration profileVersion, List<String> acceptedPurposes) {
         log.debug("Testing constraints in the following catalogEntry: \n{}", catalogEntry.toPrettyString());
-        var constraint = Optional.ofNullable(catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy"))
-            .filter(policy -> policy.isArray() && policy.size() == 1)
-            .map(policy -> policy.get(0))
-            .map(policy -> policy.get(JsonLdConstants.ODRL_NAMESPACE + "permission"))
+
+        JsonNode hasPolicy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
+        if (hasPolicy == null || hasPolicy.isNull()) {
+            log.debug("Constraint mismatch: no policy found in catalog entry.");
+            return Optional.empty();
+        }
+
+        // For the sake of uniformity we will embed a single object in an array.
+        ArrayNode policies = hasPolicy.isArray() ? (ArrayNode) hasPolicy : objectMapper.createArrayNode().add(hasPolicy);
+
+        for (JsonNode policy : policies) {
+            if (testSinglePolicy(policy, profileVersion, acceptedPurposes)) {
+                log.info("Contract offer constraints can be fulfilled by PURIS FOSS application (passed).");
+                return Optional.of(policy);
+            }
+        }
+
+        log.debug("None of the {} offered policies could be fulfilled.", policies.size());
+        return Optional.empty();
+    }
+
+    /**
+     * Checks whether a single offer from a catalog entry can be fulfilled by this application.
+     * <p>
+     * The given policy node must be in expanded form. A rejection here is not an error, since the
+     * dataset may offer further policies, see {@link #findAcceptablePolicy}.
+     *
+     * @param policy         a single expanded odrl:hasPolicy entry
+     * @param profileVersion the policy profile version to validate against
+     * @param acceptedPurposes the usage purposes we accept, any one of which satisfies the offer
+     * @return true, if the offer matches yours, otherwise false
+     */
+    private boolean testSinglePolicy(JsonNode policy, PolicyProfileVersionEnumeration profileVersion, List<String> acceptedPurposes) {
+        var constraint = Optional.ofNullable(policy.get(JsonLdConstants.ODRL_NAMESPACE + "permission"))
             .filter(permission -> permission.isArray() && permission.size() == 1)
             .map(permission -> permission.get(0))
             .map(permission -> permission.get(JsonLdConstants.ODRL_NAMESPACE + "constraint"))
             .filter(constr -> constr.isArray() && constr.size() == 1)
             .map(constr -> constr.get(0))
             .map(con -> con.get(JsonLdConstants.ODRL_NAMESPACE + "and"));
+
         if (constraint.isEmpty()) {
             log.debug("Constraint mismatch: we expect to have a constraint in permission node.");
             return false;
         }
 
         for (String rule : new String[] {"obligation", "prohibition"}) {
-            var policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy").get(0);
             var ruleNode = policy.get(JsonLdConstants.ODRL_NAMESPACE + rule);
             boolean test = ruleNode == null || (ruleNode.isArray() && ruleNode.isEmpty());
             if (!test) {
-                log.warn("Unexpected {} found, rejecting: {}", rule, catalogEntry.toPrettyString());
+                log.debug("Unexpected {} found, rejecting offer: {}", rule, policy.toPrettyString());
                 return false;
             }
         }
 
-        boolean result = true;
+        if (!constraint.get().isArray()) {
+            log.debug("Constraint mismatch: expected a list of constraints, got: {}", constraint.get());
+            return false;
+        }
 
-        if (constraint.get().isArray() && constraint.get().size() == 2) {
-            Optional<JsonNode> frameworkAgreementConstraint = Optional.empty();
-            Optional<JsonNode> purposeConstraint = Optional.empty();
+        Optional<JsonNode> frameworkAgreementConstraint = Optional.empty();
+        Optional<JsonNode> purposeConstraint = Optional.empty();
 
-            for (JsonNode con : constraint.get()) { // Iterate over array elements and find the nodes
-                JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
-                leftOperandNode = leftOperandNode.get(0);
-                leftOperandNode = leftOperandNode.get("@id");
-                if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
-                    frameworkAgreementConstraint = Optional.of(con);
-                }
-                if (leftOperandNode != null && (profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
-                    purposeConstraint = Optional.of(con);
-                }
+        for (JsonNode con : constraint.get()) {
+            JsonNode leftOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "leftOperand");
+            leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get(0);
+            leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
+            if (leftOperandNode == null) {
+                continue;
             }
-
-            if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
-                log.debug(
-                    "Not all constraints have been found: FrameworkAgreement constraint found: {}, " +
-                        "UsagePurpose constraint found: {}",
-                    frameworkAgreementConstraint.isPresent(),
-                    purposeConstraint.isPresent()
-                );
-                return false;
+            if ((profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement").equals(leftOperandNode.asText())) {
+                frameworkAgreementConstraint = Optional.of(con);
             }
+            if ((profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose").equals(leftOperandNode.asText())) {
+                purposeConstraint = Optional.of(con);
+            }
+        }
 
-            result = result && testSingleConstraint(
-                frameworkAgreementConstraint,
-                profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement",
-                JsonLdConstants.ODRL_NAMESPACE + "eq",
-                variablesService.getPurisFrameworkAgreementWithVersion()
-            );
-
-            result = result && testSingleConstraint(
-                purposeConstraint,
-                profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose",
-                JsonLdConstants.ODRL_NAMESPACE + (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
-                variablesService.getPurisPurposeWithVersion()
-            );
-
-            JsonNode policy = catalogEntry.get(JsonLdConstants.ODRL_NAMESPACE + "hasPolicy");
-            JsonNode prohibition = policy.get(JsonLdConstants.ODRL_NAMESPACE + "prohibition");
-            JsonNode obligation = policy.get(JsonLdConstants.ODRL_NAMESPACE + "obligation");
-            result = result && (prohibition == null || (prohibition.isArray() && prohibition.isEmpty()));
-            result = result && (obligation == null || (obligation.isArray() && obligation.isEmpty()));
-
-        } else {
-            log.info(
-                "2 Constraints (Framework Agreement, Purpose) are expected but got {} constraints.",
-                constraint.get().size()
+        if (frameworkAgreementConstraint.isEmpty() || purposeConstraint.isEmpty()) {
+            log.debug(
+                "Mandatory constraints missing: FrameworkAgreement constraint found: {}, " +
+                    "UsagePurpose constraint found: {}",
+                frameworkAgreementConstraint.isPresent(),
+                purposeConstraint.isPresent()
             );
             return false;
         }
 
+        boolean result = testSingleConstraint(
+            frameworkAgreementConstraint,
+            profileVersion.CX_POLICY_NAMESPACE + "FrameworkAgreement",
+            JsonLdConstants.ODRL_NAMESPACE + "eq",
+            List.of(variablesService.getPurisFrameworkAgreementWithVersion())
+        );
+
+        result = result && testSingleConstraint(
+            purposeConstraint,
+            profileVersion.CX_POLICY_NAMESPACE + "UsagePurpose",
+            JsonLdConstants.ODRL_NAMESPACE + (profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509 ? "isAnyOf" : "eq"),
+            acceptedPurposes
+        );
+
         return result;
     }
 
-    private boolean testSingleConstraint(Optional<JsonNode> constraintToTest, String targetLeftOperand, String targetOperator, String targetRightOperand) {
+    private boolean testSingleConstraint(Optional<JsonNode> constraintToTest, String targetLeftOperand, String targetOperator, List<String> acceptedRightOperands) {
 
         if (constraintToTest.isEmpty()) return false;
 
@@ -1556,7 +1662,7 @@ public class EdcAdapterService {
         leftOperandNode = leftOperandNode == null ? null : leftOperandNode.get("@id");
         if (leftOperandNode == null || !targetLeftOperand.equals(leftOperandNode.asText())) {
             String leftOperand = leftOperandNode == null ? "null" : leftOperandNode.asText();
-            log.info("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
+            log.debug("Left operand '{}' does not equal expected value '{}'.", leftOperand, targetLeftOperand);
             return false;
         }
 
@@ -1572,14 +1678,31 @@ public class EdcAdapterService {
         JsonNode rightOperandNode = con.get(JsonLdConstants.ODRL_NAMESPACE + "rightOperand");
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get(0);
         rightOperandNode = rightOperandNode == null ? null : rightOperandNode.get("@value");
-        if (rightOperandNode == null || !targetRightOperand.equals(rightOperandNode.asText())) {
+        if (rightOperandNode == null || !acceptedRightOperands.contains(rightOperandNode.asText())) {
             String rightOperand = rightOperandNode == null ? "null" : rightOperandNode.asText();
-            log.info("Right operand '{}' does not equal expected value '{}'.", rightOperand, targetRightOperand);
+            log.info("Right operand '{}' is none of the accepted values {}.", rightOperand, acceptedRightOperands);
             return false;
         }
 
-        log.info("Contract Offer constraints can be fulfilled by PURIS FOSS application (passed).");
-
         return true;
+    }
+
+    /**
+     * This method checks if a policy with the given ID already exists in the EDC.
+     * It sends a GET request to the EDC to verify the existence of the policy.
+     * If the request is successful, it returns true, indicating that the policy exists.
+     * If the request fails or an exception occurs, it returns false.
+     * 
+     * NOTE: This method only checks for the existence of the policy and does not validate its contents.
+     * @param policyId  The ID of the policy to check for existence.
+     * @return true if the policy exists, false otherwise.
+     */
+    private boolean isPolicyExisting(String policyId) {
+        try (Response policyExists = sendGetRequest(List.of("v3", "policydefinitions", policyId))) {
+            return policyExists.isSuccessful();
+        } catch(Exception e) {
+            log.error("Failed to check if policy definition already exists", e);
+            return false;
+        }
     }
 }

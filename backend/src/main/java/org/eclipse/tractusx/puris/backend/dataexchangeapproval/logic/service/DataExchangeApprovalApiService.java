@@ -18,6 +18,9 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service;
 
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
@@ -27,6 +30,12 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnD
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.adapter.DataExchangeApprovalSammMapper;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.dto.dataexchangeapprovalsamm.DataExchangeApprovalSamm;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +58,18 @@ public class DataExchangeApprovalApiService {
     private EdcAdapterService edcAdapterService;
     @Autowired
     private DataExchangeApprovalSammMapper sammMapper;
+    @Autowired
+    private OwnDataExchangeApprovalService ownDataExchangeApprovalService;
+    @Autowired
+    private OwnDataExchangeRequestService ownDataExchangeRequestService;
+    @Autowired
+    private ExecutorService executorService;
+    @Autowired
+    private IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
+    @Autowired
+    private IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
+    @Autowired
+    private IrsJobService irsJobService;
 
     public ReportedDataExchangeApproval handleIncomingDataExchangeApproval(String bpnl, DataExchangeApprovalSamm samm) {
         Partner partner = partnerService.findByBpnl(bpnl);
@@ -61,6 +82,13 @@ public class DataExchangeApprovalApiService {
             log.error("Error mapping incoming Approval");
             return null;
         }
+
+        OwnDataExchangeRequest ownRequest = approval.getDataExchangeRequest();
+        if (!partner.getBpnl().equals(ownRequest.getNotification().getPartner().getBpnl())) {
+            log.error("Partner {} is not the recipient of request {}", partner.getBpnl(), ownRequest.getRequestId());
+            return null;
+        }
+
         ReportedDataExchangeApproval existingApproval = null;
         existingApproval = reportedDataExchangeApprovalService.findByApprovalId(approval.getApprovalId());
 
@@ -71,11 +99,29 @@ public class DataExchangeApprovalApiService {
                 log.error("Error updating Approval");
                 return null;
             }
+            finalizeOriginApprovalIfComplete(approval);
+            if (approval.getDataExchangeRequest().getRelatedDataExchangeRequest() != null) {
+                irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
+            } else if (approval.isFinalized()) {
+                irsJobService.createJobsForNotification(approval.getDataExchangeRequest().getNotification());
+            }
             return approval;
         }
         try {
             log.info("Creating new Approval");
-            return reportedDataExchangeApprovalService.create(approval);
+            ReportedDataExchangeApproval created = reportedDataExchangeApprovalService.create(approval);
+            finalizeOriginApprovalIfComplete(created);
+            if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
+                // create root grants for the notification if the approval is for a root request
+                irsChainOpeningRootGrantService.syncGrantsForNotification(created.getDataExchangeRequest().getNotification());
+                if (created.isFinalized()) {
+                    irsJobService.createJobsForNotification(created.getDataExchangeRequest().getNotification());
+                }
+            } else {
+                // add the notification to the affected materials' parent materials' grants if the approval is for a related request
+                irsChainOpeningGrantService.onRelatedApprovalReceived(created);
+            }
+            return created;
         } catch (KeyAlreadyExistsException e) {
             log.error("Approval already exists", e);
             return null;
@@ -89,10 +135,45 @@ public class DataExchangeApprovalApiService {
         var body = createDataExchangeApprovalBody(approval);
         try {
             edcAdapterService.doDataExchangeApprovalPostRequest(partner, body);
-            log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl()); 
+            irsChainOpeningGrantService.createGrantsForApproval(approval);
+            log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl());
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeApproval for partner " + partner.getBpnl(), e);
         }
+    }
+
+    private void finalizeOriginApprovalIfComplete(ReportedDataExchangeApproval incoming) {
+        ReportedDataExchangeRequest origin = incoming.getDataExchangeRequest().getRelatedDataExchangeRequest();
+        if (origin == null) {
+            return;
+        }
+        OwnDataExchangeApproval originApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(origin.getUuid());
+        if (originApproval == null) {
+            log.warn("No own approval found for origin request {}", origin.getRequestId());
+            return;
+        }
+        if (originApproval.isFinalized()) {
+            return;
+        }
+
+        List<OwnDataExchangeRequest> forwardedRequests = ownDataExchangeRequestService.findByRelatedDataExchangeRequest(origin);
+        if (forwardedRequests.isEmpty()) {
+            log.warn("Origin request {} has an unfinalized approval but no forwarded requests", origin.getRequestId());
+            return;
+        }
+
+        boolean allApproved = forwardedRequests.stream().allMatch(r -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(r.getUuid()) != null);
+        if (!allApproved) {
+            return;
+        }
+
+        originApproval.setFinalized(true);
+        if (ownDataExchangeApprovalService.update(originApproval) == null) {
+            log.error("Failed to finalize approval {}", originApproval.getApprovalId());
+            return;
+        }
+        Partner partner = origin.getNotification().getPartner();
+        executorService.submit(() -> sendDataExchangeApproval(originApproval, partner));
     }
 
     private JsonNode createDataExchangeApprovalBody(OwnDataExchangeApproval approval) {

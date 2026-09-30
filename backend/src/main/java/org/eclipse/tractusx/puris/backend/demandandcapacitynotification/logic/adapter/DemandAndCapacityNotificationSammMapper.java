@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,9 +77,9 @@ public class DemandAndCapacityNotificationSammMapper {
         List<String> affectedSitesBpnsRecipient = notification.getAffectedSitesRecipient().stream().map(site -> site.getBpns()).collect(Collectors.toList());
         var builder = DemandAndCapacityNotificationSamm.builder();
         var samm = builder
-                .notificationId(notification.getNotificationId().toString())
-                .relatedNotificationIds(notification.getRelatedNotificationIds() != null ? notification.getRelatedNotificationIds().stream().map(uuid -> uuid.toString()).toList() : null)
-                .sourceDisruptionId(notification.getSourceDisruptionId() != null ? notification.getSourceDisruptionId().toString() : null)
+                .notificationId(notification.getNotificationId())
+                .relatedNotificationIds(notification.getRelatedNotificationIds())
+                .sourceDisruptionId(notification.getSourceDisruptionId())
                 .text(notification.getText())
                 .resolvingMeasureDescription(notification.getResolvingMeasureDescription())
                 .leadingRootCause(notification.getLeadingRootCause())
@@ -139,8 +138,7 @@ public class DemandAndCapacityNotificationSammMapper {
             .collect(Collectors.toList());
         var notification = builder
                 .notificationId(samm.getNotificationId())
-                .relatedNotificationIds(samm.getRelatedNotificationIds() != null ? samm.getRelatedNotificationIds() : null)
-                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? samm.getSourceDisruptionId() : null)
+                .sourceDisruptionId(samm.getSourceDisruptionId())
                 .text(samm.getText())
                 .resolvingMeasureDescription(samm.getResolvingMeasureDescription())
                 .leadingRootCause(samm.getLeadingRootCause())

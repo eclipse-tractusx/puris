@@ -33,6 +33,7 @@ import { UserGuideView } from '@views/UserGuideView';
 import { DemandCapacityNotificationView } from '@views/DemandCapacityNotificationView';
 import { MaterialListView } from '@views/MaterialListView';
 import { MaterialDetailView } from '@views/MaterialDetailView';
+import { AggregatedSupplyChainView } from '@views/AggregatedSupplyChainView';
 import { ImportExportView } from '@views/ImportExportView';
 import { MasterDataView } from '@features/master-data/components/MasterDataView';
 import BatchView from '@features/partner-data-update/components/BatchView';
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
                     {
                         path: 'materials/:direction/:materialNumber',
                         element: <MaterialDetailView />,
+                    },
+                    {
+                        path: 'materials/outbound/:materialNumber/supply-chain',
+                        element: <AggregatedSupplyChainView />,
                     }
                 ],
             },

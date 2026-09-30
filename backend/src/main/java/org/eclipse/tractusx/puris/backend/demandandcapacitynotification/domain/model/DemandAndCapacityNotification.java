@@ -54,14 +54,6 @@ public abstract class DemandAndCapacityNotification {
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     protected String notificationId;
 
-    @ElementCollection
-    @CollectionTable(
-        name = "notification_related_notification_ids",
-        joinColumns = @JoinColumn(name = "notification_uuid")
-    )
-    @Column(name = "related_notification_id")
-    protected List<String> relatedNotificationIds;
-
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     protected String sourceDisruptionId;
 

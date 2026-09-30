@@ -35,4 +35,5 @@ public final class JsonLdConstants {
     public final static String TX_AUTH_CONTEXT = "https://w3id.org/tractusx/auth/v1.0.0";
     public final static String DCAT_NAMESPACE = "http://www.w3.org/ns/dcat#";
     public final static String DSPACE_CONTEXT_2025_1 = "https://w3id.org/dspace/2025/1/context.jsonld";
+    public static final String DTR_USAGE_PURPOSE = "cx.core.digitalTwinRegistry:1";
 }
