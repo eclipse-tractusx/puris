@@ -28,5 +28,5 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
 public interface DemandAndCapacityNotificationRepository<TEntity extends DemandAndCapacityNotification> extends JpaRepository<TEntity, UUID> {
-    Optional<TEntity> findByPartnerBpnlAndSourceDisruptionId(String bpnl, UUID sourceDisruptionId);
+    Optional<TEntity> findByPartnerBpnlAndSourceDisruptionId(String bpnl, String sourceDisruptionId);
 }

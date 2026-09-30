@@ -53,6 +53,7 @@ public class ItemStockAnonymizedSammMapperTest {
     final static String CUSTOMER_MAT_NUMBER = "MNR-7307-AU340474.002";
     final static String SUPPLIER_MAT_NUMBER = "MNR-8101-ID146955.001";
     final static String CX_MAT_NUMBER = UUID.randomUUID().toString();
+    final static String CX_MAT_NUMBER_URN = "urn:uuid:" + UUID.randomUUID().toString();
     final static String OWN_BPNS = "BPNS4444444444SS";
     final static String OWN_BPNA = "BPNA4444444444AA";
     final static String SUPPLIER_BPNL = "BPNL1111111111LE";
@@ -104,7 +105,17 @@ public class ItemStockAnonymizedSammMapperTest {
 
     @Test
     @Order(1)
-    void map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm() {
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSammWithCxMatNumber() {
+        map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm(CX_MAT_NUMBER);
+    }
+    
+    @Test
+    @Order(2)
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSammWithCxMatNumberUrn() {
+        map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm(CX_MAT_NUMBER_URN);
+    }
+    
+    void map_WhenSingleMaterialItemStock_ReturnsItemStockAnonymizedSamm(String materialNumber) {
         // Given
         Material semiconductorMaterial = Material.builder()
             .ownMaterialNumber(CUSTOMER_MAT_NUMBER)
@@ -119,7 +130,7 @@ public class ItemStockAnonymizedSammMapperTest {
         mpr.setPartnerBuysMaterial(false);
         mpr.setPartnerSuppliesMaterial(true);
         mpr.setPartnerMaterialNumber(SUPPLIER_MAT_NUMBER);
-        mpr.setPartnerCXNumber(CX_MAT_NUMBER);
+        mpr.setPartnerCXNumber(materialNumber);
 
         MaterialItemStock materialItemStock = MaterialItemStock.builder()
             .partner(supplierPartner)

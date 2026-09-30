@@ -19,6 +19,7 @@
  */
 package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.adapter;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.DemandAndCapacityNotificationSamm;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,9 +77,9 @@ public class DemandAndCapacityNotificationSammMapper {
         List<String> affectedSitesBpnsRecipient = notification.getAffectedSitesRecipient().stream().map(site -> site.getBpns()).collect(Collectors.toList());
         var builder = DemandAndCapacityNotificationSamm.builder();
         var samm = builder
-                .notificationId(notification.getNotificationId().toString())
-                .relatedNotificationIds(notification.getRelatedNotificationIds() != null ? notification.getRelatedNotificationIds().stream().map(uuid -> uuid.toString()).toList() : null)
-                .sourceDisruptionId(notification.getSourceDisruptionId() != null ? notification.getSourceDisruptionId().toString() : null)
+                .notificationId(notification.getNotificationId())
+                .relatedNotificationIds(notification.getRelatedNotificationIds())
+                .sourceDisruptionId(notification.getSourceDisruptionId())
                 .text(notification.getText())
                 .resolvingMeasureDescription(notification.getResolvingMeasureDescription())
                 .leadingRootCause(notification.getLeadingRootCause())
@@ -126,6 +126,9 @@ public class DemandAndCapacityNotificationSammMapper {
             }
             default -> throw new IllegalStateException("Unexpected value: " + samm.getEffect());
         }
+        if (samm.getRelatedNotificationIds() != null && samm.getRelatedNotificationIds().stream().anyMatch(id -> !PatternStore.URN_OR_UUID_PATTERN.matcher(id).matches())) {
+            throw new IllegalArgumentException("Related Notfications must be URN or UUID format");
+        }
 
         var affectedSitesSender = partner.getSites().stream()
             .filter(site -> samm.getAffectedSitesSender().contains(site.getBpns()))
@@ -134,8 +137,8 @@ public class DemandAndCapacityNotificationSammMapper {
             .filter(site -> samm.getAffectedSitesRecipient().contains(site.getBpns()))
             .collect(Collectors.toList());
         var notification = builder
-                .notificationId(UUID.fromString(samm.getNotificationId()))
-                .sourceDisruptionId(samm.getSourceDisruptionId() != null ? UUID.fromString(samm.getSourceDisruptionId()) : null)
+                .notificationId(samm.getNotificationId())
+                .sourceDisruptionId(samm.getSourceDisruptionId())
                 .text(samm.getText())
                 .resolvingMeasureDescription(samm.getResolvingMeasureDescription())
                 .leadingRootCause(samm.getLeadingRootCause())

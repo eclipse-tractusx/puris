@@ -47,7 +47,7 @@ public class DemandAndCapacityNotificationSamm {
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String notificationId;
-    private List<@Pattern(regexp = PatternStore.URN_OR_UUID_STRING) String> relatedNotificationIds;
+    private List<String> relatedNotificationIds;
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String sourceDisruptionId;
 

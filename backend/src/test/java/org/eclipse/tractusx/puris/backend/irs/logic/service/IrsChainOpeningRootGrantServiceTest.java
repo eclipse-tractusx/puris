@@ -72,7 +72,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
     private static final String GLOBAL_ASSET_ID = "urn:uuid:6c311d29-5753-46d4-b32c-19b918ea93b0";
     private static final String ALLOWED_BPNL = "BPNLXXSUPPLIERXX";
-    private static final UUID SOURCE_DISRUPTION_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final String SOURCE_DISRUPTION_ID = "11111111-1111-1111-1111-111111111111";
     private static final Instant VALID_FROM = Instant.now().minusSeconds(7 * 24 * 3600L);
     private static final Instant VALID_TO = Instant.now().plusSeconds(7 * 24 * 3600L);
     private static final String PARENT_MATERIAL_NUMBER = "MNR-001";
@@ -121,7 +121,7 @@ class IrsChainOpeningRootGrantServiceTest {
     private IrsChainOpeningRootGrant grant(Set<String> allowedBpnls) {
         return IrsChainOpeningRootGrant.builder()
             .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
+            .sourceDisruptionId(SOURCE_DISRUPTION_ID)
             .requesterBpn(OWN_BPNL)
             .reportedNotifications(notificationsFor(allowedBpnls))
             .validFrom(VALID_FROM)
@@ -240,7 +240,7 @@ class IrsChainOpeningRootGrantServiceTest {
     void createGrant_WhenEnabled_BuildsBodyAndSends() {
         IrsChainOpeningRootGrant grant = grant(Set.of());
         ObjectMapper mapper = new ObjectMapper();
-        var body = mapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        var body = mapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID);
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -263,7 +263,7 @@ class IrsChainOpeningRootGrantServiceTest {
     void createGrant_WhenGrantAlreadySynced_SendsPut() {
         IrsChainOpeningRootGrant grant = grant(Set.of());
         grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
-        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID);
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -284,7 +284,7 @@ class IrsChainOpeningRootGrantServiceTest {
     void createGrant_WhenGrantOutOfSync_SendsPut() {
         IrsChainOpeningRootGrant grant = grant(Set.of());
         grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID);
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -305,7 +305,7 @@ class IrsChainOpeningRootGrantServiceTest {
     void createGrant_WhenGrantWasDeletedAtIrs_SendsPostToRecreate() {
         IrsChainOpeningRootGrant grant = grant(Set.of());
         grant.setSyncStatus(IrsGrantSyncStatusEnumeration.DELETED);
-        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID);
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -349,7 +349,7 @@ class IrsChainOpeningRootGrantServiceTest {
     @Test
     void createGrant_WhenMatchingActiveReportedNotification_Succeeds() {
         IrsChainOpeningRootGrant grant = grant(Set.of());
-        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID);
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -385,7 +385,7 @@ class IrsChainOpeningRootGrantServiceTest {
     @Test
     void createGrant_WhenEveryAllowedBpnlHasValidRelatedReportedNotification_Succeeds() {
         IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL));
-        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID);
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -428,7 +428,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
         when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
         when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID)).thenReturn(Optional.empty());
         when(irsRequestService.isEnabled()).thenReturn(false);
 
         chainOpeningGrantService.syncGrantsForNotification(notification);
@@ -439,7 +439,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
         assertThat(saved.getRequesterBpn()).isEqualTo(OWN_BPNL);
         assertThat(saved.getGlobalAssetId()).isEqualTo(GLOBAL_ASSET_ID);
-        assertThat(saved.getSourceDisruptionId()).isEqualTo(SOURCE_DISRUPTION_ID.toString());
+        assertThat(saved.getSourceDisruptionId()).isEqualTo(SOURCE_DISRUPTION_ID);
         assertThat(saved.getAllowedBpnls()).containsExactly(ALLOWED_BPNL);
         assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
     }
@@ -451,7 +451,7 @@ class IrsChainOpeningRootGrantServiceTest {
         IrsChainOpeningRootGrant existing = IrsChainOpeningRootGrant.builder()
             .requesterBpn(OWN_BPNL)
             .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
+            .sourceDisruptionId(SOURCE_DISRUPTION_ID)
             .reportedNotifications(notificationsFor(new HashSet<>(Set.of("BPNLXXOTHERSUPPLIER"))))
             .validFrom(VALID_FROM)
             .validTo(VALID_TO)
@@ -462,7 +462,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
         when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
         when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(existing));
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID)).thenReturn(Optional.of(existing));
         when(irsRequestService.isEnabled()).thenReturn(false);
 
         chainOpeningGrantService.syncGrantsForNotification(notification);
@@ -483,7 +483,7 @@ class IrsChainOpeningRootGrantServiceTest {
         when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
         when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
         when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID)).thenReturn(Optional.empty());
         // IRS enabled, but eligibility fails (globalAssetId does not resolve to a material during the push),
         // simulating an IRS/eligibility failure that must not propagate out of syncGrantsForNotification.
         when(irsRequestService.isEnabled()).thenReturn(true);
@@ -556,7 +556,7 @@ class IrsChainOpeningRootGrantServiceTest {
         IrsChainOpeningRootGrant grant = IrsChainOpeningRootGrant.builder()
             .requesterBpn(OWN_BPNL)
             .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
+            .sourceDisruptionId(SOURCE_DISRUPTION_ID)
             .reportedNotifications(new HashSet<>(Set.of(bareNotificationCopy(notificationUuid))))
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .build();
@@ -589,7 +589,7 @@ class IrsChainOpeningRootGrantServiceTest {
         IrsChainOpeningRootGrant grant = IrsChainOpeningRootGrant.builder()
             .requesterBpn(OWN_BPNL)
             .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
+            .sourceDisruptionId(SOURCE_DISRUPTION_ID)
             .reportedNotifications(notifications)
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .build();
@@ -625,15 +625,15 @@ class IrsChainOpeningRootGrantServiceTest {
         IrsChainOpeningRootGrant oldParentGrant = IrsChainOpeningRootGrant.builder()
             .requesterBpn(OWN_BPNL)
             .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
+            .sourceDisruptionId(SOURCE_DISRUPTION_ID)
             .reportedNotifications(oldGrantNotifications)
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .build();
 
         when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(oldParentGrant));
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID)).thenReturn(Optional.of(oldParentGrant));
         when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, OTHER_GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+            OWN_BPNL, OTHER_GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID)).thenReturn(Optional.empty());
         when(irsRequestService.isEnabled()).thenReturn(false);
 
         chainOpeningGrantService.onReportedNotificationUpdated(previous, updated);

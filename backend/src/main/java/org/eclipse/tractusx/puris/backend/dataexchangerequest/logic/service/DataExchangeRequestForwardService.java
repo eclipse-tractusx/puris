@@ -52,7 +52,7 @@ public class DataExchangeRequestForwardService {
      */
     public List<ForwardTarget> resolveForwardTargets(ReportedDataExchangeRequest origin) {
         OwnDemandAndCapacityNotification originNotification = origin.getNotification();
-        List<UUID> relatedIds = originNotification.getRelatedNotificationIds();
+        List<String> relatedIds = originNotification.getRelatedNotificationIds();
         if (relatedIds == null || relatedIds.isEmpty()) {
             return List.of();
         }

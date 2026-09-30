@@ -369,7 +369,7 @@ public class IrsChainOpeningRootGrantService {
 
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
-		UUID sourceDisruptionId = UUID.fromString(grant.getSourceDisruptionId());
+		String sourceDisruptionId = grant.getSourceDisruptionId();
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications = reportedNotificationRepository
 			.findAllBySourceDisruptionId(sourceDisruptionId).stream()
 			.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))

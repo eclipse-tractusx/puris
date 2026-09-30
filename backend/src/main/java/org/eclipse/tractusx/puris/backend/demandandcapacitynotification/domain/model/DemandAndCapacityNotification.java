@@ -51,9 +51,11 @@ public abstract class DemandAndCapacityNotification {
     @Id
     @GeneratedValue
     protected UUID uuid;
-    protected UUID notificationId;
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    protected String notificationId;
 
-    protected UUID sourceDisruptionId;
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    protected String sourceDisruptionId;
 
     @ManyToOne()
     @JoinColumn(name = "partner_uuid")

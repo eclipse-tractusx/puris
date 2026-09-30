@@ -61,7 +61,7 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
         return repository.findAll().stream().filter(notification -> notification.getPartner().getBpnl().equals(bpnl)).toList();
     }
 
-    public List<OwnDemandAndCapacityNotification> findBySourceDisruptionIdAndPartnerBpnl(UUID sourceDisruptionId, String bpnl) {
+    public List<OwnDemandAndCapacityNotification> findBySourceDisruptionIdAndPartnerBpnl(String sourceDisruptionId, String bpnl) {
         return repository.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, bpnl);
     }
 

@@ -23,7 +23,6 @@ package org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.s
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.Objects;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +68,7 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
                 .toList();
     }
 
-    public List<ReportedDemandAndCapacityNotification> findByNotificationIdIn(Collection<UUID> ids) {
+    public List<ReportedDemandAndCapacityNotification> findByNotificationIdIn(Collection<String> ids) {
         return repository.findByNotificationIdIn(ids);
     }
 

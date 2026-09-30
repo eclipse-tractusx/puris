@@ -49,7 +49,7 @@ public class DataExchangeRequestSamm {
 
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
-    private UUID sourceDisruptionId;
+    private String sourceDisruptionId;
 
     @NotNull
     private CriticalityEnumeration criticality;
@@ -72,7 +72,7 @@ public class DataExchangeRequestSamm {
     @JsonCreator
     public DataExchangeRequestSamm(
             @JsonProperty(value = "requestId") String requestId,
-            @JsonProperty(value = "sourceDisruptionId") UUID sourceDisruptionId,
+            @JsonProperty(value = "sourceDisruptionId") String sourceDisruptionId,
             @JsonProperty(value = "criticality") CriticalityEnumeration criticality,
             @JsonProperty(value = "desiredStartDateTime") Date desiredStartDateTime,
             @JsonProperty(value = "desiredEndDateTime") Date desiredEndDateTime,

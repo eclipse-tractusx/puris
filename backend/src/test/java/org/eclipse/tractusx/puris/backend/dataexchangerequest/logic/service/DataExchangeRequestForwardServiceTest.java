@@ -138,9 +138,9 @@ public class DataExchangeRequestForwardServiceTest {
  
     @Test
     void skipsNotificationBelongingToRequestingPartner() {
-        UUID loopBack = UUID.randomUUID();
-        UUID genuine = UUID.randomUUID();
-        List<UUID> relatedIds = List.of(loopBack, genuine);
+        String loopBack = UUID.randomUUID().toString();
+        String genuine = UUID.randomUUID().toString();
+        List<String> relatedIds = List.of(loopBack, genuine);
  
         ReportedDataExchangeRequest origin = originRequest(relatedIds, customerPartner, dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00"));
         ReportedDemandAndCapacityNotification loopBackNotification = reportedNotification(loopBack, customerPartner, dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00"));
@@ -156,8 +156,8 @@ public class DataExchangeRequestForwardServiceTest {
  
     @Test
     void datesDontFitInsideTargetNotificationWindow() {
-        UUID relatedId = UUID.randomUUID();
-        List<UUID> relatedIds = List.of(relatedId);
+        String relatedId = UUID.randomUUID().toString();
+        List<String> relatedIds = List.of(relatedId);
  
         ReportedDataExchangeRequest origin = originRequest(relatedIds, customerPartner, dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00"));
         ReportedDemandAndCapacityNotification target = reportedNotification(relatedId, supplierPartner, dateFromString("01-03-2026 00:00:00"), dateFromString("30-06-2026 00:00:00"));
@@ -173,8 +173,8 @@ public class DataExchangeRequestForwardServiceTest {
  
     @Test
     void datesFitInsideTargetNotificationWindow() {
-        UUID relatedId = UUID.randomUUID();
-        List<UUID> relatedIds = List.of(relatedId);
+        String relatedId = UUID.randomUUID().toString();
+        List<String> relatedIds = List.of(relatedId);
  
         ReportedDataExchangeRequest origin = originRequest(relatedIds, customerPartner, dateFromString("01-04-2026 00:00:00"), dateFromString("01-05-2026 00:00:00"));
         ReportedDemandAndCapacityNotification target = reportedNotification(relatedId, supplierPartner, dateFromString("01-03-2026 00:00:00"), dateFromString("30-06-2026 00:00:00"));
@@ -190,8 +190,8 @@ public class DataExchangeRequestForwardServiceTest {
  
     @Test
     void createsForwardedRequests() {
-        ReportedDataExchangeRequest origin = originRequest(List.of(UUID.randomUUID()), customerPartner, dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00"));
-        ReportedDemandAndCapacityNotification targetNotification = reportedNotification(UUID.randomUUID(), supplierPartner, dateFromString("01-03-2026 00:00:00"), dateFromString("30-06-2026 00:00:00"));
+        ReportedDataExchangeRequest origin = originRequest(List.of(UUID.randomUUID().toString()), customerPartner, dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00"));
+        ReportedDemandAndCapacityNotification targetNotification = reportedNotification(UUID.randomUUID().toString(), supplierPartner, dateFromString("01-03-2026 00:00:00"), dateFromString("30-06-2026 00:00:00"));
  
         DataExchangeRequestForwardService.ForwardTarget target = new DataExchangeRequestForwardService.ForwardTarget(targetNotification, dateFromString("01-03-2026 00:00:00"), dateFromString("30-06-2026 00:00:00"));
  
@@ -228,7 +228,7 @@ public class DataExchangeRequestForwardServiceTest {
         verify(ownDataExchangeRequestService, times(3)).create(any());
     }
  
-    static ReportedDemandAndCapacityNotification reportedNotification(UUID notificationId, Partner partner, Date startOfEffect, Date expectedEndOfEffect) {
+    static ReportedDemandAndCapacityNotification reportedNotification(String notificationId, Partner partner, Date startOfEffect, Date expectedEndOfEffect) {
         return ReportedDemandAndCapacityNotification.builder()
             .uuid(UUID.randomUUID())
             .notificationId(notificationId)
@@ -240,16 +240,16 @@ public class DataExchangeRequestForwardServiceTest {
  
     static DataExchangeRequestForwardService.ForwardTarget forwardTarget(Partner partner) {
         return new DataExchangeRequestForwardService.ForwardTarget(
-            reportedNotification(UUID.randomUUID(), partner,
+            reportedNotification(UUID.randomUUID().toString(), partner,
             dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00")),
             dateFromString("01-01-2026 00:00:00"),
             dateFromString("31-12-2026 00:00:00"));
     }
 
-    static ReportedDataExchangeRequest originRequest(List<UUID> relatedNotificationIds, Partner requester, Date desiredStart, Date desiredEnd) {
+    static ReportedDataExchangeRequest originRequest(List<String> relatedNotificationIds, Partner requester, Date desiredStart, Date desiredEnd) {
         OwnDemandAndCapacityNotification ownNotification = OwnDemandAndCapacityNotification.builder()
             .uuid(UUID.randomUUID())
-            .notificationId(UUID.randomUUID())
+            .notificationId(UUID.randomUUID().toString())
             .relatedNotificationIds(relatedNotificationIds)
             .partner(requester)
             .startDateOfEffect(dateFromString("01-01-2026 00:00:00"))

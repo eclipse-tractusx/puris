@@ -42,11 +42,14 @@ import lombok.ToString;
 @ToString
 public class DemandAndCapacityNotificationDto implements Serializable {
     private UUID uuid;
-    private UUID notificationId;
 
-    private List<UUID> relatedNotificationIds;
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    private String notificationId;
 
-    private UUID sourceDisruptionId;
+    private List<@Pattern(regexp = PatternStore.URN_OR_UUID_STRING) String> relatedNotificationIds;
+
+    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    private String sourceDisruptionId;
 
     @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;

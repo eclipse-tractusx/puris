@@ -431,8 +431,8 @@ public class DataExchangeApprovalApiServiceTest {
     static ReportedDataExchangeRequest originRequest() {
         OwnDemandAndCapacityNotification ownNotification = OwnDemandAndCapacityNotification.builder()
             .uuid(UUID.randomUUID())
-            .notificationId(UUID.randomUUID())
-            .relatedNotificationIds(new ArrayList<>(List.of(UUID.randomUUID())))
+            .notificationId(UUID.randomUUID().toString())
+            .relatedNotificationIds(new ArrayList<>(List.of(UUID.randomUUID().toString())))
             .partner(customerPartner)
             .startDateOfEffect(dateFromString("01-01-2026 00:00:00"))
             .expectedEndDateOfEffect(dateFromString("31-12-2026 00:00:00"))
@@ -454,7 +454,7 @@ public class DataExchangeApprovalApiServiceTest {
         ReportedDemandAndCapacityNotification supplierNotification =
             ReportedDemandAndCapacityNotification.builder()
                 .uuid(UUID.randomUUID())
-                .notificationId(UUID.randomUUID())
+                .notificationId(UUID.randomUUID().toString())
                 .partner(supplier)
                 .startDateOfEffect(dateFromString("01-01-2026 00:00:00"))
                 .expectedEndDateOfEffect(dateFromString("31-12-2026 00:00:00"))

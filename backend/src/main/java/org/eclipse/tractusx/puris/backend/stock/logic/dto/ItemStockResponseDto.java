@@ -55,9 +55,11 @@ public class ItemStockResponseDto {
     @ToString
     public static class HeaderDto {
         @NotNull
-        private UUID messageId;
+        @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+        private String messageId;
         @NotNull
-        private UUID relatedMessageId;
+        @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+        private String relatedMessageId;
         @NotNull
         @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
         private String context;

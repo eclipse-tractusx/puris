@@ -364,7 +364,7 @@ public class IrsChainOpeningPartnerGrantService {
 	 */
 	private void assertGrantEligible(IrsChainOpeningPartnerGrant grant) {
 		Date now = new Date();
-		UUID sourceDisruptionId = UUID.fromString(grant.getSourceDisruptionId());
+		String sourceDisruptionId = grant.getSourceDisruptionId();
 
 		OwnDemandAndCapacityNotification matchingNotification = ownNotificationRepository
 			.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, grant.getRequesterBpn()).stream()
