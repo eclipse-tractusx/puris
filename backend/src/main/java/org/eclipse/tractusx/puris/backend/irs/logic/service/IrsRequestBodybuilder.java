@@ -67,7 +67,7 @@ public class IrsRequestBodybuilder {
         ObjectNode grantNode = objectMapper.valueToTree(grant);
         ArrayNode allowedBpnlsNode = objectMapper.createArrayNode();
         grantNode.set("allowedBpnlSet", allowedBpnlsNode);
-        grant.getAllowedBpnls().forEach(allowedBpnlsNode::add);
+        grant.getAllowedBpnlSet().forEach(allowedBpnlsNode::add);
         allowedBpnlsNode.add(variablesService.getOwnBpnl());
         return grantNode;
     }

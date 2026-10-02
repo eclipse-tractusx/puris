@@ -138,6 +138,10 @@ public class IrsChainOpeningPartnerGrantService {
 		return queuedRequest;
 	}
 
+	public List<IrsChainOpeningPartnerGrant> findAll() {
+		return irsChainOpeningPartnerGrantRepository.findAll();
+	}
+
 	/**
 	 * Creates or updates a Chain Opening Grant for the partner, for each material affected by the
 	 * notification behind the given approval. Invoked once we've successfully sent this approval to
@@ -401,6 +405,6 @@ public class IrsChainOpeningPartnerGrantService {
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =
 			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();
 
-		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnlSet(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
 }
