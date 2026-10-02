@@ -861,17 +861,6 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       type: object
-    IrsJobDto:
-      additionalProperties: false
-      properties:
-        jobId:
-          format: uuid
-          maxItems: 50
-          type: string
-        ownMaterialNumber:
-          maxItems: 50
-          type: string
-        requestStatus:
     IrsChainOpeningGrantDto:
       additionalProperties: false
       properties:
@@ -913,6 +902,44 @@ components:
           type: string
         validTo:
           format: date-time
+          maxItems: 50
+          type: string
+      type: object
+    IrsJobDto:
+      additionalProperties: false
+      properties:
+        jobId:
+          format: uuid
+          maxItems: 50
+          type: string
+        ownMaterialNumber:
+          maxItems: 50
+          type: string
+        requestStatus:
+          enum:
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          maxItems: 50
+          type: string
+        sourceDisruptionId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        state:
+          enum:
+          - UNSAVED
+          - INITIAL
+          - RUNNING
+          - TRANSFERS_FINISHED
+          - COMPLETED
+          - CANCELED
+          - ERROR
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
           maxItems: 50
           type: string
       type: object
@@ -973,18 +1000,6 @@ components:
           - CANCELLED
           maxItems: 50
           type: string
-        sourceDisruptionId:
-          maxItems: 50
-          type: string
-        state:
-          enum:
-          - UNSAVED
-          - INITIAL
-          - RUNNING
-          - TRANSFERS_FINISHED
-          - COMPLETED
-          - CANCELED
-          - ERROR
         type:
           enum:
           - POLICY_CREATE
@@ -4023,12 +4038,6 @@ paths:
     get:
       description: Get all IRS jobs.
       operationId: getAllJobs
-  /irs/partner-grants:
-    get:
-      description: Get all partner grants regardless of their sync status (NOT_SYNCED,
-        PENDING, SYNCED, OUT_OF_SYNC, DELETED). Only available if the IRS adapter
-        is enabled.
-      operationId: getAllPartnerGrants
       responses:
         '200':
           content:
@@ -4049,6 +4058,19 @@ paths:
       summary: Get all IRS jobs -- ADMIN ONLY
       tags:
       - irs-job-controller
+  /irs/partner-grants:
+    get:
+      description: Get all partner grants regardless of their sync status (NOT_SYNCED,
+        PENDING, SYNCED, OUT_OF_SYNC, DELETED). Only available if the IRS adapter
+        is enabled.
+      operationId: getAllPartnerGrants
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
                   $ref: '#/components/schemas/IrsChainOpeningGrantDto'
                 maxItems: 50
                 type: array
