@@ -99,7 +99,8 @@ public class MaterialPartnerRelationsControllerTest {
             bpnl,
             partnerMaterialNumber,
             true,
-            true
+            true,
+            null
         );
 
         // when
@@ -139,7 +140,8 @@ public class MaterialPartnerRelationsControllerTest {
             bpnlWrong,
             partnerMaterialNumber,
             true,
-            true
+            true,
+            null
         );
 
         // when

@@ -1,5 +1,5 @@
 meta {
-  name: 06-Get EDR for Transfer
+  name: 06-Get EDR for Transfer (Anon)
   type: http
   seq: 6
   tags: [
@@ -23,11 +23,6 @@ auth:apikey {
   placement: header
 }
 
-script:pre-request {
-  console.log("Waiting 10 seconds to let transfer process start");
-  await new Promise(resolve => setTimeout(resolve, 10000));
-}
-
 script:post-response {
   const jsonData = res.getBody();
   bru.setVar("DTR_EDR_AUTH", jsonData.authorization);
@@ -35,6 +30,7 @@ script:post-response {
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });

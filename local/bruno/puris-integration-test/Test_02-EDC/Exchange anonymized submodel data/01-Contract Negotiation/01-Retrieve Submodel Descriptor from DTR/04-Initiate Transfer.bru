@@ -42,6 +42,7 @@ script:post-response {
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });

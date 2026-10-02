@@ -1,5 +1,5 @@
 meta {
-  name: 05-Get Transfer By ID
+  name: 05-Get Transfer By ID (Share-Enablement)
   type: http
   seq: 7
   tags: [
@@ -46,6 +46,7 @@ body:json {
 }
 
 tests {
+  if (bru.getVar("__retryPending")) return;
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);
   });

@@ -61,7 +61,7 @@ export const canCreateRequest = (notification: DemandCapacityNotification, reque
     notification.reported === true
     && notification.status !== 'resolved'
     && isDemandEffect(notification.effect)
-    && !requests.some((request) => !request.relatedDataExchangeRequests?.length || request.relatedDataExchangeRequests.some((r) => r.notificationId === notification.notificationId));
+    && !requests.some((request) => !request.relatedDataExchangeRequestId);
  
 const getSingleExchangeStatus = (
     notification: DemandCapacityNotification,
@@ -74,7 +74,7 @@ const getSingleExchangeStatus = (
  
     if (notification.status === 'resolved') return status('Terminated', () => onViewApprovalClicked?.(request));
     if (!request.dataExchangeApproval) return direction === 'outgoing'
-        ? status('Request Pending', () => onViewRequestClicked?.(request))
+        ? status(request.relatedDataExchangeRequestId ? 'Forwarded, pending' : 'Request Pending', () => onViewRequestClicked?.(request))
         : status('Approval Pending', () => onCreateApprovalClicked?.(request));
     if (request.desiredEndDateTime && new Date(request.desiredEndDateTime) < new Date()) return status('Expired', () => onViewApprovalClicked?.(request), 'text.disabled');
     if (request.dataExchangeApproval.isFinalized === false) return status('Approved, not finalized', () => onViewApprovalClicked?.(request), 'warning.main');

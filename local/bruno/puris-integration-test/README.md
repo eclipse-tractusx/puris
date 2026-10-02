@@ -265,6 +265,27 @@ This section negotiates access to anonymized submodel assets and retrieves the c
 6. The anonymized submodel payload is retrieved from the endpoint resolved in the DTR phase
 7. Terminate the transfer process after data retrieval and increment the `CURRENT_SUBMODEL_INDEX`. If additional submodels remain, the workflow restarts at step 1 for the next iteration. Otherwise, the index is reset and the loop is completed.
 
+## Retry mechanism for some of the tests
+
+Several tests in this collection depend on one another (e.g. EDC contract negotiations, transfer processes, DTR updates etc.) Instead of having each test wait with a fixed amount of time to ensure the result, we now retry the request itself against its actual response, using a script in `collection.bru`'s `script:post-response`.
+
+After every request in the collection, the script checks if the response shows that the reuqest is "ready". If it is not it waits for 2s and re-runs the same request for the total of 10s, after which it gives up and moves to the next request. 
+
+By default, a response is considered "not ready" only for these HTTP statuses: `404`, `409`, `425`, `503`. Any other status (including `400`) is treated as final.
+
+### Using it in a new request
+
+Any request that might be retried must start its `tests {}` block with:
+
+```js
+tests {
+  if (bru.getVar("__retryPending")) return;
+}
+```
+If there are some cases where the "ready" state depends on the response body please utilize variables `retryUntilField` and `retryUntilValue` in the `script:pre-request` block of your test.
+
+**Note on naming convention of tests**: `bru.setNextRequest()` matches by the request's `meta.name` across the entire collection. If two requests share the same name and either one can be retried, the retry can resolve to the wrong file, or fail to reschedule at all.
+
 ## Preparations
 
 To run integration tests import the collection and the environment file to Bruno.

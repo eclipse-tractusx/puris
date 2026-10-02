@@ -22,7 +22,7 @@ import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { SearchInput } from '@components/ui/SearchInput';
 import { useTitle } from '@contexts/titleProvider';
 import { MaterialList } from '@features/material-list/components/MaterialList';
-import { useMaterials } from '@features/stock-view/hooks/useMaterials';
+import { useMaterials } from '@hooks/useMaterials';
 
 import { MenuItem, Select, Stack } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
