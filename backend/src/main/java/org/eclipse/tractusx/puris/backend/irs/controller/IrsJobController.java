@@ -20,10 +20,10 @@ package org.eclipse.tractusx.puris.backend.irs.controller;
 
 import java.util.List;
 
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.logic.dto.IrsJobDto;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,7 +49,7 @@ public class IrsJobController {
 
     private final IrsJobService irsJobService;
 
-    private final IrsRequestService irsRequestService;
+    private final IrsAdapterConfiguration irsAdapterConfiguration;
 
     private final ModelMapper modelMapper;
 
@@ -78,7 +78,7 @@ public class IrsJobController {
     }
 
     private void assertIrsAdapterEnabled() {
-        if (!irsRequestService.isEnabled()) {
+        if (!irsAdapterConfiguration.isIrsAdapterEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "IRS adapter is disabled.");
         }
     }

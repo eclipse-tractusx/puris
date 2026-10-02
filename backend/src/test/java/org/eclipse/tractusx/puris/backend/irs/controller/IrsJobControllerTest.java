@@ -28,11 +28,11 @@ import org.eclipse.tractusx.puris.backend.common.security.SecurityConfig;
 import org.eclipse.tractusx.puris.backend.common.security.annotation.WithMockApiKey;
 import org.eclipse.tractusx.puris.backend.common.security.logic.ApiKeyAuthenticationProvider;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJobStateEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsJobService;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ public class IrsJobControllerTest {
     private IrsJobService irsJobService;
 
     @MockitoBean
-    private IrsRequestService irsRequestService;
+    private IrsAdapterConfiguration irsAdapterConfiguration;
 
     @Test
     @WithMockApiKey
@@ -73,7 +73,7 @@ public class IrsJobControllerTest {
         material.setOwnMaterialNumber("MAT-123");
         job.setMaterial(material);
 
-        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(true);
         when(irsJobService.findAll()).thenReturn(List.of(job));
 
         mockMvc.perform(get("/irs/jobs"))
@@ -88,7 +88,7 @@ public class IrsJobControllerTest {
     @Test
     @WithMockApiKey
     void getAllJobs_adapterDisabled_returnsForbiddenAndSkipsRepository() throws Exception {
-        when(irsRequestService.isEnabled()).thenReturn(false);
+        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
 
         mockMvc.perform(get("/irs/jobs"))
             .andExpect(status().isForbidden());
@@ -102,7 +102,7 @@ public class IrsJobControllerTest {
             .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(irsJobService);
-        verifyNoInteractions(irsRequestService);
+        verifyNoInteractions(irsAdapterConfiguration);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class IrsJobControllerTest {
             .andExpect(status().isForbidden());
 
         verifyNoInteractions(irsJobService);
-        verifyNoInteractions(irsRequestService);
+        verifyNoInteractions(irsAdapterConfiguration);
     }
 
 }

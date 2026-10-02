@@ -47,6 +47,5 @@ public class IrsJobDto implements Serializable {
     private String ownMaterialNumber;
 
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
-    
     private String sourceDisruptionId;
 }
