@@ -26,11 +26,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -107,18 +106,26 @@ public abstract class IrsChainOpeningGrant {
 
 	public abstract Set<ReportedDemandAndCapacityNotification> getReportedNotifications();
 
+	public abstract Set<OwnDataExchangeRequest> getDataExchangeRequests();
+
 	/**
 	 * The BPNLs allowed to be recursively queried under this grant, derived from the partners
-	 * of {@link #getReportedNotifications()}. This is the wire shape expected by the IRS
-	 * grant-creation request.
+	 * of {@link #getReportedNotifications()} and {@link #getDataExchangeRequests()}. This is the wire shape
+	 * expected by the IRS grant-creation request.
 	 */
 	@JsonIgnore
 	public Set<String> getAllowedBpnls() {
-		return getReportedNotifications().stream()
+		Set<String> allowedBpnls = getReportedNotifications().stream()
 			.map(ReportedDemandAndCapacityNotification::getPartner)
 			.filter(Objects::nonNull)
 			.map(Partner::getBpnl)
 			.collect(Collectors.toCollection(LinkedHashSet::new));
+		getDataExchangeRequests().stream()
+			.map(OwnDataExchangeRequest::getPartner)
+			.filter(Objects::nonNull)
+			.map(Partner::getBpnl)
+			.forEach(allowedBpnls::add);
+		return allowedBpnls;
 	}
 
 	/**

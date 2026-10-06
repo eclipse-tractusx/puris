@@ -306,6 +306,27 @@ components:
     DataExchangeRequestDto:
       additionalProperties: false
       properties:
+        affectedMaterialNumbers:
+          items:
+            maxItems: 50
+            pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+            type: string
+          maxItems: 50
+          type: array
+        affectedSitesBpnsRecipient:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        affectedSitesBpnsSender:
+          items:
+            maxItems: 50
+            pattern: ^BPNS[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
         criticality:
           enum:
           - high
@@ -321,9 +342,32 @@ components:
           format: date-time
           maxItems: 50
           type: string
+        effect:
+          enum:
+          - demand-reduction
+          - demand-increase
+          - capacity-reduction
+          - capacity-increase
+          maxItems: 50
+          type: string
+        leadingRootCause:
+          enum:
+          - strike
+          - natural-disaster
+          - production-incident
+          - pandemic-or-epidemic
+          - logistics-disruption
+          - war
+          - other
+          maxItems: 50
+          type: string
         notificationId:
           format: uuid
           maxItems: 50
+          type: string
+        partnerBpnl:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
           type: string
         relatedDataExchangeRequestId:
           maxItems: 50
@@ -339,6 +383,10 @@ components:
             type: string
           maxItems: 50
           type: array
+        sourceDisruptionId:
+          format: uuid
+          maxItems: 50
+          type: string
         text:
           maxItems: 50
           type: string
@@ -354,7 +402,6 @@ components:
       - criticality
       - desiredEndDateTime
       - desiredStartDateTime
-      - notificationId
       - requestedTypes
       - text
       type: object
@@ -1045,6 +1092,7 @@ components:
           type: boolean
         partnerCXNumber:
           maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         partnerMaterialNumber:
           maxItems: 50

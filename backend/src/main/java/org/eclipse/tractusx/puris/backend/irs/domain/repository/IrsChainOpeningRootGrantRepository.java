@@ -32,4 +32,6 @@ public interface IrsChainOpeningRootGrantRepository extends JpaRepository<IrsCha
 
 	List<IrsChainOpeningRootGrant> findAllByReportedNotifications_Uuid(UUID notificationUuid);
 
+	List<IrsChainOpeningRootGrant> findAllByDataExchangeRequests_Uuid(UUID requestUuid);
+
 }

@@ -25,34 +25,43 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.ReportedDataExchangeRequestRepository;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportedDataExchangeRequestService extends DataExchangeRequestService<ReportedDataExchangeRequest, ReportedDataExchangeRequestRepository> {
 
-    public ReportedDataExchangeRequestService(ReportedDataExchangeRequestRepository repository) {
-        super(repository);
+    public ReportedDataExchangeRequestService(ReportedDataExchangeRequestRepository repository, PartnerService partnerService,
+            MaterialPartnerRelationService mprService) {
+        super(repository, partnerService, mprService);
     }
 
     public final ReportedDataExchangeRequest create(ReportedDataExchangeRequest reportedDataExchangeRequest) {
-        if (reportedDataExchangeRequest == null || !validator.apply(reportedDataExchangeRequest)) {  
-            throw new IllegalArgumentException("Invalid data exchange request");
-        }
-        if (repository.findAll().stream().filter(existing -> existing.equals(reportedDataExchangeRequest)).findFirst().isPresent()) {
-            throw new KeyAlreadyExistsException("Data exchange request already exists");
-        }
-        if (repository.findByRequestId(reportedDataExchangeRequest.getRequestId()).isPresent()) {
-            throw new KeyAlreadyExistsException(String.format("A reported data exchange request for request id %s' already exists", reportedDataExchangeRequest.getRequestId()));
+        if (reportedDataExchangeRequest == null) {
+            throw new IllegalArgumentException("Missing data exchange request.");
         }
         if (reportedDataExchangeRequest.getRequestId() == null) {
             reportedDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
+        }
+        List<String> errors = validateWithDetails(reportedDataExchangeRequest);
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Invalid data exchange request: " + String.join(" ", errors));
+        }
+        if (repository.findByRequestId(reportedDataExchangeRequest.getRequestId()).isPresent()) {
+            throw new KeyAlreadyExistsException(String.format("A reported data exchange request for request id '%s' already exists", reportedDataExchangeRequest.getRequestId()));
         }
         return repository.save(reportedDataExchangeRequest);
     }
 
     public final ReportedDataExchangeRequest update(ReportedDataExchangeRequest reportedDataExchangeRequest) {
-        if (!validator.apply(reportedDataExchangeRequest)) {
-            throw new IllegalArgumentException("Invalid request");
+        if (reportedDataExchangeRequest == null) {
+            throw new IllegalArgumentException("Missing data exchange request.");
+        }
+        List<String> errors = validateWithDetails(reportedDataExchangeRequest);
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Invalid request: " + String.join(" ", errors));
         }
         if (reportedDataExchangeRequest.getUuid() == null || repository.findById(reportedDataExchangeRequest.getUuid()).isEmpty()) {
             return null;
@@ -61,40 +70,17 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
     }
     
     @Override
-    public boolean validate(ReportedDataExchangeRequest dataExchangeRequest) {
-        return validateWithDetails(dataExchangeRequest).isEmpty();
-    }
-
     public List<String> validateWithDetails(ReportedDataExchangeRequest dataExchangeRequest) {
+        if (dataExchangeRequest == null) {
+            return List.of("Missing data exchange request.");
+        }
         List<String> errors = new ArrayList<>();
         errors.addAll(basicValidation(dataExchangeRequest));
-        if (dataExchangeRequest.getNotification() == null) {
-            errors.add("Missing notification.");
-        }
-        errors.addAll(validateDesiredDates(dataExchangeRequest));
-
-        return errors;
-    }
-
-    private List<String> validateDesiredDates(ReportedDataExchangeRequest reportedDataExchangeRequest) {
-        List<String> errors = new ArrayList<>();
-        if (!reportedDataExchangeRequest.getDesiredStartDateTime().before(reportedDataExchangeRequest.getDesiredEndDateTime())) {
-            errors.add("desiredStartDateTime must be before desiredEndDateTime.");
-        }
-        if (reportedDataExchangeRequest.getDesiredStartDateTime().before(reportedDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            errors.add("desiredStartDateTime must not be before notification startDateOfEffect.");
-        }
-        if (reportedDataExchangeRequest.getDesiredEndDateTime().before(reportedDataExchangeRequest.getNotification().getStartDateOfEffect())) {
-            errors.add("desiredEndDateTime must not be before notification startDateOfEffect.");
-        }
-        if (reportedDataExchangeRequest.getNotification().getExpectedEndDateOfEffect() != null) {
-            if (reportedDataExchangeRequest.getDesiredStartDateTime().after(reportedDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                errors.add("desiredStartDateTime must not be after notification expectedEndDateOfEffect.");
-            }
-            if (reportedDataExchangeRequest.getDesiredEndDateTime().after(reportedDataExchangeRequest.getNotification().getExpectedEndDateOfEffect())) {
-                errors.add("desiredEndDateTime must not be after notification expectedEndDateOfEffect.");
-            }
-        }
+        errors.addAll(validateMaterials(dataExchangeRequest));
+        errors.addAll(validateSites(dataExchangeRequest, dataExchangeRequest.getPartner(), partnerService.getOwnPartnerEntity()));
+        OwnDemandAndCapacityNotification notification = dataExchangeRequest.getNotification();
+        errors.addAll(validateDesiredDates(dataExchangeRequest, notification != null ? notification.getStartDateOfEffect() : null,
+            notification != null ? notification.getExpectedEndDateOfEffect() : null));
         return errors;
     }
 }

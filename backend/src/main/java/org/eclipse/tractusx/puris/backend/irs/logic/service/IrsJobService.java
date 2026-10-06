@@ -18,11 +18,16 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
@@ -34,6 +39,7 @@ import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeE
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +65,12 @@ public class IrsJobService {
 	private final IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
 
 	private final MaterialService materialService;
+
+	private final MaterialRelationService materialRelationService;
+
+	private final OwnDataExchangeRequestRepository ownDataExchangeRequestRepository;
+
+	private final ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
 
 	/**
 	 * Persists the given IRS job locally and sends a
@@ -139,6 +151,18 @@ public class IrsJobService {
         createJobsForRootGrants(grants);
     }
 
+    /**
+     * Counterpart of {@link #createJobsForNotification} for an own root request without notification:
+     * creates and sends a new IRS job for every root grant that has the given request among its
+     * dataExchangeRequests.
+     *
+     * @param request the own root request without notification
+     */
+    public void createJobsForRequest(OwnDataExchangeRequest request) {
+        List<IrsChainOpeningRootGrant> grants = irsChainOpeningRootGrantRepository.findAllByDataExchangeRequests_Uuid(request.getUuid());
+        createJobsForRootGrants(grants);
+    }
+
     private void createJobsForRootGrants(List<IrsChainOpeningRootGrant> grants) {
         for (IrsChainOpeningRootGrant grant : grants) {
             Material material = materialService.findByMaterialNumberCx(grant.getGlobalAssetId());
@@ -170,7 +194,9 @@ public class IrsJobService {
 	 * relation.</li>
 	 * <li>At least one child material of those valid relations is affected by a
 	 * currently-active
-	 * reported demand and capacity notification.</li>
+	 * reported demand and capacity notification, or by an own data exchange request
+	 * without notification that its partner approved and whose desired window has
+	 * not ended.</li>
 	 * </ol>
 	 *
 	 * @param material the material to check
@@ -189,12 +215,33 @@ public class IrsJobService {
 			throw new IllegalArgumentException("Material must be a product to be used for an IRS job.");
 		}
 
-		if (!reportedNotificationService.isAnyChildAffectedByActiveNotifications(material)) {
+		if (!reportedNotificationService.isAnyChildAffectedByActiveNotifications(material)
+				&& !isAnyChildAffectedByApprovedRequests(material)) {
 			log.error("No child material of material {} is affected by a currently-active notification",
 					material.getOwnMaterialNumber());
 			throw new IllegalArgumentException(
 					"At least one child material must be affected by a currently-active notification to create an IRS job.");
 		}
+	}
+
+	/**
+	 * Counterpart of {@code ReportedDemandAndCapacityNotificationService.isAnyChildAffectedByActiveNotifications}
+	 * for requests without notification: whether at least one currently-valid child material 
+	 * is affected by an own data exchange request without notification that its partner approved
+	 * and whose desired window has not ended.
+	 */
+	private boolean isAnyChildAffectedByApprovedRequests(Material parent) {
+		Date now = new Date();
+		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(parent.getOwnMaterialNumber(), now);
+
+		return ownDataExchangeRequestRepository.findAll().stream()
+			.filter(request -> request.getNotification() == null)
+			.filter(request -> request.getDesiredEndDateTime() != null && !request.getDesiredEndDateTime().before(now))
+			.filter(request -> request.getMaterials() != null && request.getMaterials().stream()
+				.filter(Objects::nonNull)
+				.map(Material::getOwnMaterialNumber)
+				.anyMatch(childMaterialNumbers::contains))
+			.anyMatch(request -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(request.getUuid()) != null);
 	}
 
 }

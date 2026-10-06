@@ -25,6 +25,9 @@ import java.util.UUID;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.LeadingRootCauseEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.MaterialSamm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,8 +51,20 @@ public class DataExchangeRequestSamm {
     private String requestId;
 
     @NotNull
-    @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private UUID sourceDisruptionId;
+
+    @NotNull
+    private LeadingRootCauseEnumeration leadingRootCause;
+
+    @NotNull
+    private EffectEnumeration effect;
+
+    @NotEmpty
+    private List<@NotNull MaterialSamm> materialsAffected;
+
+    private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesSender;
+
+    private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesRecipient;
 
     @NotNull
     private CriticalityEnumeration criticality;
@@ -73,6 +88,11 @@ public class DataExchangeRequestSamm {
     public DataExchangeRequestSamm(
             @JsonProperty(value = "requestId") String requestId,
             @JsonProperty(value = "sourceDisruptionId") UUID sourceDisruptionId,
+            @JsonProperty(value = "leadingRootCause") LeadingRootCauseEnumeration leadingRootCause,
+            @JsonProperty(value = "effect") EffectEnumeration effect,
+            @JsonProperty(value = "materialsAffected") List<MaterialSamm> materialsAffected,
+            @JsonProperty(value = "affectedSitesSender") List<String> affectedSitesSender,
+            @JsonProperty(value = "affectedSitesRecipient") List<String> affectedSitesRecipient,
             @JsonProperty(value = "criticality") CriticalityEnumeration criticality,
             @JsonProperty(value = "desiredStartDateTime") Date desiredStartDateTime,
             @JsonProperty(value = "desiredEndDateTime") Date desiredEndDateTime,
@@ -81,6 +101,11 @@ public class DataExchangeRequestSamm {
             @JsonProperty(value = "timestamp") Date timestamp) {
         this.requestId = requestId;
         this.sourceDisruptionId = sourceDisruptionId;
+        this.leadingRootCause = leadingRootCause;
+        this.effect = effect;
+        this.materialsAffected = materialsAffected;
+        this.affectedSitesSender = affectedSitesSender;
+        this.affectedSitesRecipient = affectedSitesRecipient;
         this.criticality = criticality;
         this.desiredStartDateTime = desiredStartDateTime;
         this.desiredEndDateTime = desiredEndDateTime;
@@ -100,6 +125,11 @@ public class DataExchangeRequestSamm {
         final DataExchangeRequestSamm that = (DataExchangeRequestSamm) o;
         return Objects.equals(requestId, that.requestId)
                 && Objects.equals(sourceDisruptionId, that.sourceDisruptionId)
+                && Objects.equals(leadingRootCause, that.leadingRootCause)
+                && Objects.equals(effect, that.effect)
+                && Objects.equals(materialsAffected, that.materialsAffected)
+                && Objects.equals(affectedSitesSender, that.affectedSitesSender)
+                && Objects.equals(affectedSitesRecipient, that.affectedSitesRecipient)
                 && Objects.equals(criticality, that.criticality)
                 && Objects.equals(desiredStartDateTime, that.desiredStartDateTime)
                 && Objects.equals(desiredEndDateTime, that.desiredEndDateTime)
@@ -110,6 +140,7 @@ public class DataExchangeRequestSamm {
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, sourceDisruptionId, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text, timestamp);
+        return Objects.hash(requestId, sourceDisruptionId, leadingRootCause, effect, materialsAffected, affectedSitesSender,
+                affectedSitesRecipient, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text, timestamp);
     }
 }

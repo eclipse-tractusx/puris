@@ -140,14 +140,18 @@ public class IrsChainOpeningPartnerGrantService {
 
 	/**
 	 * Creates or updates a Chain Opening Grant for the partner, for each material affected by the
-	 * notification behind the given approval. Invoked once we've successfully sent this approval to
-	 * the partner.
+	 * notification behind the given approval, or by the request itself if it has no notification.
+	 * Invoked once we've successfully sent this approval to the partner.
 	 *
 	 * @param approval the own approval that was just sent to the partner
 	 */
 	public void createGrantsForApproval(OwnDataExchangeApproval approval) {
 		ReportedDataExchangeRequest triggeringRequest = approval.getDataExchangeRequest();
 		OwnDemandAndCapacityNotification notification = triggeringRequest.getNotification();
+		if (notification == null) {
+			createGrantsForRequestWithoutNotification(triggeringRequest);
+			return;
+		}
 		if (notification.getMaterials() == null) {
 			return;
 		}
@@ -190,19 +194,17 @@ public class IrsChainOpeningPartnerGrantService {
 	 * @param updated  the notification's state after the update
 	 */
 	public void onReportedNotificationUpdated(ReportedDemandAndCapacityNotification updated) {
-		OwnDataExchangeRequest forwardedRequest = ownDataExchangeRequestRepository.findByNotification_Uuid(updated.getUuid()).orElse(null);
-		if (forwardedRequest == null) {
-			return;
+		for (OwnDataExchangeRequest forwardedRequest : ownDataExchangeRequestRepository.findAllByNotification_Uuid(updated.getUuid())) {
+			ReportedDataExchangeRequest triggeringRequest = forwardedRequest.getRelatedDataExchangeRequest();
+			if (triggeringRequest == null) {
+				continue;
+			}
+			OwnDataExchangeApproval sentApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggeringRequest.getUuid());
+			if (sentApproval == null) {
+				continue;
+			}
+			createGrantsForApproval(sentApproval);
 		}
-		ReportedDataExchangeRequest triggeringRequest = forwardedRequest.getRelatedDataExchangeRequest();
-		if (triggeringRequest == null) {
-			return;
-		}
-		OwnDataExchangeApproval sentApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggeringRequest.getUuid());
-		if (sentApproval == null) {
-			return;
-		}
-		createGrantsForApproval(sentApproval);
 	}
 
 	/**
@@ -232,12 +234,11 @@ public class IrsChainOpeningPartnerGrantService {
 		if (currentMaterialCxIds.isEmpty()) {
 			return;
 		}
-		ReportedDataExchangeRequest triggeringRequest = reportedDataExchangeRequestRepository.findByNotification_Uuid(updated.getUuid()).orElse(null);
+		ReportedDataExchangeRequest triggeringRequest = reportedDataExchangeRequestRepository.findAllByNotification_Uuid(updated.getUuid()).stream()
+			.filter(request -> ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(request.getUuid()) != null)
+			.findFirst()
+			.orElse(null);
 		if (triggeringRequest == null) {
-			return;
-		}
-		OwnDataExchangeApproval sentApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggeringRequest.getUuid());
-		if (sentApproval == null) {
 			// No approval sent yet for this notification - nothing to create prematurely.
 			return;
 		}
@@ -340,7 +341,8 @@ public class IrsChainOpeningPartnerGrantService {
 	 */
 	private Set<ReportedDemandAndCapacityNotification> resolveCandidateNotifications(
 			ReportedDataExchangeRequest triggeringRequest, Set<String> childMaterialNumbers, Date now) {
-		return ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggeringRequest.getUuid()).stream()
+		return reportedDataExchangeRequestRepository.findAllByNotification_Uuid(triggeringRequest.getNotification().getUuid()).stream()
+			.flatMap(request -> ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(request.getUuid()).stream())
 			.map(forwardedRequest -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwardedRequest.getUuid()))
 			.filter(Objects::nonNull)
 			.map(approval -> approval.getDataExchangeRequest().getNotification())
@@ -359,6 +361,7 @@ public class IrsChainOpeningPartnerGrantService {
 	 * incoming request; and for every BPNL in the grant's allowedBpnls, there must be a valid
 	 * related reported notification (via the relatedDataExchangeRequest chain) covering a child
 	 * material of the grant's material.
+	 * An approved incoming request without notification can take the place of the own notification
 	 *
 	 * @throws IllegalArgumentException if the grant does not satisfy the applicable conditions
 	 */
@@ -374,7 +377,9 @@ public class IrsChainOpeningPartnerGrantService {
 			.findFirst()
 			.orElse(null);
 
-		if (matchingNotification == null) {
+		List<ReportedDataExchangeRequest> requestsWithoutNotification = resolveRequestsWithoutNotification(grant.getRequesterBpn(), sourceDisruptionId, grant.getGlobalAssetId(), now);
+
+		if (matchingNotification == null && requestsWithoutNotification.isEmpty()) {
 			log.error("No active own notification found matching grant for sourceDisruptionId {}, requesterBpn {} and globalAssetId {}",
 				grant.getSourceDisruptionId(), grant.getRequesterBpn(), grant.getGlobalAssetId());
 			throw new IllegalArgumentException(
@@ -382,10 +387,11 @@ public class IrsChainOpeningPartnerGrantService {
 					+ "partnerBpnl, validity bounds and affected material.");
 		}
 
-		ReportedDataExchangeRequest triggeringRequest = reportedDataExchangeRequestRepository
-			.findByNotification_Uuid(matchingNotification.getUuid())
+		ReportedDataExchangeRequest triggeringRequest = matchingNotification == null ? null : reportedDataExchangeRequestRepository
+			.findAllByNotification_Uuid(matchingNotification.getUuid()).stream()
+			.findFirst()
 			.orElse(null);
-		if (triggeringRequest == null) {
+		if (triggeringRequest == null && requestsWithoutNotification.isEmpty()) {
 			log.error("No incoming request found for notification {} while checking grant eligibility", matchingNotification.getUuid());
 			throw new IllegalArgumentException(
 				"A chain opening grant requires an incoming data exchange request backing its matching own notification.");
@@ -398,9 +404,110 @@ public class IrsChainOpeningPartnerGrantService {
 		}
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
-		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =
-			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();
+		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications = triggeringRequest == null ? List.of()
+			: resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();
+		List<OwnDataExchangeRequest> relatedRequests = resolveCandidateRequests(requestsWithoutNotification, childMaterialNumbers, now);
 
-		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, relatedRequests,
+			childMaterialNumbers, now);
+	}
+
+	/**
+	 * Counterpart of {@link #createGrantsForApproval} for a request without notification: the request
+	 * takes the place of the own notification.
+	 */
+	private void createGrantsForRequestWithoutNotification(ReportedDataExchangeRequest triggeringRequest) {
+		if (triggeringRequest.getMaterials() == null) {
+			return;
+		}
+		for (Material material : triggeringRequest.getMaterials()) {
+			if (material == null || material.getMaterialNumberCx() == null) {
+				continue;
+			}
+			syncGrantForRequestWithoutNotification(triggeringRequest, material);
+		}
+	}
+
+	/**
+	 * Counterpart of {@link #syncGrant} for a request without notification. The requester,
+	 * sourceDisruptionId and validity window come from the request. The grant's dataExchangeRequests are
+	 * recomputed from the requests we forwarded for it (and for any other approved request of the
+	 * partner leading to the same grant) and that their partner approved
+	 */
+	private void syncGrantForRequestWithoutNotification(ReportedDataExchangeRequest triggeringRequest, Material material) {
+		String requesterBpn = triggeringRequest.getPartner().getBpnl();
+		String globalAssetId = material.getMaterialNumberCx();
+		UUID sourceDisruptionId = triggeringRequest.getSourceDisruptionId();
+		Date now = new Date();
+
+		IrsChainOpeningPartnerGrant grant = irsChainOpeningPartnerGrantRepository
+			.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(requesterBpn, globalAssetId, sourceDisruptionId.toString())
+			.orElse(null);
+
+		boolean isNew = grant == null;
+		if (isNew) {
+			grant = IrsChainOpeningPartnerGrant.builder()
+				.requesterBpn(requesterBpn)
+				.globalAssetId(globalAssetId)
+				.sourceDisruptionId(sourceDisruptionId.toString())
+				.useCase(IrsAdapterConfiguration.PURIS_USE_CASE)
+				.validFrom(triggeringRequest.getDesiredStartDateTime().toInstant())
+				.validTo(triggeringRequest.getDesiredEndDateTime().toInstant())
+				.syncStatus(IrsGrantSyncStatusEnumeration.NOT_SYNCED)
+				.build();
+		}
+
+		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
+		List<OwnDataExchangeRequest> candidateRequests = resolveCandidateRequests(
+			resolveRequestsWithoutNotification(requesterBpn, sourceDisruptionId, globalAssetId, now), childMaterialNumbers, now);
+
+		boolean changed = IrsChainOpeningGrantSyncUtils.reconcileRequests(grant, candidateRequests);
+
+		if (!isNew && changed && grant.getSyncStatus() == IrsGrantSyncStatusEnumeration.SYNCED) {
+			grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+		}
+
+		IrsChainOpeningPartnerGrant saved = irsChainOpeningPartnerGrantRepository.save(grant);
+
+		try {
+			IrsQueuedRequest queuedRequest = createOrUpdateGrant(saved);
+			if (queuedRequest != null) {
+				saved.setSyncStatus(IrsGrantSyncStatusEnumeration.PENDING);
+			}
+		} catch (IllegalArgumentException e) {
+			log.error("Failed to enqueue chain opening grant sync for requesterBpn {}, globalAssetId {}, sourceDisruptionId {}",
+				requesterBpn, globalAssetId, sourceDisruptionId, e);
+			saved.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+		}
+
+		irsChainOpeningPartnerGrantRepository.save(saved);
+	}
+
+	/**
+	 * Resolves the incoming requests without notification that the grant keyed by (requesterBpn,
+	 * globalAssetId, sourceDisruptionId) can be based on, in place of an own notification
+	 */
+	private List<ReportedDataExchangeRequest> resolveRequestsWithoutNotification(String requesterBpn, UUID sourceDisruptionId, String globalAssetId, Date now) {
+		return reportedDataExchangeRequestRepository.findAllBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, requesterBpn).stream()
+			.filter(request -> request.getNotification() == null)
+			.filter(request -> IrsChainOpeningGrantSyncUtils.isRequestActiveNow(request, now))
+			.filter(request -> IrsChainOpeningGrantSyncUtils.affectsMaterialWithMaterialNumberCx(request, globalAssetId))
+			.filter(request -> ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(request.getUuid()) != null)
+			.toList();
+	}
+
+	/**
+	 * Counterpart of {@link #resolveCandidateNotifications} for requests without notification: the
+	 * requests we forwarded for the given requests (along the bill of material) that their partner
+	 * approved, whose desired window has not ended and that cover one of the given child material numbers.
+	 */
+	private List<OwnDataExchangeRequest> resolveCandidateRequests(List<ReportedDataExchangeRequest> triggeringRequests,
+			Set<String> childMaterialNumbers, Date now) {
+		return triggeringRequests.stream()
+			.flatMap(triggeringRequest -> ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggeringRequest.getUuid()).stream())
+			.filter(forwardedRequest -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwardedRequest.getUuid()) != null)
+			.filter(forwardedRequest -> IrsChainOpeningGrantSyncUtils.isRequestActiveNow(forwardedRequest, now))
+			.filter(forwardedRequest -> IrsChainOpeningGrantSyncUtils.affectsAnyMaterial(forwardedRequest, childMaterialNumbers))
+			.toList();
 	}
 }

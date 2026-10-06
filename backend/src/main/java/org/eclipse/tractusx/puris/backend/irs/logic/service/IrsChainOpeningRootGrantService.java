@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
@@ -333,6 +334,8 @@ public class IrsChainOpeningRootGrantService {
 	 * of the grant's globalAssetId (see {@link #assertSelfRequestedGrantEligible}), and for every
 	 * BPNL in the grant's allowedBpnls, there must be a valid reported notification from that BPNL,
 	 * covering at least one child material of the material identified by the grant's globalAssetId.
+	 * Requests without notification backing the grant count like reported notifications (see
+	 * {@link #resolveRelatedRequests}).
 	 *
 	 * @throws IllegalArgumentException if the grant does not satisfy the applicable conditions
 	 */
@@ -348,13 +351,14 @@ public class IrsChainOpeningRootGrantService {
 		}
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
-		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, resolveRelatedRequests(grant, childMaterialNumbers, now), childMaterialNumbers, now);
 	}
 
 	/**
 	 * Ensures that a root grant is eligible: the globalAssetId must resolve to a known material,
 	 * and there must be at least one active reported notification with a matching sourceDisruptionId
-	 * affecting a currently-valid child material of it.
+	 * affecting a currently-valid child material of it, or a request without notification backing the
+	 * grant that does (see {@link #resolveRelatedRequests}).
 	 *
 	 * @return the list of active reported notifications establishing eligibility
 	 * @throws IllegalArgumentException if the globalAssetId does not resolve to a known material,
@@ -379,7 +383,7 @@ public class IrsChainOpeningRootGrantService {
 				.anyMatch(childMaterialNumbers::contains))
 			.toList();
 
-		if (relatedReportedNotifications.isEmpty()) {
+		if (relatedReportedNotifications.isEmpty() && resolveRelatedRequests(grant, childMaterialNumbers, now).isEmpty()) {
 			log.error("No active reported notification found matching sourceDisruptionId {} and covering a child material of {}",
 				grant.getSourceDisruptionId(), grant.getGlobalAssetId());
 			throw new IllegalArgumentException(
@@ -388,5 +392,98 @@ public class IrsChainOpeningRootGrantService {
 		}
 
 		return relatedReportedNotifications;
+	}
+
+	/**
+	 * Counterpart of {@link #syncGrantsForNotification} for an own root request without notification,
+	 * once its partner approved it: for each currently-valid parent material of the request's materials,
+	 * a grant is created or updated with the request added to its dataExchangeRequests.
+	 * <p>
+	 *
+	 * @param request the own root request without notification that was just approved
+	 */
+	public void syncGrantsForRequest(OwnDataExchangeRequest request) {
+		if (request.getMaterials() == null) {
+			return;
+		}
+
+		String requesterBpn = variablesService.getOwnBpnl();
+		String sourceDisruptionId = request.getSourceDisruptionId().toString();
+		Date now = new Date();
+
+		Set<String> parentOwnMaterialNumbers = request.getMaterials().stream()
+			.filter(Objects::nonNull)
+			.map(Material::getOwnMaterialNumber)
+			.flatMap(childOwnMaterialNumber -> materialRelationService.findAllParents(childOwnMaterialNumber).stream())
+			.filter(relation -> MaterialRelationService.isRelationValidNow(relation, now))
+			.map(MaterialRelation::getParentOwnMaterialNumber)
+			.collect(Collectors.toSet());
+
+		for (String parentOwnMaterialNumber : parentOwnMaterialNumbers) {
+			Material parentMaterial = materialService.findByOwnMaterialNumber(parentOwnMaterialNumber);
+			if (parentMaterial == null || parentMaterial.getMaterialNumberCx() == null) {
+				continue;
+			}
+			addRequestToGrant(requesterBpn, parentMaterial.getMaterialNumberCx(), sourceDisruptionId, request);
+		}
+	}
+
+	/**
+	 * Counterpart of {@link #addNotificationToGrant} for a request without notification: adds the request
+	 * to the grant's dataExchangeRequests, creating the grant if it does not exist.
+	 */
+	private void addRequestToGrant(String requesterBpn, String globalAssetId, String sourceDisruptionId, OwnDataExchangeRequest request) {
+		IrsChainOpeningRootGrant grant = irsChainOpeningRootGrantRepository
+			.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(requesterBpn, globalAssetId, sourceDisruptionId)
+			.orElse(null);
+
+		boolean isNew = grant == null;
+		if (isNew) {
+			grant = IrsChainOpeningRootGrant.builder()
+				.requesterBpn(requesterBpn)
+				.globalAssetId(globalAssetId)
+				.sourceDisruptionId(sourceDisruptionId)
+				.useCase(IrsAdapterConfiguration.PURIS_USE_CASE)
+				.syncStatus(IrsGrantSyncStatusEnumeration.NOT_SYNCED)
+				.build();
+		}
+
+		boolean changed = IrsChainOpeningGrantSyncUtils.addRequestIfAbsent(grant, request);
+
+		Instant requestStart = request.getDesiredStartDateTime().toInstant();
+		Instant requestEnd = request.getDesiredEndDateTime().toInstant();
+		Instant newValidFrom = grant.getValidFrom() == null || requestStart.isBefore(grant.getValidFrom()) ? requestStart : grant.getValidFrom();
+		Instant newValidTo = grant.getValidTo() == null || requestEnd.isAfter(grant.getValidTo()) ? requestEnd : grant.getValidTo();
+
+		if (!Objects.equals(grant.getValidFrom(), newValidFrom) || !Objects.equals(grant.getValidTo(), newValidTo)) {
+			changed = true;
+		}
+		grant.setValidFrom(newValidFrom);
+		grant.setValidTo(newValidTo);
+
+		if (!isNew && changed && grant.getSyncStatus() == IrsGrantSyncStatusEnumeration.SYNCED) {
+			grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+		}
+
+		IrsChainOpeningRootGrant saved = irsChainOpeningRootGrantRepository.save(grant);
+
+		try {
+			IrsQueuedRequest queuedRequest = createOrUpdateGrant(saved);
+			if (queuedRequest != null) {
+				saved.setSyncStatus(IrsGrantSyncStatusEnumeration.PENDING);
+			}
+		} catch (IllegalArgumentException e) {
+			log.error("Failed to enqueue chain opening root grant sync for requesterBpn {}, globalAssetId {}, sourceDisruptionId {}", requesterBpn, globalAssetId, sourceDisruptionId, e);
+			saved.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+		}
+
+		irsChainOpeningRootGrantRepository.save(saved);
+	}
+
+	private List<OwnDataExchangeRequest> resolveRelatedRequests(IrsChainOpeningRootGrant grant, Set<String> childMaterialNumbers, Date now) {
+		return grant.getDataExchangeRequests().stream()
+			.filter(request -> IrsChainOpeningGrantSyncUtils.isRequestActiveNow(request, now))
+			.filter(request -> IrsChainOpeningGrantSyncUtils.affectsAnyMaterial(request, childMaterialNumbers))
+			.toList();
 	}
 }

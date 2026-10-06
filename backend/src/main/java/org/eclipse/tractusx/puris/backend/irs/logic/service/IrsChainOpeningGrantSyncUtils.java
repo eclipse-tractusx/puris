@@ -25,10 +25,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.DataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 
 /**
  * Stateless helpers shared by {@link IrsChainOpeningRootGrantService} and
@@ -116,5 +119,95 @@ final class IrsChainOpeningGrantSyncUtils {
 						+ "a child material of the grant's material.");
 			}
 		}
+	}
+
+	/**
+	 * Determines whether a data exchange request without notification can back a grant at the given point in
+	 * time
+	 */
+	static boolean isRequestActiveNow(DataExchangeRequest request, Date now) {
+		return request.getDesiredEndDateTime() != null && !request.getDesiredEndDateTime().before(now);
+	}
+
+	/**
+	 * Determines whether one of the request's materials has the given materialNumberCx.
+	 */
+	static boolean affectsMaterialWithMaterialNumberCx(DataExchangeRequest request, String materialNumberCx) {
+		return request.getMaterials() != null && materialNumberCx != null && request.getMaterials().stream()
+			.filter(Objects::nonNull)
+			.map(Material::getMaterialNumberCx)
+			.anyMatch(materialNumberCx::equals);
+	}
+
+	/**
+	 * Determines whether one of the request's materials has one of the given own material numbers.
+	 */
+	static boolean affectsAnyMaterial(DataExchangeRequest request, Set<String> ownMaterialNumbers) {
+		return request.getMaterials() != null && request.getMaterials().stream()
+			.filter(Objects::nonNull)
+			.map(Material::getOwnMaterialNumber)
+			.anyMatch(ownMaterialNumbers::contains);
+	}
+
+	/**
+	 * Adds the request to the grant's dataExchangeRequests if no request with the same uuid is already present,
+	 * the counterpart of {@link #addNotificationIfAbsent}.
+	 *
+	 * @return {@code true} if the request was added, {@code false} if it was already present
+	 */
+	static boolean addRequestIfAbsent(IrsChainOpeningGrant grant, OwnDataExchangeRequest request) {
+		boolean alreadyPresent = grant.getDataExchangeRequests().stream()
+			.anyMatch(existing -> existing.getUuid().equals(request.getUuid()));
+		if (alreadyPresent) {
+			return false;
+		}
+		return grant.getDataExchangeRequests().add(request);
+	}
+
+	/**
+	 * Adding missing entries and removing stale ones, the counterpart of {@link #reconcile}.
+	 *
+	 * @return {@code true} if the grant's dataExchangeRequests changed as a result
+	 */
+	static boolean reconcileRequests(IrsChainOpeningGrant grant, List<OwnDataExchangeRequest> desired) {
+		Set<UUID> desiredUuids = desired.stream()
+			.map(OwnDataExchangeRequest::getUuid)
+			.collect(Collectors.toSet());
+
+		boolean changed = grant.getDataExchangeRequests().removeIf(existing -> !desiredUuids.contains(existing.getUuid()));
+		for (OwnDataExchangeRequest request : desired) {
+			if (addRequestIfAbsent(grant, request)) {
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	/**
+	 * Same as {@link #assertAllowedBpnlsEligible(Set, List, Set, Date)}, but an allowed BPNL can also be
+	 * backed by a related request without notification Only requests their partner approved may be passed.
+	 *
+	 * @throws IllegalArgumentException if any allowed BPNL lacks a matching related reported notification or request
+	 */
+	static void assertAllowedBpnlsEligible(Set<String> allowedBpnls,
+			List<ReportedDemandAndCapacityNotification> relatedReportedNotifications,
+			List<OwnDataExchangeRequest> relatedRequests,
+			Set<String> childMaterialNumbers, Date now) {
+		if (allowedBpnls == null || allowedBpnls.isEmpty()) {
+			return;
+		}
+
+		Set<String> backedByRequest = relatedRequests.stream()
+			.filter(request -> isRequestActiveNow(request, now))
+			.filter(request -> affectsAnyMaterial(request, childMaterialNumbers))
+			.map(OwnDataExchangeRequest::getPartner)
+			.filter(Objects::nonNull)
+			.map(Partner::getBpnl)
+			.collect(Collectors.toSet());
+		Set<String> remainingBpnls = allowedBpnls.stream()
+			.filter(allowedBpnl -> !backedByRequest.contains(allowedBpnl))
+			.collect(Collectors.toSet());
+
+		assertAllowedBpnlsEligible(remainingBpnls, relatedReportedNotifications, childMaterialNumbers, now);
 	}
 }
