@@ -905,6 +905,44 @@ components:
           maxItems: 50
           type: string
       type: object
+    IrsJobDto:
+      additionalProperties: false
+      properties:
+        jobId:
+          format: uuid
+          maxItems: 50
+          type: string
+        ownMaterialNumber:
+          maxItems: 50
+          type: string
+        requestStatus:
+          enum:
+          - PENDING
+          - SUCCEEDED
+          - FAILED
+          - CANCELLED
+          maxItems: 50
+          type: string
+        sourceDisruptionId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        state:
+          enum:
+          - UNSAVED
+          - INITIAL
+          - RUNNING
+          - TRANSFERS_FINISHED
+          - COMPLETED
+          - CANCELED
+          - ERROR
+          maxItems: 50
+          type: string
+        uuid:
+          format: uuid
+          maxItems: 50
+          type: string
+      type: object
     IrsQueuedRequestDto:
       additionalProperties: false
       properties:
@@ -3996,6 +4034,30 @@ paths:
       summary: Import data via excel file -- ADMIN ONLY
       tags:
       - file-controller
+  /irs/jobs:
+    get:
+      description: Get all IRS jobs.
+      operationId: getAllJobs
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                additionalProperties: false
+                items:
+                  $ref: '#/components/schemas/IrsJobDto'
+                maxItems: 50
+                type: array
+          description: Returns all IRS jobs.
+        '401':
+          description: Missing API key.
+        '403':
+          description: IRS adapter is disabled, or the provided API key is invalid.
+        '500':
+          description: Internal Server Error.
+      summary: Get all IRS jobs -- ADMIN ONLY
+      tags:
+      - irs-job-controller
   /irs/partner-grants:
     get:
       description: Get all partner grants regardless of their sync status (NOT_SYNCED,
