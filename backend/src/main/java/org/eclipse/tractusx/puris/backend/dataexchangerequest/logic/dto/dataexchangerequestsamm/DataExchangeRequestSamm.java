@@ -26,7 +26,6 @@ import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.LeadingRootCauseEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.dto.demandandcapacitynotficationsamm.MaterialSamm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -85,7 +84,6 @@ public class DataExchangeRequestSamm {
     public DataExchangeRequestSamm(
             @JsonProperty(value = "requestId") String requestId,
             @JsonProperty(value = "sourceDisruptionId") UUID sourceDisruptionId,
-            @JsonProperty(value = "leadingRootCause") LeadingRootCauseEnumeration leadingRootCause,
             @JsonProperty(value = "effect") EffectEnumeration effect,
             @JsonProperty(value = "materialsAffected") List<MaterialSamm> materialsAffected,
             @JsonProperty(value = "affectedSitesSender") List<String> affectedSitesSender,
