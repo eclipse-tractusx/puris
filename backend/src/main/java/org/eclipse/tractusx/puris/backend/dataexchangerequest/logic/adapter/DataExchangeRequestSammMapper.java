@@ -18,7 +18,6 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.adapter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,6 @@ public class DataExchangeRequestSammMapper {
         return builder
                 .requestId(request.getRequestId())
                 .sourceDisruptionId(request.getSourceDisruptionId())
-                .leadingRootCause(request.getLeadingRootCause())
                 .effect(request.getEffect())
                 .materialsAffected(materialsAffected)
                 .affectedSitesSender(toBpnsList(request.getAffectedSitesSender()))
@@ -106,11 +104,11 @@ public class DataExchangeRequestSammMapper {
     public ReportedDataExchangeRequest sammToReportedDataExchangeRequest(Partner partner, DataExchangeRequestSamm samm) {
         List<Material> materials = resolveRelatedMaterials(partner, samm);
         if (materials.isEmpty()) {
-            log.error("Rejecting data exchange request {}.", samm.getRequestId());
+            log.error("Rejecting data exchange request {} from {}: none of the affected materials is related to this partner.", samm.getRequestId(), partner.getBpnl());
             return null;
         }
  
-        OwnDemandAndCapacityNotification notification = findMatchingOwnNotification(partner, samm.getSourceDisruptionId());
+        OwnDemandAndCapacityNotification notification = findOwnNotification(partner, samm.getSourceDisruptionId());
         if (notification == null) {
             log.info("No own notification to {} for source disruption id {}", partner.getBpnl(), samm.getSourceDisruptionId());
         }
@@ -120,7 +118,6 @@ public class DataExchangeRequestSammMapper {
                 .partner(partner)
                 .notification(notification)
                 .sourceDisruptionId(samm.getSourceDisruptionId())
-                .leadingRootCause(samm.getLeadingRootCause())
                 .effect(samm.getEffect())
                 .materials(materials)
                 .affectedSitesSender(resolveSites(partner, samm.getAffectedSitesSender()))
@@ -202,24 +199,18 @@ public class DataExchangeRequestSammMapper {
         return null;
     }
  
-    private OwnDemandAndCapacityNotification findMatchingOwnNotification(Partner partner, UUID sourceDisruptionId) {
+    private OwnDemandAndCapacityNotification findOwnNotification(Partner partner, UUID sourceDisruptionId) {
         if (sourceDisruptionId == null) {
             return null;
         }
-        List<OwnDemandAndCapacityNotification> candidates = ownDemandAndCapacityNotificationService.findBySourceDisruptionIdAndPartnerBpnl(sourceDisruptionId, partner.getBpnl());
-        if (candidates == null) {
-            return null;
-        }
-        return candidates.stream()
-            .max(Comparator.comparing(OwnDemandAndCapacityNotification::getContentChangedAt, Comparator.nullsFirst(Comparator.naturalOrder())))
-            .orElse(null);
+        return ownDemandAndCapacityNotificationService.findByBpnlAndSourceDisruptionId(partner.getBpnl(), sourceDisruptionId);
     }
  
     /**
      * Unknown sites are dropped, as for DCNs.
      */
     private static List<Site> resolveSites(Partner owner, List<String> bpnsList) {
-        if (bpnsList == null || bpnsList.isEmpty() || owner == null || owner.getSites() == null) {
+        if (bpnsList == null) {
             return new ArrayList<>();
         }
         return owner.getSites().stream()

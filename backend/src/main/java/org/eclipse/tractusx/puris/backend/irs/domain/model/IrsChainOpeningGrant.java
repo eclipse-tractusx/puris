@@ -104,28 +104,20 @@ public abstract class IrsChainOpeningGrant {
 	@JsonIgnore
 	protected IrsGrantSyncStatusEnumeration syncStatus;
 
-	public abstract Set<ReportedDemandAndCapacityNotification> getReportedNotifications();
-
 	public abstract Set<OwnDataExchangeRequest> getDataExchangeRequests();
 
 	/**
 	 * The BPNLs allowed to be recursively queried under this grant, derived from the partners
-	 * of {@link #getReportedNotifications()} and {@link #getDataExchangeRequests()}. This is the wire shape
+	 * of {@link #getDataExchangeRequests()}. This is the wire shape
 	 * expected by the IRS grant-creation request.
 	 */
 	@JsonIgnore
 	public Set<String> getAllowedBpnls() {
-		Set<String> allowedBpnls = getReportedNotifications().stream()
-			.map(ReportedDemandAndCapacityNotification::getPartner)
-			.filter(Objects::nonNull)
-			.map(Partner::getBpnl)
-			.collect(Collectors.toCollection(LinkedHashSet::new));
-		getDataExchangeRequests().stream()
+		return getDataExchangeRequests().stream()
 			.map(OwnDataExchangeRequest::getPartner)
 			.filter(Objects::nonNull)
 			.map(Partner::getBpnl)
-			.forEach(allowedBpnls::add);
-		return allowedBpnls;
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	/**

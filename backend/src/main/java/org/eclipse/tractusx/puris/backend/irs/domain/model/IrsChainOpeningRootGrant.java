@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -66,16 +65,6 @@ public class IrsChainOpeningRootGrant extends IrsChainOpeningGrant {
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
-		name = "chain_opening_root_grant_notification",
-		joinColumns = @JoinColumn(name = "chain_opening_root_grant_uuid"),
-		inverseJoinColumns = @JoinColumn(name = "reported_notification_uuid")
-	)
-	@JsonIgnore
-	@Builder.Default
-	private Set<ReportedDemandAndCapacityNotification> reportedNotifications = new HashSet<>();
-
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(
 		name = "chain_opening_root_grant_request",
 		joinColumns = @JoinColumn(name = "chain_opening_root_grant_uuid"),
 		inverseJoinColumns = @JoinColumn(name = "data_exchange_request_uuid")
@@ -83,11 +72,6 @@ public class IrsChainOpeningRootGrant extends IrsChainOpeningGrant {
 	@JsonIgnore
 	@Builder.Default
 	private Set<OwnDataExchangeRequest> dataExchangeRequests = new HashSet<>();
-
-	@Override
-	public Set<ReportedDemandAndCapacityNotification> getReportedNotifications() {
-		return reportedNotifications;
-	}
 
 	@Override
 	public Set<OwnDataExchangeRequest> getDataExchangeRequests() {

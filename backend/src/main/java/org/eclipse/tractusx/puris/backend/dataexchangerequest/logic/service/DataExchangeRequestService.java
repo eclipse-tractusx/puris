@@ -69,9 +69,6 @@ public abstract class  DataExchangeRequestService<TEntity extends DataExchangeRe
         if (dataExchangeRequest.getSourceDisruptionId() == null) {
             errors.add("Missing sourceDisruptionId.");
         }
-        if (dataExchangeRequest.getLeadingRootCause() == null) {
-            errors.add("Missing leadingRootCause.");
-        }
         if (dataExchangeRequest.getEffect() == null) {
             errors.add("Missing effect.");
         }
@@ -162,7 +159,7 @@ public abstract class  DataExchangeRequestService<TEntity extends DataExchangeRe
         if (sites == null || sites.isEmpty() || owner == null) {
             return List.of();
         }
-        Set<String> ownerBpns = owner.getSites() == null ? Set.of() : owner.getSites().stream().map(Site::getBpns).collect(Collectors.toSet());
+        Set<String> ownerBpns = owner.getSites().stream().map(Site::getBpns).collect(Collectors.toSet());
         List<String> errors = new ArrayList<>();
         for (Site site : sites) {
             if (site == null || !ownerBpns.contains(site.getBpns())) {

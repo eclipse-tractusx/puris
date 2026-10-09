@@ -79,8 +79,9 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         errors.addAll(validateMaterials(dataExchangeRequest));
         errors.addAll(validateSites(dataExchangeRequest, dataExchangeRequest.getPartner(), partnerService.getOwnPartnerEntity()));
         OwnDemandAndCapacityNotification notification = dataExchangeRequest.getNotification();
-        errors.addAll(validateDesiredDates(dataExchangeRequest, notification != null ? notification.getStartDateOfEffect() : null,
-            notification != null ? notification.getExpectedEndDateOfEffect() : null));
+        if (notification != null) {
+            errors.addAll(validateDesiredDates(dataExchangeRequest, notification.getStartDateOfEffect(), notification.getExpectedEndDateOfEffect()));
+        }
         return errors;
     }
 }

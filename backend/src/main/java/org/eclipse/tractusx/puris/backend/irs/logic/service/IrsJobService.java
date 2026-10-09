@@ -28,8 +28,6 @@ import java.util.UUID;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
@@ -57,8 +55,6 @@ public class IrsJobService {
 	private final IrsRequestBodybuilder irsRequestBodybuilder;
 
 	private final IrsRequestQueueService irsRequestQueueService;
-
-	private final ReportedDemandAndCapacityNotificationService reportedNotificationService;
 
 	private final IrsAdapterConfiguration irsAdapterConfiguration;
 
@@ -138,25 +134,13 @@ public class IrsJobService {
 		return irsJobRepository.save(irsJob);
 	}
 
-	/**
-     * Creates and sends a new IRS job for every root grant that has the given notification among
-     * its reportedNotifications. A grant whose globalAssetId does not resolve to a known material,
+    /**
+     * Creates and sends a new IRS job for every root grant that has the given request among its
+     * dataExchangeRequests. A grant whose globalAssetId does not resolve to a known material,
      * or whose material is not eligible for an IRS job, is skipped and logged — it does not prevent
      * jobs from being created for the other grants.
      *
-     * @param notification the notification whose root grants should each get a new IRS job
-     */
-    public void createJobsForNotification(ReportedDemandAndCapacityNotification notification) {
-        List<IrsChainOpeningRootGrant> grants = irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notification.getUuid());
-        createJobsForRootGrants(grants);
-    }
-
-    /**
-     * Counterpart of {@link #createJobsForNotification} for an own root request without notification:
-     * creates and sends a new IRS job for every root grant that has the given request among its
-     * dataExchangeRequests.
-     *
-     * @param request the own root request without notification
+     * @param request the own root request whose root grants should each get a new IRS job
      */
     public void createJobsForRequest(OwnDataExchangeRequest request) {
         List<IrsChainOpeningRootGrant> grants = irsChainOpeningRootGrantRepository.findAllByDataExchangeRequests_Uuid(request.getUuid());
@@ -192,11 +176,9 @@ public class IrsJobService {
 	 * <li>The material is a product ({@code productFlag == true}).</li>
 	 * <li>The material is the parent in at least one currently-valid material
 	 * relation.</li>
-	 * <li>At least one child material of those valid relations is affected by a
-	 * currently-active
-	 * reported demand and capacity notification, or by an own data exchange request
-	 * without notification that its partner approved and whose desired window has
-	 * not ended.</li>
+	 * <li>At least one child material of those valid relations is affected by an
+	 * own data exchange request that its partner approved and whose desired window
+	 * has not ended.</li>
 	 * </ol>
 	 *
 	 * @param material the material to check
@@ -215,27 +197,23 @@ public class IrsJobService {
 			throw new IllegalArgumentException("Material must be a product to be used for an IRS job.");
 		}
 
-		if (!reportedNotificationService.isAnyChildAffectedByActiveNotifications(material)
-				&& !isAnyChildAffectedByApprovedRequests(material)) {
-			log.error("No child material of material {} is affected by a currently-active notification",
+		if (!isAnyChildAffectedByApprovedRequests(material)) {
+			log.error("No child material of material {} is affected by an approved, active data exchange request",
 					material.getOwnMaterialNumber());
 			throw new IllegalArgumentException(
-					"At least one child material must be affected by a currently-active notification to create an IRS job.");
+					"At least one child material must be affected by an approved, active data exchange request to create an IRS job.");
 		}
 	}
 
 	/**
-	 * Counterpart of {@code ReportedDemandAndCapacityNotificationService.isAnyChildAffectedByActiveNotifications}
-	 * for requests without notification: whether at least one currently-valid child material 
-	 * is affected by an own data exchange request without notification that its partner approved
-	 * and whose desired window has not ended.
+	 * Whether at least one currently-valid child material of the given material is affected by an own data
+	 * exchange request that its partner approved and whose desired window has not ended.
 	 */
 	private boolean isAnyChildAffectedByApprovedRequests(Material parent) {
 		Date now = new Date();
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(parent.getOwnMaterialNumber(), now);
 
 		return ownDataExchangeRequestRepository.findAll().stream()
-			.filter(request -> request.getNotification() == null)
 			.filter(request -> request.getDesiredEndDateTime() != null && !request.getDesiredEndDateTime().before(now))
 			.filter(request -> request.getMaterials() != null && request.getMaterials().stream()
 				.filter(Objects::nonNull)

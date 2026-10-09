@@ -26,19 +26,16 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.Reque
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.LeadingRootCauseEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
-import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
-import org.junit.Test;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -118,7 +115,6 @@ public class DataExchangeRequestControllerTest {
         assertTrue(errors.containsAll(List.of(
             "Missing partner.",
             "Missing sourceDisruptionId.",
-            "Missing leadingRootCause.",
             "Missing effect.",
             "At least one affected material is required.")));
     }
@@ -195,7 +191,6 @@ public class DataExchangeRequestControllerTest {
         OwnDataExchangeRequest request = new OwnDataExchangeRequest();
         request.setPartner(supplierPartner);
         request.setSourceDisruptionId(UUID.randomUUID());
-        request.setLeadingRootCause(LeadingRootCauseEnumeration.values()[0]);
         request.setEffect(EffectEnumeration.values()[0]);
         request.setMaterials(List.of(material));
         request.setCriticality(CriticalityEnumeration.values()[0]);

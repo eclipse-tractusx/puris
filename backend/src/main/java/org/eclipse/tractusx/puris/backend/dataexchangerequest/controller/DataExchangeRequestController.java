@@ -240,7 +240,6 @@ public class DataExchangeRequestController {
         ownDataExchangeRequest.setNotification(notification);
         ownDataExchangeRequest.setPartner(notification.getPartner());
         ownDataExchangeRequest.setSourceDisruptionId(notification.getSourceDisruptionId());
-        ownDataExchangeRequest.setLeadingRootCause(notification.getLeadingRootCause());
         ownDataExchangeRequest.setEffect(notification.getEffect());
         ownDataExchangeRequest.setMaterials(copyOf(notification.getMaterials()));
         ownDataExchangeRequest.setAffectedSitesSender(copyOf(notification.getAffectedSitesRecipient()));
@@ -249,7 +248,7 @@ public class DataExchangeRequestController {
     }
  
     private OwnDataExchangeRequest buildRequestWithoutNotification(DataExchangeRequestDto requestDto) {
-        if (requestDto.getPartnerBpnl() == null || requestDto.getLeadingRootCause() == null || requestDto.getEffect() == null
+        if (requestDto.getPartnerBpnl() == null || requestDto.getEffect() == null
                 || requestDto.getAffectedMaterialNumbers() == null || requestDto.getAffectedMaterialNumbers().isEmpty()) {
             log.warn("Rejected own data exchange request: required properties are missing (partnerBpnl, leadingRootCause, effect, affectedMaterialNumbers)");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Required properties are missing: partnerBpnl, leadingRootCause, effect, affectedMaterialNumbers.");
@@ -274,7 +273,6 @@ public class DataExchangeRequestController {
         OwnDataExchangeRequest ownDataExchangeRequest = buildRequest(requestDto);
         ownDataExchangeRequest.setPartner(partner);
         ownDataExchangeRequest.setSourceDisruptionId(UUID.randomUUID());
-        ownDataExchangeRequest.setLeadingRootCause(requestDto.getLeadingRootCause());
         ownDataExchangeRequest.setEffect(requestDto.getEffect());
         ownDataExchangeRequest.setMaterials(new ArrayList<>(materials.values()));
         ownDataExchangeRequest.setAffectedSitesSender(resolveSites(partnerService.getOwnPartnerEntity(), requestDto.getAffectedSitesBpnsSender()));
@@ -299,8 +297,7 @@ public class DataExchangeRequestController {
             return sites;
         }
         for (String bpns : new LinkedHashSet<>(bpnsList)) {
-            Site site = owner == null || owner.getSites() == null ? null
-                : owner.getSites().stream().filter(s -> s.getBpns().equals(bpns)).findFirst().orElse(null);
+            Site site = owner.getSites().stream().filter(s -> s.getBpns().equals(bpns)).findFirst().orElse(null);
             if (site == null) {
                 log.warn("Rejected own data exchange request: site {} could not be found", bpns);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Site for bpns %s could not be found.", bpns));

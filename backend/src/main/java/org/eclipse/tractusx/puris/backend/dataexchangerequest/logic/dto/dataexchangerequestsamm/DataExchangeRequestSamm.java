@@ -54,9 +54,6 @@ public class DataExchangeRequestSamm {
     private UUID sourceDisruptionId;
 
     @NotNull
-    private LeadingRootCauseEnumeration leadingRootCause;
-
-    @NotNull
     private EffectEnumeration effect;
 
     @NotEmpty
@@ -101,7 +98,6 @@ public class DataExchangeRequestSamm {
             @JsonProperty(value = "timestamp") Date timestamp) {
         this.requestId = requestId;
         this.sourceDisruptionId = sourceDisruptionId;
-        this.leadingRootCause = leadingRootCause;
         this.effect = effect;
         this.materialsAffected = materialsAffected;
         this.affectedSitesSender = affectedSitesSender;
@@ -125,7 +121,6 @@ public class DataExchangeRequestSamm {
         final DataExchangeRequestSamm that = (DataExchangeRequestSamm) o;
         return Objects.equals(requestId, that.requestId)
                 && Objects.equals(sourceDisruptionId, that.sourceDisruptionId)
-                && Objects.equals(leadingRootCause, that.leadingRootCause)
                 && Objects.equals(effect, that.effect)
                 && Objects.equals(materialsAffected, that.materialsAffected)
                 && Objects.equals(affectedSitesSender, that.affectedSitesSender)
@@ -140,7 +135,7 @@ public class DataExchangeRequestSamm {
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, sourceDisruptionId, leadingRootCause, effect, materialsAffected, affectedSitesSender,
+        return Objects.hash(requestId, sourceDisruptionId, effect, materialsAffected, affectedSitesSender,
                 affectedSitesRecipient, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text, timestamp);
     }
 }

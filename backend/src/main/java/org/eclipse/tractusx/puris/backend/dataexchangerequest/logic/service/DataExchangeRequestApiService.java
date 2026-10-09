@@ -65,7 +65,7 @@ public class DataExchangeRequestApiService {
         existingRequest = reportedDataExchangeRequestService.findByRequestId(request.getRequestId());
 
         if (existingRequest != null) {
-            if (existingRequest.getPartner() == null || !bpnl.equals(existingRequest.getPartner().getBpnl())) {
+            if (!bpnl.equals(existingRequest.getPartner().getBpnl())) {
                 log.error("Rejecting update of Request {}", request.getRequestId());
                 return null;
             }

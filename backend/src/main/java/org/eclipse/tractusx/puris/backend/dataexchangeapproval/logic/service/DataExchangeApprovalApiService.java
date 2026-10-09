@@ -186,7 +186,7 @@ public class DataExchangeApprovalApiService {
             irsChainOpeningRootGrantService.syncGrantsForRequest(request);
             return;
         }
-        irsChainOpeningRootGrantService.syncGrantsForNotification(request.getNotification());
+        irsChainOpeningRootGrantService.syncGrantsForRequest(request);
     }
 
     private void createIrsJobs(OwnDataExchangeRequest request) {
@@ -194,7 +194,7 @@ public class DataExchangeApprovalApiService {
             irsJobService.createJobsForRequest(request);
             return;
         }
-        irsJobService.createJobsForNotification(request.getNotification());
+        irsJobService.createJobsForRequest(request);
     }
 
     private void addForwardedRequestToGrants(ReportedDataExchangeApproval approval) {

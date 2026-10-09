@@ -30,8 +30,6 @@ public interface IrsChainOpeningRootGrantRepository extends JpaRepository<IrsCha
 	Optional<IrsChainOpeningRootGrant> findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
 		String requesterBpn, String globalAssetId, String sourceDisruptionId);
 
-	List<IrsChainOpeningRootGrant> findAllByReportedNotifications_Uuid(UUID notificationUuid);
-
 	List<IrsChainOpeningRootGrant> findAllByDataExchangeRequests_Uuid(UUID requestUuid);
 
 }

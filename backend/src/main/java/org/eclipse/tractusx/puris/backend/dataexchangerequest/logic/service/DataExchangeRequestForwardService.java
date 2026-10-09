@@ -31,6 +31,7 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.OwnDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
@@ -111,27 +112,20 @@ public class DataExchangeRequestForwardService {
         }
         Date now = new Date();
         Partner requester = origin.getPartner();
-
-        List<MaterialPartnerRelation> relations = mprService.findAll();
-        Map<String, List<MaterialPartnerRelation>> supplierRelationsByMaterial = relations.stream()
-            .filter(MaterialPartnerRelation::isPartnerSuppliesMaterial)
+        boolean demand = isDemandEffect(origin.getEffect());
+        Map<String, List<MaterialPartnerRelation>> relationsByMaterial = mprService.findAll().stream()
+            .filter(demand ? MaterialPartnerRelation::isPartnerBuysMaterial : MaterialPartnerRelation::isPartnerSuppliesMaterial)
             .collect(Collectors.groupingBy(mpr -> mpr.getMaterial().getOwnMaterialNumber()));
-        Map<String, List<MaterialPartnerRelation>> customerRelationsByMaterial = relations.stream()
-            .filter(MaterialPartnerRelation::isPartnerBuysMaterial)
-            .collect(Collectors.groupingBy(mpr -> mpr.getMaterial().getOwnMaterialNumber()));
-
+ 
         Map<String, Partner> partners = new LinkedHashMap<>();
         Map<String, Map<String, Material>> materialsByPartner = new LinkedHashMap<>();
-
+ 
         for (Material material : origin.getMaterials()) {
-            MaterialPartnerRelation relationToRequester = mprService.find(material, requester);
-            boolean upwards = relationToRequester != null && relationToRequester.isPartnerSuppliesMaterial() && !relationToRequester.isPartnerBuysMaterial();
-            Set<String> nextMaterialNumbers = upwards
+            Set<String> nextMaterialNumbers = demand
                 ? materialRelationService.resolveParentOwnMaterialNumbers(material.getOwnMaterialNumber(), now)
                 : materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
-            Map<String, List<MaterialPartnerRelation>> nextRelations = upwards ? customerRelationsByMaterial : supplierRelationsByMaterial;
             if (nextMaterialNumbers == null || nextMaterialNumbers.isEmpty()) {
-                log.info("Material {} has no currently valid {} materials, nothing to forward for it", material.getOwnMaterialNumber(), upwards ? "parent" : "child");
+                log.info("Material {} has no currently valid {} materials, nothing to forward for it", material.getOwnMaterialNumber(), demand ? "parent" : "child");
                 continue;
             }
             for (String nextMaterialNumber : nextMaterialNumbers) {
@@ -139,7 +133,7 @@ public class DataExchangeRequestForwardService {
                 if (next == null) {
                     continue;
                 }
-                for (MaterialPartnerRelation relation : nextRelations.getOrDefault(nextMaterialNumber, List.of())) {
+                for (MaterialPartnerRelation relation : relationsByMaterial.getOrDefault(nextMaterialNumber, List.of())) {
                     Partner partner = relation.getPartner();
                     if (requester.getBpnl().equals(partner.getBpnl())) {
                         continue;
@@ -149,11 +143,10 @@ public class DataExchangeRequestForwardService {
                 }
             }
         }
-
+ 
         List<ForwardTarget> targets = new ArrayList<>();
         for (var entry : materialsByPartner.entrySet()) {
-            targets.add(new ForwardTarget(partners.get(entry.getKey()), null, new ArrayList<>(entry.getValue().values()),
-                origin.getDesiredStartDateTime(), origin.getDesiredEndDateTime()));
+            targets.add(new ForwardTarget(partners.get(entry.getKey()), null, new ArrayList<>(entry.getValue().values()), origin.getDesiredStartDateTime(), origin.getDesiredEndDateTime()));
         }
         return targets;
     }
@@ -168,7 +161,6 @@ public class DataExchangeRequestForwardService {
                 .notification(notification)
                 .relatedDataExchangeRequest(origin)
                 .sourceDisruptionId(origin.getSourceDisruptionId())
-                .leadingRootCause(notification != null ? notification.getLeadingRootCause() : origin.getLeadingRootCause())
                 .effect(notification != null ? notification.getEffect() : origin.getEffect())
                 .materials(new ArrayList<>(target.materials()))
                 .affectedSitesSender(notification != null ? copyOf(notification.getAffectedSitesRecipient()) : new ArrayList<>())
@@ -186,6 +178,10 @@ public class DataExchangeRequestForwardService {
             }
         }
         return created;
+    }
+
+    private static boolean isDemandEffect(EffectEnumeration effect) {
+        return effect == EffectEnumeration.DEMAND_INCREASE || effect == EffectEnumeration.DEMAND_REDUCTION;
     }
 
     private static <T> List<T> copyOf(List<T> list) {

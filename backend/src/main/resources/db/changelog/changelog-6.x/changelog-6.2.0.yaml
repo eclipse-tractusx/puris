@@ -56,26 +56,6 @@ databaseChangeLog:
                   name: notification_uuid
                   type: UUID
                   constraints:
-                    nullable: true
-              - column:
-                  name: partner_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: source_disruption_id
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: leading_root_cause
-                  type: SMALLINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: effect
-                  type: SMALLINT
-                  constraints:
                     nullable: false
               - column:
                   name: criticality
@@ -130,25 +110,11 @@ databaseChangeLog:
             constraintName: fk_own_data_exchange_request_notification
 
         - addForeignKeyConstraint:
-            baseTableName: own_data_exchange_request
-            baseColumnNames: partner_uuid
-            referencedTableName: partner
-            referencedColumnNames: uuid
-            constraintName: fk_own_data_exchange_request_partner
-
-        - addForeignKeyConstraint:
             baseTableName: own_data_exchange_request_requested_types
             baseColumnNames: own_data_exchange_request_uuid
             referencedTableName: own_data_exchange_request
             referencedColumnNames: uuid
             constraintName: fk_own_data_exchange_request_requested_types
-
-        - createIndex:
-            indexName: idx_own_data_exchange_request_source_disruption_id
-            tableName: own_data_exchange_request
-            columns:
-              - column:
-                  name: source_disruption_id
   - changeSet:
         id: "3"
         author: OlgaIvkovic
@@ -188,26 +154,6 @@ databaseChangeLog:
                     name: notification_uuid
                     type: UUID
                     constraints:
-                      nullable: true
-                - column:
-                    name: partner_uuid
-                    type: UUID
-                    constraints:
-                      nullable: false
-                - column:
-                    name: source_disruption_id
-                    type: UUID
-                    constraints:
-                      nullable: false
-                - column:
-                    name: leading_root_cause
-                    type: SMALLINT
-                    constraints:
-                      nullable: false
-                - column:
-                    name: effect
-                    type: SMALLINT
-                    constraints:
                       nullable: false
                 - column:
                     name: criticality
@@ -245,89 +191,6 @@ databaseChangeLog:
               referencedTableName: own_demand_and_capacity_notification
               referencedColumnNames: uuid
               constraintName: fk_reported_data_exchange_request_notification
-          - addForeignKeyConstraint:
-              baseTableName: reported_data_exchange_request
-              baseColumnNames: partner_uuid
-              referencedTableName: partner
-              referencedColumnNames: uuid
-              constraintName: fk_reported_data_exchange_request_partner
-          - createIndex:
-              indexName: idx_reported_data_exchange_request_source_disruption_id
-              tableName: reported_data_exchange_request
-              columns:
-                - column:
-                    name: source_disruption_id
-          # Join tables shared by own and reported requests, like notification_material for DCNs. Request uuids are
-          # unique across both request tables, so data_exchange_request_uuid has no foreign key.
-          - createTable:
-              tableName: data_exchange_request_material
-              columns:
-                - column:
-                    name: data_exchange_request_uuid
-                    type: UUID
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: data_exchange_request_material_pkey
-                - column:
-                    name: material_own_material_number
-                    type: VARCHAR(255)
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: data_exchange_request_material_pkey
-          - addForeignKeyConstraint:
-              baseTableName: data_exchange_request_material
-              baseColumnNames: material_own_material_number
-              referencedTableName: material
-              referencedColumnNames: own_material_number
-              constraintName: fk_data_exchange_request_material_material
-          - createTable:
-              tableName: data_exchange_request_affected_sites_sender
-              columns:
-                - column:
-                    name: data_exchange_request_uuid
-                    type: UUID
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: data_exchange_request_affected_sites_sender_pkey
-                - column:
-                    name: site_bpns
-                    type: VARCHAR(255)
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: data_exchange_request_affected_sites_sender_pkey
-          - addForeignKeyConstraint:
-              baseTableName: data_exchange_request_affected_sites_sender
-              baseColumnNames: site_bpns
-              referencedTableName: site
-              referencedColumnNames: bpns
-              constraintName: fk_data_exchange_request_affected_sites_sender_site
-          - createTable:
-              tableName: data_exchange_request_affected_sites_recipient
-              columns:
-                - column:
-                    name: data_exchange_request_uuid
-                    type: UUID
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: data_exchange_request_affected_sites_recipient_pkey
-                - column:
-                    name: site_bpns
-                    type: VARCHAR(255)
-                    constraints:
-                      nullable: false
-                      primaryKey: true
-                      primaryKeyName: data_exchange_request_affected_sites_recipient_pkey
-          - addForeignKeyConstraint:
-              baseTableName: data_exchange_request_affected_sites_recipient
-              baseColumnNames: site_bpns
-              referencedTableName: site
-              referencedColumnNames: bpns
-              constraintName: fk_data_exchange_request_affected_sites_recipient_site
   - changeSet:
       id: "4"
       author: OlgaIvkovic
@@ -644,35 +507,6 @@ databaseChangeLog:
             constraintName: fk_chain_opening_grant_notification_notification
             referencedColumnNames: uuid
             referencedTableName: reported_demand_and_capacity_notification
-        - createTable:
-            tableName: chain_opening_grant_request
-            columns:
-              - column:
-                  name: chain_opening_grant_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: data_exchange_request_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-        - addUniqueConstraint:
-            tableName: chain_opening_grant_request
-            columnNames: chain_opening_grant_uuid, data_exchange_request_uuid
-            constraintName: uc_chain_opening_grant_request_key
-        - addForeignKeyConstraint:
-            baseColumnNames: chain_opening_grant_uuid
-            baseTableName: chain_opening_grant_request
-            constraintName: fk_chain_opening_grant_request_grant
-            referencedColumnNames: uuid
-            referencedTableName: chain_opening_grant
-        - addForeignKeyConstraint:
-            baseColumnNames: data_exchange_request_uuid
-            baseTableName: chain_opening_grant_request
-            constraintName: fk_chain_opening_grant_request_request
-            referencedColumnNames: uuid
-            referencedTableName: own_data_exchange_request
   - changeSet:
       id: "10"
       author: ReneSchroederLJ
@@ -755,35 +589,6 @@ databaseChangeLog:
             constraintName: fk_chain_opening_root_grant_notification_notification
             referencedColumnNames: uuid
             referencedTableName: reported_demand_and_capacity_notification
-        - createTable:
-            tableName: chain_opening_root_grant_request
-            columns:
-              - column:
-                  name: chain_opening_root_grant_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-              - column:
-                  name: data_exchange_request_uuid
-                  type: UUID
-                  constraints:
-                    nullable: false
-        - addUniqueConstraint:
-            tableName: chain_opening_root_grant_request
-            columnNames: chain_opening_root_grant_uuid, data_exchange_request_uuid
-            constraintName: uc_chain_opening_root_grant_request_key
-        - addForeignKeyConstraint:
-            baseColumnNames: chain_opening_root_grant_uuid
-            baseTableName: chain_opening_root_grant_request
-            constraintName: fk_chain_opening_root_grant_request_grant
-            referencedColumnNames: uuid
-            referencedTableName: chain_opening_root_grant
-        - addForeignKeyConstraint:
-            baseColumnNames: data_exchange_request_uuid
-            baseTableName: chain_opening_root_grant_request
-            constraintName: fk_chain_opening_root_grant_request_request
-            referencedColumnNames: uuid
-            referencedTableName: own_data_exchange_request
   - changeSet:
       id: "11"
       author: ReneSchroederLJ
@@ -1145,4 +950,3 @@ databaseChangeLog:
             tableName: aggregated_material_data_node
             columnName: measurement_unit
             columnDataType: SMALLINT
-

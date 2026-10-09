@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.DataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.DemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -36,7 +34,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 /**
  * Stateless helpers shared by {@link IrsChainOpeningRootGrantService} and
  * {@link IrsChainOpeningPartnerGrantService}, extracted so both grant flavors reuse exactly the same
- * notification-activity, material-relation-validity and allowed-BPNL-eligibility logic.
+ * request-activity, material and allowed-BPNL-eligibility logic.
  */
 final class IrsChainOpeningGrantSyncUtils {
 
@@ -44,86 +42,36 @@ final class IrsChainOpeningGrantSyncUtils {
 	}
 
 	/**
-	 * Adds the notification to the grant's reportedNotifications if no notification with the same
-	 * uuid is already present (entities have no overridden equals/hashCode, so membership is
-	 * checked explicitly by uuid rather than relying on Set semantics).
+	 * Ensures that, for every given allowed BPNL, the given backed by one of the given related 
+	 * requests to that partner that is still active and covers at least one of the given child material numbers.
+	 * An empty or {@code null} allowedBpnls is trivially eligible.
 	 *
-	 * @return {@code true} if the notification was added, {@code false} if it was already present
-	 */
-	static boolean addNotificationIfAbsent(IrsChainOpeningGrant grant, ReportedDemandAndCapacityNotification notification) {
-		boolean alreadyPresent = grant.getReportedNotifications().stream()
-			.anyMatch(existing -> existing.getUuid().equals(notification.getUuid()));
-		if (alreadyPresent) {
-			return false;
-		}
-		return grant.getReportedNotifications().add(notification);
-	}
-
-	/**
-	 * Removes the notification (matched by uuid) from the grant's reportedNotifications.
-	 *
-	 * @return {@code true} if the notification was present and removed
-	 */
-	static boolean removeNotificationIfPresent(IrsChainOpeningGrant grant, ReportedDemandAndCapacityNotification notification) {
-		return grant.getReportedNotifications().removeIf(existing -> existing.getUuid().equals(notification.getUuid()));
-	}
-
-	/**
-	 * Reconciles the grant's reportedNotifications to exactly match {@code desired} (uuid-based),
-	 * adding missing entries and removing stale ones.
-	 *
-	 * @return {@code true} if the grant's reportedNotifications changed as a result
-	 */
-	static boolean reconcile(IrsChainOpeningGrant grant, Set<ReportedDemandAndCapacityNotification> desired) {
-		Set<UUID> desiredUuids = desired.stream()
-			.map(ReportedDemandAndCapacityNotification::getUuid)
-			.collect(Collectors.toSet());
-
-		boolean changed = grant.getReportedNotifications().removeIf(existing -> !desiredUuids.contains(existing.getUuid()));
-		for (ReportedDemandAndCapacityNotification notification : desired) {
-			if (addNotificationIfAbsent(grant, notification)) {
-				changed = true;
-			}
-		}
-		return changed;
-	}
-
-	/**
-	 * Ensures that, for every given allowed BPNL, the given related reported notifications contain
-	 * a valid one (i.e. one that is currently active) from that BPNL, covering at least one of the
-	 * given child material numbers. An empty or {@code null} allowedBpnls is trivially eligible.
-	 *
-	 * @throws IllegalArgumentException if any allowed BPNL lacks a matching related reported notification
+	 * @throws IllegalArgumentException if any allowed BPNL lacks a matching related request
 	 */
 	static void assertAllowedBpnlsEligible(Set<String> allowedBpnls,
-			List<ReportedDemandAndCapacityNotification> relatedReportedNotifications,
+			List<OwnDataExchangeRequest> relatedRequests,
 			Set<String> childMaterialNumbers, Date now) {
 		if (allowedBpnls == null || allowedBpnls.isEmpty()) {
 			return;
 		}
 
-		for (String allowedBpnl : allowedBpnls) {
-			boolean hasMatchingNotification = relatedReportedNotifications.stream()
-				.filter(notification -> notification.getPartner() != null
-					&& Objects.equals(notification.getPartner().getBpnl(), allowedBpnl))
-				.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))
-				.filter(notification -> notification.getMaterials() != null)
-				.flatMap(notification -> notification.getMaterials().stream())
-				.filter(Objects::nonNull)
-				.map(Material::getOwnMaterialNumber)
-				.anyMatch(childMaterialNumbers::contains);
+		Set<String> backedByRequest = relatedRequests.stream()
+			.filter(request -> isRequestActiveNow(request, now))
+			.filter(request -> affectsAnyMaterial(request, childMaterialNumbers))
+			.map(OwnDataExchangeRequest::getPartner)
+			.filter(Objects::nonNull)
+			.map(Partner::getBpnl)
+			.collect(Collectors.toSet());
 
-			if (!hasMatchingNotification) {
-				throw new IllegalArgumentException(
-					"Each allowed BPNL of a chain opening grant requires a valid related reported notification covering "
-						+ "a child material of the grant's material.");
-			}
+		if (!backedByRequest.containsAll(allowedBpnls)) {
+			throw new IllegalArgumentException(
+				"Each allowed BPNL of a chain opening grant requires a valid related data exchange request covering "
+					+ "a child material of the grant's material.");
 		}
 	}
 
 	/**
-	 * Determines whether a data exchange request without notification can back a grant at the given point in
-	 * time
+	 * Determines whether a data exchange request can back a grant at the given point in time
 	 */
 	static boolean isRequestActiveNow(DataExchangeRequest request, Date now) {
 		return request.getDesiredEndDateTime() != null && !request.getDesiredEndDateTime().before(now);
@@ -151,7 +99,6 @@ final class IrsChainOpeningGrantSyncUtils {
 
 	/**
 	 * Adds the request to the grant's dataExchangeRequests if no request with the same uuid is already present,
-	 * the counterpart of {@link #addNotificationIfAbsent}.
 	 *
 	 * @return {@code true} if the request was added, {@code false} if it was already present
 	 */
@@ -165,7 +112,8 @@ final class IrsChainOpeningGrantSyncUtils {
 	}
 
 	/**
-	 * Adding missing entries and removing stale ones, the counterpart of {@link #reconcile}.
+	 * Reconciles the grant's dataExchangeRequests to exactly match {@code desired} (uuid-based),
+	 * adding missing entries and removing stale ones.
 	 *
 	 * @return {@code true} if the grant's dataExchangeRequests changed as a result
 	 */
@@ -181,33 +129,5 @@ final class IrsChainOpeningGrantSyncUtils {
 			}
 		}
 		return changed;
-	}
-
-	/**
-	 * Same as {@link #assertAllowedBpnlsEligible(Set, List, Set, Date)}, but an allowed BPNL can also be
-	 * backed by a related request without notification Only requests their partner approved may be passed.
-	 *
-	 * @throws IllegalArgumentException if any allowed BPNL lacks a matching related reported notification or request
-	 */
-	static void assertAllowedBpnlsEligible(Set<String> allowedBpnls,
-			List<ReportedDemandAndCapacityNotification> relatedReportedNotifications,
-			List<OwnDataExchangeRequest> relatedRequests,
-			Set<String> childMaterialNumbers, Date now) {
-		if (allowedBpnls == null || allowedBpnls.isEmpty()) {
-			return;
-		}
-
-		Set<String> backedByRequest = relatedRequests.stream()
-			.filter(request -> isRequestActiveNow(request, now))
-			.filter(request -> affectsAnyMaterial(request, childMaterialNumbers))
-			.map(OwnDataExchangeRequest::getPartner)
-			.filter(Objects::nonNull)
-			.map(Partner::getBpnl)
-			.collect(Collectors.toSet());
-		Set<String> remainingBpnls = allowedBpnls.stream()
-			.filter(allowedBpnl -> !backedByRequest.contains(allowedBpnl))
-			.collect(Collectors.toSet());
-
-		assertAllowedBpnlsEligible(remainingBpnls, relatedReportedNotifications, childMaterialNumbers, now);
 	}
 }

@@ -50,10 +50,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -280,7 +278,6 @@ public class DataExchangeRequestForwardServiceTest {
         Assertions.assertSame(targetNotification, created.getNotification());
         Assertions.assertSame(supplierPartner, created.getPartner());
         Assertions.assertEquals(origin.getSourceDisruptionId(), created.getSourceDisruptionId());
-        Assertions.assertEquals(targetNotification.getLeadingRootCause(), created.getLeadingRootCause());
         Assertions.assertEquals(targetNotification.getEffect(), created.getEffect());
         Assertions.assertEquals(targetNotification.getMaterials(), created.getMaterials());
         
@@ -311,7 +308,6 @@ public class DataExchangeRequestForwardServiceTest {
         Assertions.assertSame(origin, created.getRelatedDataExchangeRequest());
         Assertions.assertSame(supplierPartner, created.getPartner());
         Assertions.assertEquals(origin.getSourceDisruptionId(), created.getSourceDisruptionId());
-        Assertions.assertEquals(origin.getLeadingRootCause(), created.getLeadingRootCause());
         Assertions.assertEquals(origin.getEffect(), created.getEffect());
         Assertions.assertEquals(List.of(child), created.getMaterials());
         Assertions.assertTrue(created.getAffectedSitesSender().isEmpty());
@@ -399,7 +395,6 @@ public class DataExchangeRequestForwardServiceTest {
             .partner(requester)
             .notification(ownNotification)
             .sourceDisruptionId(SOURCE_DISRUPTION_ID)
-            .leadingRootCause(LeadingRootCauseEnumeration.STRIKE)
             .effect(EffectEnumeration.CAPACITY_REDUCTION)
             .materials(new ArrayList<>(List.of(material("MNR-ORIGIN"))))
             .criticality(CriticalityEnumeration.HIGH)
@@ -416,7 +411,6 @@ public class DataExchangeRequestForwardServiceTest {
             .requestId(UUID.randomUUID().toString())
             .partner(requester)
             .sourceDisruptionId(SOURCE_DISRUPTION_ID)
-            .leadingRootCause(LeadingRootCauseEnumeration.STRIKE)
             .effect(EffectEnumeration.CAPACITY_REDUCTION)
             .materials(new ArrayList<>(materials))
             .criticality(CriticalityEnumeration.HIGH)

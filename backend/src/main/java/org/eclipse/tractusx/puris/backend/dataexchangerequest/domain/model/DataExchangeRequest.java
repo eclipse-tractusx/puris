@@ -82,9 +82,6 @@ public abstract class DataExchangeRequest {
     protected UUID sourceDisruptionId;
 
     @NotNull
-    protected LeadingRootCauseEnumeration leadingRootCause;
-
-    @NotNull
     protected EffectEnumeration effect;
 
     @ManyToMany
@@ -147,7 +144,6 @@ public abstract class DataExchangeRequest {
         final DataExchangeRequest that = (DataExchangeRequest) o;
         return Objects.equals(this.getRequestId(), that.getRequestId()) &&
             Objects.equals(this.getSourceDisruptionId(), that.getSourceDisruptionId()) &&
-            this.getLeadingRootCause() == that.getLeadingRootCause() &&
             this.getEffect() == that.getEffect() &&
             Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
             Objects.equals(toInstant(this.getDesiredStartDateTime()), toInstant(that.getDesiredStartDateTime())) &&
@@ -157,7 +153,7 @@ public abstract class DataExchangeRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, sourceDisruptionId, leadingRootCause, effect, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
+        return Objects.hash(requestId, sourceDisruptionId, effect, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
     }
 
     private static Instant toInstant(Date d) {

@@ -52,8 +52,6 @@ public class DataExchangeRequestDto implements Serializable {
     @Pattern(regexp = PatternStore.BPNL_STRING)
     private String partnerBpnl;
 
-    private LeadingRootCauseEnumeration leadingRootCause;
-
     private EffectEnumeration effect;
 
     private List<@Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING) String> affectedMaterialNumbers;

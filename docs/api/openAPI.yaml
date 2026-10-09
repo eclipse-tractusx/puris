@@ -350,17 +350,6 @@ components:
           - capacity-increase
           maxItems: 50
           type: string
-        leadingRootCause:
-          enum:
-          - strike
-          - natural-disaster
-          - production-incident
-          - pandemic-or-epidemic
-          - logistics-disruption
-          - war
-          - other
-          maxItems: 50
-          type: string
         notificationId:
           format: uuid
           maxItems: 50
