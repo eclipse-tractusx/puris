@@ -56,7 +56,7 @@ public class DataExchangeRequestApiService {
             log.error("Unknown Partner BPNL");
             return null;
         }
-        var request = sammMapper.sammToReportedDataExchangeRequest(bpnl, samm);
+        var request = sammMapper.sammToReportedDataExchangeRequest(partner, samm);
         if (request == null) {
             log.error("Error mapping incoming Request");
             return null;
@@ -65,6 +65,10 @@ public class DataExchangeRequestApiService {
         existingRequest = reportedDataExchangeRequestService.findByRequestId(request.getRequestId());
 
         if (existingRequest != null) {
+            if (!bpnl.equals(existingRequest.getPartner().getBpnl())) {
+                log.error("Rejecting update of Request {}", request.getRequestId());
+                return null;
+            }
             log.info("Updating existing Request");
             request.setUuid(existingRequest.getUuid());
             if (reportedDataExchangeRequestService.update(request) == null) {
@@ -85,11 +89,12 @@ public class DataExchangeRequestApiService {
         }
     }
 
-    public void sendDataExchangeRequest(OwnDataExchangeRequest request, Partner partner) {
-        var body = createDataExchangeRequestBody(request);
+    public void sendDataExchangeRequest(OwnDataExchangeRequest request) {
+        Partner partner = request.getPartner();
         try {
+            var body = createDataExchangeRequestBody(request);
             edcAdapterService.doDataExchangeRequestPostRequest(partner, body);
-            log.info("Successfully sent Data Exchange Request to partner " + partner.getBpnl()); 
+            log.info("Successfully sent Data Exchange Request to partner " + partner.getBpnl());
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeRequest for partner " + partner.getBpnl(), e);
         }
@@ -97,7 +102,7 @@ public class DataExchangeRequestApiService {
 
     private JsonNode createDataExchangeRequestBody(OwnDataExchangeRequest request) {
         var samm = sammMapper.ownDataExchangeRequestToSamm(request);
-        return messageService.createMessage(request.getNotification().getPartner(), IndustryCoreMessageContext.DATA_EXCHANGE_REQUEST_CONTEXT, samm);
+        return messageService.createMessage(request.getPartner(), IndustryCoreMessageContext.DATA_EXCHANGE_REQUEST_CONTEXT, samm);
     }
     
 }

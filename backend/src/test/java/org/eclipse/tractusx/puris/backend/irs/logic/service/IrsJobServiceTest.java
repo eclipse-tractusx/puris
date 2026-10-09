@@ -18,8 +18,10 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
@@ -31,18 +33,24 @@ import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatu
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsChainOpeningRootGrantRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,6 +63,8 @@ class IrsJobServiceTest {
 
     private static final String GLOBAL_ASSET_ID = "urn:uuid:6c311d29-5753-46d4-b32c-19b918ea93b0";
     private static final String OTHER_GLOBAL_ASSET_ID = "urn:uuid:00000000-0000-0000-0000-0000000000aa";
+    private static final String CHILD_MATERIAL_NUMBER = "MNR-002";
+    private static final String OTHER_MATERIAL_NUMBER = "MNR-003";
 
     @Mock
     private IrsJobRepository irsJobRepository;
@@ -66,9 +76,6 @@ class IrsJobServiceTest {
     private IrsRequestQueueService irsRequestQueueService;
 
     @Mock
-    private ReportedDemandAndCapacityNotificationService reportedNotificationService;
-
-    @Mock
     private IrsAdapterConfiguration irsAdapterConfiguration;
 
     @Mock
@@ -77,11 +84,21 @@ class IrsJobServiceTest {
     @Mock
     private MaterialService materialService;
 
+    @Mock
+    private MaterialRelationService materialRelationService;
+
+    @Mock
+    private OwnDataExchangeRequestRepository ownDataExchangeRequestRepository;
+
+    @Mock
+    private ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
+
     @InjectMocks
     private IrsJobService irsJobService;
 
     private IrsJob validJob;
     private Material material;
+    private OwnDataExchangeRequest approvedRequest;
 
     @BeforeEach
     void setUp() {
@@ -94,8 +111,13 @@ class IrsJobServiceTest {
         validJob.setMaterial(material);
         validJob.setState(IrsJobStateEnumeration.INITIAL);
 
+        approvedRequest = ownRequest(CHILD_MATERIAL_NUMBER);
+
         lenient().when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(true);
-        lenient().when(reportedNotificationService.isAnyChildAffectedByActiveNotifications(material)).thenReturn(true);
+        lenient().when(materialRelationService.resolveChildOwnMaterialNumbers(any(), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
+        lenient().when(ownDataExchangeRequestRepository.findAll()).thenReturn(List.of(approvedRequest));
+        lenient().when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(approvedRequest.getUuid()))
+            .thenReturn(new ReportedDataExchangeApproval());
     }
 
     // --- createAndSend ---
@@ -151,7 +173,7 @@ class IrsJobServiceTest {
         verify(irsRequestBodybuilder, never()).buildJobCreationRequestBody(any());
     }
 
-    // --- createJobsForNotification ---
+    // --- createJobsForRequest ---
 
     private IrsChainOpeningRootGrant rootGrant(String globalAssetId, String sourceDisruptionId) {
         return IrsChainOpeningRootGrant.builder()
@@ -172,26 +194,24 @@ class IrsJobServiceTest {
     }
 
     @Test
-    void createJobsForNotification_WhenGrantMaterialNotFound_SkipsGrantWithoutThrowing() {
-        ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
-        notification.setUuid(UUID.randomUUID());
-        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, UUID.randomUUID().toString());
-        when(irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notification.getUuid())).thenReturn(List.of(grant));
+    void createJobsForRequest_WhenGrantMaterialNotFound_SkipsGrantWithoutThrowing() {
+        OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
+        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, request.getSourceDisruptionId().toString());
+        when(irsChainOpeningRootGrantRepository.findAllByDataExchangeRequests_Uuid(request.getUuid())).thenReturn(List.of(grant));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
 
-        irsJobService.createJobsForNotification(notification);
+        irsJobService.createJobsForRequest(request);
 
         verify(irsJobRepository, never()).save(any());
     }
 
     @Test
-    void createJobsForNotification_WhenOneGrantIneligible_ContinuesWithRemainingGrants() {
-        ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
-        notification.setUuid(UUID.randomUUID());
-        String sourceDisruptionId = UUID.randomUUID().toString();
+    void createJobsForRequest_WhenOneGrantIneligible_ContinuesWithRemainingGrants() {
+        OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
+        String sourceDisruptionId = request.getSourceDisruptionId().toString();
         IrsChainOpeningRootGrant ineligibleGrant = rootGrant(OTHER_GLOBAL_ASSET_ID, sourceDisruptionId);
         IrsChainOpeningRootGrant eligibleGrant = rootGrant(GLOBAL_ASSET_ID, sourceDisruptionId);
-        when(irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notification.getUuid()))
+        when(irsChainOpeningRootGrantRepository.findAllByDataExchangeRequests_Uuid(request.getUuid()))
             .thenReturn(List.of(ineligibleGrant, eligibleGrant));
 
         Material ineligibleMaterial = new Material();
@@ -201,9 +221,86 @@ class IrsJobServiceTest {
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(material);
         stubSuccessfulSend();
 
-        irsJobService.createJobsForNotification(notification);
+        irsJobService.createJobsForRequest(request);
 
         // one successful create+send cycle for the eligible grant: one save on create, one on update
         verify(irsJobRepository, times(2)).save(any(IrsJob.class));
+    }
+
+    /** An own request for the given materials, whose desired window runs from an hour ago to in an hour. */
+    private OwnDataExchangeRequest ownRequest(String... ownMaterialNumbers) {
+        List<Material> materials = new ArrayList<>();
+        for (String ownMaterialNumber : ownMaterialNumbers) {
+            Material requested = new Material();
+            requested.setOwnMaterialNumber(ownMaterialNumber);
+            materials.add(requested);
+        }
+        UUID uuid = UUID.randomUUID();
+        OwnDataExchangeRequest request = new OwnDataExchangeRequest();
+        request.setUuid(uuid);
+        request.setRequestId("urn:uuid:" + uuid);
+        request.setSourceDisruptionId(UUID.randomUUID());
+        request.setMaterials(materials);
+        request.setDesiredStartDateTime(Date.from(Instant.now().minusSeconds(3600)));
+        request.setDesiredEndDateTime(Date.from(Instant.now().plusSeconds(3600)));
+        return request;
+    }
+
+    /**
+     * Stubs the request's root grant for GLOBAL_ASSET_ID and its material, and makes the request the only stored request, which
+     * overrides the approved request of setUp.
+     */
+    private IrsChainOpeningRootGrant stubRootGrantOfRequest(OwnDataExchangeRequest request) {
+        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, request.getSourceDisruptionId().toString());
+        when(irsChainOpeningRootGrantRepository.findAllByDataExchangeRequests_Uuid(request.getUuid())).thenReturn(List.of(grant));
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(material);
+        when(ownDataExchangeRequestRepository.findAll()).thenReturn(List.of(request));
+        return grant;
+    }
+
+    @Test
+    void createJobsForRequest_WhenRequestWasApproved_CreatesAndSendsJob() {
+        OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
+        IrsChainOpeningRootGrant grant = stubRootGrantOfRequest(request);
+        when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(request.getUuid())).thenReturn(new ReportedDataExchangeApproval());
+        stubSuccessfulSend();
+
+        irsJobService.createJobsForRequest(request);
+
+        ArgumentCaptor<IrsJob> captor = ArgumentCaptor.forClass(IrsJob.class);
+        verify(irsJobRepository, times(2)).save(captor.capture());
+        assertThat(captor.getValue().getMaterial()).isEqualTo(material);
+        assertThat(captor.getValue().getSourceDisruptionId()).isEqualTo(grant.getSourceDisruptionId());
+    }
+
+    @Test
+    void createJobsForRequest_WhenRequestWasNotApproved_SkipsGrant() {
+        OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
+        stubRootGrantOfRequest(request);
+        irsJobService.createJobsForRequest(request);
+
+        verify(irsJobRepository, never()).save(any());
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void createJobsForRequest_WhenRequestWindowHasEnded_SkipsGrant() {
+        OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
+        request.setDesiredEndDateTime(Date.from(Instant.now().minusSeconds(3600)));
+        stubRootGrantOfRequest(request);
+
+        irsJobService.createJobsForRequest(request);
+
+        verify(irsJobRepository, never()).save(any());
+    }
+
+    @Test
+    void createJobsForRequest_WhenRequestAffectsNoChildMaterial_SkipsGrant() {
+        OwnDataExchangeRequest request = ownRequest(OTHER_MATERIAL_NUMBER);
+        stubRootGrantOfRequest(request);
+
+        irsJobService.createJobsForRequest(request);
+
+        verify(irsJobRepository, never()).save(any());
     }
 }

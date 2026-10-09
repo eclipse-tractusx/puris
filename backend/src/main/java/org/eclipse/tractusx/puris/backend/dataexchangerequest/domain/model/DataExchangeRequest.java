@@ -24,6 +24,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.LeadingRootCauseEnumeration;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Site;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +36,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -62,6 +71,42 @@ public abstract class DataExchangeRequest {
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     protected String requestId;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "partner_uuid", nullable = false)
+    @ToString.Exclude
+    @NotNull
+    protected Partner partner;
+
+    @NotNull
+    protected UUID sourceDisruptionId;
+
+    @NotNull
+    protected EffectEnumeration effect;
+
+    @ManyToMany
+    @JoinTable(
+        name = "data_exchange_request_material",
+        joinColumns = @JoinColumn(name = "data_exchange_request_uuid"),
+        inverseJoinColumns = @JoinColumn(name = "material_own_material_number"))
+    @ToString.Exclude
+    protected List<Material> materials;
+
+    @ManyToMany
+    @JoinTable(
+        name = "data_exchange_request_affected_sites_sender",
+        joinColumns = @JoinColumn(name = "data_exchange_request_uuid"),
+        inverseJoinColumns = @JoinColumn(name = "site_bpns"))
+    @ToString.Exclude
+    protected List<Site> affectedSitesSender;
+
+    @ManyToMany
+    @JoinTable(
+        name = "data_exchange_request_affected_sites_recipient",
+        joinColumns = @JoinColumn(name = "data_exchange_request_uuid"),
+        inverseJoinColumns = @JoinColumn(name = "site_bpns"))
+    @ToString.Exclude
+    protected List<Site> affectedSitesRecipient;
 
     @NotNull
     private CriticalityEnumeration criticality;
@@ -98,6 +143,8 @@ public abstract class DataExchangeRequest {
 
         final DataExchangeRequest that = (DataExchangeRequest) o;
         return Objects.equals(this.getRequestId(), that.getRequestId()) &&
+            Objects.equals(this.getSourceDisruptionId(), that.getSourceDisruptionId()) &&
+            this.getEffect() == that.getEffect() &&
             Objects.equals(this.getCriticality().getValue(), that.getCriticality().getValue()) &&
             Objects.equals(toInstant(this.getDesiredStartDateTime()), toInstant(that.getDesiredStartDateTime())) &&
             Objects.equals(toInstant(this.getDesiredEndDateTime()), toInstant(that.getDesiredEndDateTime())) &&
@@ -106,7 +153,7 @@ public abstract class DataExchangeRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
+        return Objects.hash(requestId, sourceDisruptionId, effect, criticality, desiredStartDateTime, desiredEndDateTime, requestedTypes, text);
     }
 
     private static Instant toInstant(Date d) {

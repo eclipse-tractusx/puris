@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface IrsChainOpeningPartnerGrantRepository extends JpaRepository<IrsChainOpeningPartnerGrant, UUID> {
@@ -30,6 +31,6 @@ public interface IrsChainOpeningPartnerGrantRepository extends JpaRepository<Irs
 	Optional<IrsChainOpeningPartnerGrant> findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
 		String requesterBpn, String globalAssetId, String sourceDisruptionId);
 
-	List<IrsChainOpeningPartnerGrant> findAllByReportedNotifications_Uuid(UUID notificationUuid);
+	List<IrsChainOpeningRootGrant> findAllByDataExchangeRequests_Uuid(UUID requestUuid);
 
 }

@@ -22,12 +22,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.CriticalityEnumeration;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.EffectEnumeration;
+import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.LeadingRootCauseEnumeration;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,8 +45,20 @@ public class DataExchangeRequestDto implements Serializable {
     private UUID uuid;
     private String requestId;
 
-    @NotNull
     private UUID notificationId;
+
+    private UUID sourceDisruptionId;
+
+    @Pattern(regexp = PatternStore.BPNL_STRING)
+    private String partnerBpnl;
+
+    private EffectEnumeration effect;
+
+    private List<@Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING) String> affectedMaterialNumbers;
+
+    private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesBpnsSender;
+
+    private List<@Pattern(regexp = PatternStore.BPNS_STRING) String> affectedSitesBpnsRecipient;
 
     @NotNull
     private CriticalityEnumeration criticality;

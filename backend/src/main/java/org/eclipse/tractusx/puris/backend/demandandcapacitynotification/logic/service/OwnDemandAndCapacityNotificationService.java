@@ -28,7 +28,6 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.OwnDemandAndCapacityNotificationRepository;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +43,9 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
     @Autowired
     private ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository;
 
-    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
-
     public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService,
-            MaterialPartnerRelationService mpr, IrsChainOpeningPartnerGrantService irsChainOpeningGrantService) {
+            MaterialPartnerRelationService mpr) {
         super(ownNotificationRepository, partnerService, mpr);
-        this.irsChainOpeningGrantService = irsChainOpeningGrantService;
-    }
-
-    @Override
-    protected void afterUpdate(OwnDemandAndCapacityNotification previous, OwnDemandAndCapacityNotification updated) {
-        irsChainOpeningGrantService.onOwnNotificationUpdated(previous, updated);
     }
 
     public List<OwnDemandAndCapacityNotification>  findAllByPartnerBpnl(String bpnl) {
