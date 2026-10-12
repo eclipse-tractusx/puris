@@ -51,7 +51,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-@WebMvcTest(DigitalTwinEventControllerTest.class)
+@WebMvcTest(DigitalTwinEventController.class)
 @Import({SecurityConfig.class, ApiKeyAuthenticationProvider.class, DtrSecurityConfiguration.class, VariablesService.class,
     TestConfig.class, IndustryCoreMessageService.class})
 public class DigitalTwinEventControllerTest {
