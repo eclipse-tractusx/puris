@@ -21,6 +21,8 @@ package org.eclipse.tractusx.puris.backend.stock.logic.dto.itemstocksamm;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -39,6 +41,7 @@ import java.util.Set;
  * set.
  */
 
+@Schema (name = "ItemStockPosition")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -111,6 +111,32 @@ components:
       - plannedProductionQuantity
       - productionSiteBpnsAnonymized
       type: object
+    AllocatedStock:
+      additionalProperties: false
+      properties:
+        isBlocked:
+          type: boolean
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantityOnAllocatedStock:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        stockLocationBPNA:
+          maxItems: 50
+          pattern: ^BPNA[0-9a-zA-Z]{12}$
+          type: string
+        stockLocationBPNS:
+          maxItems: 50
+          pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
+      required:
+      - isBlocked
+      - lastUpdatedOnDateTime
+      - quantityOnAllocatedStock
+      - stockLocationBPNA
+      - stockLocationBPNS
+      type: object
     AllocatedStockAnonymized:
       additionalProperties: false
       properties:
@@ -311,6 +337,49 @@ components:
       - direction
       - materialGlobalAssetId
       type: object
+    Delivery:
+      additionalProperties: false
+      properties:
+        deliveryQuantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        incoterm:
+          enum:
+          - EXW
+          - FCA
+          - FAS
+          - FOB
+          - CFR
+          - CIF
+          - DAP
+          - DPU
+          - CPT
+          - CIP
+          - DDP
+          maxItems: 50
+          type: string
+        lastUpdatedOnDateTime:
+          format: date-time
+          maxItems: 50
+          type: string
+        trackingNumber:
+          maxItems: 50
+          pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
+          type: string
+        transitEvents:
+          items:
+            $ref: '#/components/schemas/TransitEvent'
+          maxItems: 2
+          minItems: 1
+          type: array
+          uniqueItems: true
+        transitLocations:
+          $ref: '#/components/schemas/TransitLocations'
+      required:
+      - deliveryQuantity
+      - lastUpdatedOnDateTime
+      - transitEvents
+      - transitLocations
+      type: object
     DeliveryAnonymized:
       additionalProperties: false
       properties:
@@ -484,7 +553,7 @@ components:
           type: string
         positions:
           items:
-            $ref: '#/components/schemas/Position'
+            $ref: '#/components/schemas/DeliveryPosition'
           maxItems: 50
           type: array
           uniqueItems: true
@@ -508,6 +577,20 @@ components:
       required:
       - deliveries
       - materialGlobalAssetIdAnonymized
+      type: object
+    DeliveryPosition:
+      additionalProperties: false
+      properties:
+        deliveries:
+          items:
+            $ref: '#/components/schemas/Delivery'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        orderPositionReference:
+          $ref: '#/components/schemas/OrderPositionReference'
+      required:
+      - deliveries
       type: object
     Demand:
       additionalProperties: false
@@ -837,6 +920,20 @@ components:
       - allocatedStocksAnonymized
       - direction
       type: object
+    ItemStockPosition:
+      additionalProperties: false
+      properties:
+        allocatedStocks:
+          items:
+            $ref: '#/components/schemas/AllocatedStock'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+        orderPositionReference:
+          $ref: '#/components/schemas/OrderPositionReference'
+      required:
+      - allocatedStocks
+      type: object
     ItemStockSamm:
       additionalProperties: false
       properties:
@@ -852,7 +949,7 @@ components:
           type: string
         positions:
           items:
-            $ref: '#/components/schemas/Position'
+            $ref: '#/components/schemas/ItemStockPosition'
           maxItems: 50
           type: array
           uniqueItems: true
@@ -861,6 +958,20 @@ components:
       - positions
       type: object
     JsonNode:
+      type: object
+    Location:
+      additionalProperties: false
+      properties:
+        bpnaProperty:
+          maxItems: 50
+          pattern: ^BPNA[0-9a-zA-Z]{12}$
+          type: string
+        bpnsProperty:
+          maxItems: 50
+          pattern: ^BPNS[0-9a-zA-Z]{12}$
+          type: string
+      required:
+      - bpnsProperty
       type: object
     Material:
       additionalProperties: false
@@ -1911,6 +2022,17 @@ components:
       required:
       - dateTimeOfEvent
       - eventType
+      type: object
+    TransitLocations:
+      additionalProperties: false
+      properties:
+        destination:
+          $ref: '#/components/schemas/Location'
+        origin:
+          $ref: '#/components/schemas/Location'
+      required:
+      - destination
+      - origin
       type: object
     ValidityPeriodEntity:
       additionalProperties: false
