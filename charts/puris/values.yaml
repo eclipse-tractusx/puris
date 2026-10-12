@@ -506,6 +506,9 @@ backend:
     dataexchangerequestapi:
       # -- Asset ID for Data Exchange Request API
       apiassetid: dataexchangerequestapi-api-asset
+    digitaltwineventapi:
+      # -- Asset ID for Digital Twin Event API
+      apiassetid: digitaltwineventapi-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
       credential: DataExchangeGovernance

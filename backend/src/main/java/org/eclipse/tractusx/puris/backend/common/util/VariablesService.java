@@ -169,6 +169,21 @@ public class VariablesService {
      * during asset creation.
      */
     private String dataExchangeRequestApi;
+    
+    /**
+     * The url under which this application's Digital Twin Event API endpoint can
+     * be reached by external machines.
+     */
+    public String getDigitalTwinEventApiEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "digital-twin-events";
+    }
+
+    @Value("${puris.digitaltwineventapi.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Digital Twin Event API request API
+     * during asset creation.
+     */
+    private String digitalTwinEventApiAssetId;
 
     /**
      * The url under which this application's anonymized delivery information request endpoint can
@@ -422,6 +437,10 @@ public class VariablesService {
 
     public String getDataExchangeRequestApiAssetId() {
         return dataExchangeRequestApi + "@" + ownBpnl;
+    }
+
+    public String getDigitalTwinEventApiAssetId() {
+        return digitalTwinEventApiAssetId + "@" + ownBpnl;
     }
 
     public String getPartTypeLegacySubmodelApiAssetId() {

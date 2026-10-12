@@ -223,7 +223,12 @@ public class EdcAdapterService {
             variablesService.getDaysOfSupplySubmodelEndpoint(),
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
-        log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
+        log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDigitalTwinEventApiAsset(
+            variablesService.getDigitalTwinEventApiAssetId(),
+            variablesService.getDigitalTwinEventApiEndpoint()
+        )));
+        result &= assetRegistration;
+        log.info("Registration of DigitalTwinEvent API 3.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
             variablesService.getDataExchangeRequestApiAssetId(),
             variablesService.getDataExchangeRequestEndpoint()
         )));
@@ -289,7 +294,8 @@ public class EdcAdapterService {
         result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
         result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
-        createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner("DigitalTwinEventAPI 3.0.0", variablesService.getDigitalTwinEventApiAssetId(), partner);
+        result &= createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner);
         return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeLegacySubmodelApiAssetId(), partner) && result;
     }
 
@@ -493,6 +499,11 @@ public class EdcAdapterService {
 
     private boolean registerDataExchangeRequestAsset(String assetId, String endpoint) {
         var body = edcRequestBodyBuilder.buildDataExchangeRequestRegistrationBody(assetId, endpoint);
+        return sendAssetRegistrationRequest(body, assetId);
+    }
+
+    private boolean registerDigitalTwinEventApiAsset(String assetId, String endpoint) {
+        var body = edcRequestBodyBuilder.buildDigitalTwinEventApiRegistrationBody(assetId, endpoint);
         return sendAssetRegistrationRequest(body, assetId);
     }
 
