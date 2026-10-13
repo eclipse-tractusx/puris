@@ -77,6 +77,10 @@ public class DigitalTwinEventControllerTest {
         Partner ownPartner = new Partner();
         ownPartner.setBpnl(OWN_BPNL);
         when(partnerService.getOwnPartnerEntity()).thenReturn(ownPartner);
+
+        Partner partner = new Partner();
+        partner.setBpnl(PARTNER_BPNL);
+        when(partnerService.findByBpnl(PARTNER_BPNL)).thenReturn(partner);
     }
 
     @ParameterizedTest
@@ -125,12 +129,16 @@ public class DigitalTwinEventControllerTest {
         "industrycore-digitaltwinevent-ConnectToParent:3.0.0",
         "CX-DataExchangeRequestAPI-RequestReceive:1.0.0",
         " IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0",
-        "IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0\n"
+        "IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0\n",
+        "IndustryCore-DigitalTwinEvent-Delete:3.0.0",
+        "IndustryCore-DigitalTwinEvent-connectToParent:3.0.0",
+        "IndustryCore-DigitalTwinEvent-FEEDBACK:3.0.0",
+        "IndustryCore-DigitalTwinEvent-ConnectToParentAndChild:3.0.0"
     })
     void contextNotMatchingPattern_post_returnsBadRequest(String context) throws Exception {
         postViaEdc(message(context).toString())
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.detail").value("Context does not match IndustryCore-DigitalTwinEvent-<Operation>:3.0.0"));
+            .andExpect(jsonPath("$.detail").value("Context does not match IndustryCore-DigitalTwinEvent-<ConnectToParent | ConnectToChild | SubmodelUpdate | Feedback>:3.0.0"));
     }
 
     @Test
@@ -140,7 +148,7 @@ public class DigitalTwinEventControllerTest {
 
         postViaEdc(body.toString())
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.detail").value("Context does not match IndustryCore-DigitalTwinEvent-<Operation>:3.0.0"));
+            .andExpect(jsonPath("$.detail").value("Context does not match IndustryCore-DigitalTwinEvent-<ConnectToParent | ConnectToChild | SubmodelUpdate | Feedback>:3.0.0"));
     }
 
     @Test

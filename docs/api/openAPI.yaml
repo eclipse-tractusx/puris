@@ -3541,6 +3541,13 @@ paths:
       responses:
         '400':
           description: 'Bad Request: invalid edc-bpn header, message header or context'
+        '401':
+          description: 'Access forbidden. '
+        '403':
+          description: Access forbidden - self-access only
+        '404':
+          description: 'Not Found: a child material is unknown or not supplied to
+            the sender'
         '501':
           description: Handling of the operation is not implemented yet
       summary: Receives Digital Twin Events 3.0. This endpoint is meant to be accessed

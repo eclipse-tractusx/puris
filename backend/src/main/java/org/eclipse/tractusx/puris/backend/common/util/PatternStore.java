@@ -134,16 +134,10 @@ public class PatternStore {
     public final static Pattern RELATIVE_PATH_PATTERN = Pattern.compile(RELATIVE_PATH_STRING);
 
     /**
-     * Contains a Java-Regex-String that matches the context of a Digital Twin Event message,
-     * "IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0". The operation is a single word of
-     * letters and digits.
+     * Contains a Pattern that matches the four valid contexts of a Digital Twin Event message.
+     * "IndustryCore-DigitalTwinEvent-&lt;Operation&gt;:3.0.0", where the operation is one of
+     * ConnectToParent, ConnectToChild, SubmodelUpdate or Feedback.
      */
-    public final static String DIGITAL_TWIN_EVENT_CONTEXT_STRING = "^IndustryCore-DigitalTwinEvent-[a-zA-Z0-9]+:3\\.0\\.0$";
-
-    /**
-     * Contains a Pattern that matches the context of a Digital Twin Event message.
-     * It is constructed from the DIGITAL_TWIN_EVENT_CONTEXT_STRING constant.
-     */
-    public final static Pattern DIGITAL_TWIN_EVENT_CONTEXT_PATTERN = Pattern.compile(DIGITAL_TWIN_EVENT_CONTEXT_STRING);
+    public final static Pattern DIGITAL_TWIN_EVENT_CONTEXT_PATTERN = Pattern.compile("^IndustryCore-DigitalTwinEvent-(ConnectToParent|ConnectToChild|SubmodelUpdate|Feedback):3\\.0\\.0$");
 
 }

@@ -285,7 +285,7 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
+    public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId + "_" + partner.getPolicyProfileVersion().getValue());
         body.put("accessPolicyId", getBpnPolicyId(partner));

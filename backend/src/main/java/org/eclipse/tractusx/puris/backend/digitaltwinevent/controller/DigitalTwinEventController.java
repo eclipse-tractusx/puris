@@ -28,6 +28,7 @@ import java.util.Arrays;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -54,6 +55,9 @@ public class DigitalTwinEventController {
     @Autowired
     private IndustryCoreMessageService messageService;
 
+    @Autowired
+    private PartnerService partnerService;
+
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
     private final Pattern contextPattern = PatternStore.DIGITAL_TWIN_EVENT_CONTEXT_PATTERN;
@@ -61,6 +65,9 @@ public class DigitalTwinEventController {
     @Operation(summary = "Receives Digital Twin Events 3.0. This endpoint is meant to be accessed by partners via EDC only.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "400", description = "Bad Request: invalid edc-bpn header, message header or context", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Access forbidden. ", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Access forbidden - self-access only", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Not Found: a child material is unknown or not supplied to the sender", content = @Content),
         @ApiResponse(responseCode = "501", description = "Handling of the operation is not implemented yet", content = @Content)
     })
     @PostMapping
@@ -73,6 +80,10 @@ public class DigitalTwinEventController {
         if (!bpnlPattern.matcher(bpnl).matches()) {
             log.warn("Rejecting Digital Twin Event. Invalid BPNL in edc-bpn header");
             return badRequest("Invalid BPNL in edc-bpn header");
+        }
+        if (partnerService.findByBpnl(bpnl) == null) {
+            log.warn("Rejecting Digital Twin Event. Unknown partner {}", bpnl);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Unknown partner " + bpnl));
         }
         try {
             IndustryCoreMessageContext context = getContext(body);
@@ -104,32 +115,32 @@ public class DigitalTwinEventController {
         }
         String context = header.path("context").asText("");
         if (!contextPattern.matcher(context).matches()) {
-            throw new IllegalArgumentException("Context does not match IndustryCore-DigitalTwinEvent-<Operation>:3.0.0");
+            throw new IllegalArgumentException("Context does not match IndustryCore-DigitalTwinEvent-<ConnectToParent | ConnectToChild | SubmodelUpdate | Feedback>:3.0.0");
         }
         return Arrays.stream(IndustryCoreMessageContext.values())
             .filter(supported -> supported.getValue().equals(context))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Unsupported operation in context " + context));
+            .orElseThrow(() -> new IllegalArgumentException("Context does not match IndustryCore-DigitalTwinEvent-<ConnectToParent | ConnectToChild | SubmodelUpdate | Feedback>:3.0.0"));
     }
 
     private ResponseEntity<?> handleConnectToParent(String bpnl, JsonNode body) {
-        return notImplemented("ConnectToParent", bpnl);
+        return notImplemented("ConnectToParent", bpnl, body);
     }
 
     private ResponseEntity<?> handleConnectToChild(String bpnl, JsonNode body) {
-        return notImplemented("ConnectToChild", bpnl);
+        return notImplemented("ConnectToChild", bpnl, body);
     }
 
     private ResponseEntity<?> handleSubmodelUpdate(String bpnl, JsonNode body) {
-        return notImplemented("SubmodelUpdate", bpnl);
+        return notImplemented("SubmodelUpdate", bpnl, body);
     }
 
     private ResponseEntity<?> handleFeedback(String bpnl, JsonNode body) {
-        return notImplemented("Feedback", bpnl);
+        return notImplemented("Feedback", bpnl, body);
     }
 
-    private ResponseEntity<ProblemDetail> notImplemented(String operation, String bpnl) {
-        log.info("Received {} event from {}. Handling is not implemented yet.", operation, bpnl);
+    private ResponseEntity<ProblemDetail> notImplemented(String operation, String bpnl, JsonNode body) {
+        log.info("Received {} event from {}. Handling is not implemented yet. Full message: {}", operation, bpnl, body.toPrettyString() );
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_IMPLEMENTED, operation + " is not implemented yet"));
     }
 
