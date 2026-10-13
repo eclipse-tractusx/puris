@@ -1045,6 +1045,7 @@ components:
           type: boolean
         partnerCXNumber:
           maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         partnerMaterialNumber:
           maxItems: 50
@@ -3510,6 +3511,49 @@ paths:
       summary: Deletes a demand by its UUID
       tags:
       - demand-controller
+  /digital-twin-events:
+    post:
+      operationId: postDigitalTwinEvent
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              content: {}
+              header:
+                context: IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0
+                messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9
+                receiverBpn: BPNL4444444444XX
+                senderBpn: BPNL1234567890ZZ
+                sentDateTime: '2026-10-09T10:00:00+02:00'
+                version: 3.0.0
+            schema:
+              $ref: '#/components/schemas/JsonNode'
+              additionalProperties: false
+        required: true
+      responses:
+        '400':
+          description: 'Bad Request: invalid edc-bpn header, message header or context'
+        '401':
+          description: 'Access forbidden. '
+        '403':
+          description: Access forbidden - self-access only
+        '404':
+          description: 'Not Found: a child material is unknown or not supplied to
+            the sender'
+        '501':
+          description: Handling of the operation is not implemented yet
+      summary: Receives Digital Twin Events 3.0. This endpoint is meant to be accessed
+        by partners via EDC only.
+      tags:
+      - digital-twin-event-controller
   /edc/assets:
     get:
       description: Gets a specific EDC asset by its asset id.

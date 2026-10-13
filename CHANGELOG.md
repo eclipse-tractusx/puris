@@ -13,7 +13,7 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- /
+- Added EDC asset and endpoint for DigitalTwinEventAPI ([#1260](https://github.com/eclipse-tractusx/puris/pull/1260))
 
 ### Changed
 

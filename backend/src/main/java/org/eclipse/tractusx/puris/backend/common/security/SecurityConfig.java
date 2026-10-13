@@ -115,6 +115,7 @@ public class SecurityConfig {
                         "/data-exchange-request/**",
                         "/data-exchange-approval/**",
                         "/demand-and-capacity-notification/**",
+                        "/digital-twin-events/**",
                         "/aggregated-data/**",
                         "/planned-production/**",
                         "/material-demand/**",
