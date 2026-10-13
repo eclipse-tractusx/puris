@@ -65,10 +65,10 @@ public class DigitalTwinEventController {
     @Operation(summary = "Receives Digital Twin Events 3.0. This endpoint is meant to be accessed by partners via EDC only.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "400", description = "Bad Request: invalid edc-bpn header, message header or context", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Access forbidden. ", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized. Missing API key.", content = @Content),
         @ApiResponse(responseCode = "403", description = "Access forbidden - self-access only", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Not Found: a child material is unknown or not supplied to the sender", content = @Content),
-        @ApiResponse(responseCode = "501", description = "Handling of the operation is not implemented yet", content = @Content)
+        @ApiResponse(responseCode = "404", description = "Not Found: the sender is not a known partner", content = @Content),
+        @ApiResponse(responseCode = "501", description = "Forbidden - Insufficient permissions or invalid API key", content = @Content)
     })
     @PostMapping
     public ResponseEntity<?> postDigitalTwinEvent(
