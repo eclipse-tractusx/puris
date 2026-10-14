@@ -34,4 +34,5 @@ export type IrsChainOpeningGrant = {
     validTo: string | null;
     syncStatus: IrsGrantSyncStatus;
     allowedBpnlSet: string[] | null;
+    reportedNotificationIds: string[] | null;
 };

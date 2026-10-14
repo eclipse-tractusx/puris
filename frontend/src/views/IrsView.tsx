@@ -24,15 +24,21 @@ Assisted-by: Claude Code Opus 5.5
 */
 
 import { Table } from '@catena-x/portal-shared-components';
-import { Box } from '@mui/material';
-import { useEffect } from 'react';
+import { Box, Button, Stack } from '@mui/material';
+import { Add, Replay } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { useTitle } from '@contexts/titleProvider';
+import { useNotifications } from '@contexts/notificationContext';
 import { useIrsRootGrants } from '@hooks/irs/useIrsRootGrants';
 import { useIrsPartnerGrants } from '@hooks/irs/useIrsPartnerGrants';
 import { useIrsJobs } from '@hooks/irs/useIrsJobs';
 import { useIrsRequests } from '@hooks/irs/useIrsRequests';
+import { useAllMaterials } from '@hooks/useAllMaterials';
 import { IrsChainOpeningGrant } from '@models/types/irs/irs-grant';
+import { IrsJobCreationModal } from '@features/irs/components/IrsJobCreationModal';
+import { IrsQueuedRequest } from '@models/types/irs/irs-queued-request';
+import { retryIrsRequest } from '@services/irs-service';
 
 const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString() : '-');
 
@@ -64,8 +70,40 @@ const grantColumns = [
 export const IrsView = () => {
     const { rootGrants } = useIrsRootGrants();
     const { partnerGrants } = useIrsPartnerGrants();
-    const { jobs } = useIrsJobs();
-    const { requests } = useIrsRequests();
+    const { jobs, refreshJobs } = useIrsJobs();
+    const { requests, refreshRequests } = useIrsRequests();
+    const { materials } = useAllMaterials();
+    const [jobModalOpen, setJobModalOpen] = useState(false);
+    const [retryingRequestUuid, setRetryingRequestUuid] = useState<string | null>(null);
+    const { notify } = useNotifications();
+
+    const handleRetry = async (request: IrsQueuedRequest) => {
+        setRetryingRequestUuid(request.uuid);
+        try {
+            await retryIrsRequest(request.uuid);
+            notify({
+                title: 'Request queued for retry',
+                description: 'The request will be sent to the IRS again shortly',
+                severity: 'success',
+            });
+            refreshRequests();
+            refreshJobs();
+        } catch (error: any) {
+            notify({
+                title: 'Error retrying request',
+                description:
+                    error?.status === 409
+                        ? 'The request is no longer failed or a newer request for the same entity is already pending'
+                        : error?.status === 404
+                          ? 'The request no longer exists'
+                          : error?.message,
+                severity: 'error',
+            });
+            refreshRequests();
+        } finally {
+            setRetryingRequestUuid(null);
+        }
+    };
     const { setTitle } = useTitle();
 
     useEffect(() => {
@@ -93,6 +131,11 @@ export const IrsView = () => {
                 getRowHeight={() => 'auto'}
                 rowSelection={false}
             />
+            <Stack width="100%" direction="row" justifyContent="end" alignItems="center">
+                <Button variant="contained" sx={{ display: 'flex', gap: '.5rem' }} onClick={() => setJobModalOpen(true)}>
+                    <Add /> New Job
+                </Button>
+            </Stack>
             <Table
                 title="Jobs"
                 columns={[
@@ -140,12 +183,43 @@ export const IrsView = () => {
                         valueGetter: (params) => formatInstant(params.row.nextAttemptAt),
                     },
                     { headerName: 'Last Error', field: 'lastErrorMessage', flex: 1.25 },
+                    {
+                        headerName: '',
+                        field: 'retry',
+                        width: 110,
+                        sortable: false,
+                        disableColumnMenu: true,
+                        renderCell: ({ row }: { row: IrsQueuedRequest }) =>
+                            row.status === 'FAILED' ? (
+                                <Box display="flex" alignItems="center" justifyContent="center" width="100%" height="100%">
+                                    <Button
+                                        variant="text"
+                                        sx={{ display: 'flex', gap: '.25rem' }}
+                                        onClick={() => handleRetry(row)}
+                                        disabled={retryingRequestUuid === row.uuid}
+                                        data-testid="irs-request-retry"
+                                    >
+                                        <Replay /> Retry
+                                    </Button>
+                                </Box>
+                            ) : null,
+                    },
                 ]}
                 rows={requests ?? []}
                 getRowId={(row) => row.uuid}
                 noRowsMsg="No requests found"
                 getRowHeight={() => 'auto'}
                 rowSelection={false}
+            />
+            <IrsJobCreationModal
+                open={jobModalOpen}
+                rootGrants={rootGrants ?? []}
+                materials={materials ?? []}
+                onClose={() => setJobModalOpen(false)}
+                onSave={() => {
+                    refreshJobs();
+                    refreshRequests();
+                }}
             />
         </Box>
     );

@@ -14,14 +14,24 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  *
+ * AI-Disclosure: This file was largely AI-generated. The AI-generated portions are made
+ * available under CC0-1.0 and not subject to the project's licence.
+ * The human contributor has reviewed and verified that the code is correct.
+ *
  * SPDX-License-Identifier: Apache-2.0
+ * Assisted-by: Claude Code Opus 5.5
  */
 package org.eclipse.tractusx.puris.backend.irs.domain.repository;
 
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
 public interface IrsJobRepository extends JpaRepository<IrsJob, UUID> {
+
+    boolean existsByMaterialAndSourceDisruptionIdAndRequestStatus(Material material, String sourceDisruptionId,
+        IrsQueuedRequestStatusEnumeration requestStatus);
 }
