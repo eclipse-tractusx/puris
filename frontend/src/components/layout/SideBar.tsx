@@ -35,6 +35,7 @@ import { OverridableComponent } from '@mui/material/OverridableComponent';
 import { Button, Stack, SvgIconTypeMap, Typography } from '@mui/material';
 import { Role } from '@models/types/auth/role';
 import {
+    AccountTreeOutlined,
     AutoStoriesOutlined,
     ChevronLeftOutlined,
     ContentCopyOutlined,
@@ -55,6 +56,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useOwnPartner } from '@hooks/useOwnPartner';
 import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
+import { config } from '@models/constants/config';
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: theme.sidebarWidth,
@@ -118,6 +120,7 @@ type SideBarItemProps = (
     name: string;
     icon: React.ReactElement<OverridableComponent<SvgIconTypeMap<object, 'svg'>>>;
     requiredRoles?: Role[];
+    enabled?: boolean;
 };
 
 const sideBarItems: SideBarItemProps[] = [
@@ -128,6 +131,7 @@ const sideBarItems: SideBarItemProps[] = [
     { name: 'Catalog', icon: <AutoStoriesOutlined />, path: '/catalog', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Negotiations', icon: <HandshakeOutlined />, path: '/negotiations', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Transfers', icon: <SyncAltOutlined />, path: '/transfers', requiredRoles: ['PURIS_ADMIN'] },
+    { name: 'IRS Integration', icon: <AccountTreeOutlined />, path: '/irs', enabled: config.app.IRS_ADAPTER_ENABLED, requiredRoles: ['PURIS_ADMIN'] },
     { name: 'User Guide', icon: <HelpOutlineOutlined />, path: '/user-guide' },
     { name: 'About License', icon: <InfoOutlined/>, path: '/about-license'},
     { name: 'Partner Data Batch', icon: <LoopIcon />, path: '/batch/partner-data-batch', requiredRoles: ['PURIS_ADMIN'] },
@@ -169,6 +173,7 @@ export default function MiniDrawer() {
             </DrawerHeader>
             <List>
                 {sideBarItems.map((item) => {
+                    if (item.enabled === false) return null;
                     if (item.requiredRoles && !hasRole(item.requiredRoles)) return null;
 
                     return (

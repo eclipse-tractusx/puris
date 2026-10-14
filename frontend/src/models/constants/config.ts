@@ -36,6 +36,7 @@ const app = {
     ENDPOINT_ERP_SCHEDULE_UPDATE: import.meta.env.VITE_ENDPOINT_ERP_SCHEDULE_UPDATE.trim() as string,
     ENDPOINT_IRS_ROOT_GRANTS: import.meta.env.VITE_ENDPOINT_IRS_ROOT_GRANTS.trim() as string,
     ENDPOINT_IRS_PARTNER_GRANTS: import.meta.env.VITE_ENDPOINT_IRS_PARTNER_GRANTS.trim() as string,
+    ENDPOINT_IRS_JOBS: import.meta.env.VITE_ENDPOINT_IRS_JOBS.trim() as string,
     ENDPOINT_IRS_REQUESTS: import.meta.env.VITE_ENDPOINT_IRS_REQUESTS.trim() as string,
     ENDPOINT_PARTNER: import.meta.env.VITE_ENDPOINT_PARTNER.trim() as string,
     ENDPOINT_DEMAND: import.meta.env.VITE_ENDPOINT_DEMAND.trim() as string,
@@ -47,6 +48,7 @@ const app = {
     ENDPOINT_IMPORT_FILES: import.meta.env.VITE_ENDPOINT_IMPORT_FILES.trim() as string,
     ENDPOINT_ALL_MATERIALS: import.meta.env.VITE_ENDPOINT_ALL_MATERIALS.trim() as string,
     GENERATE_MATERIAL_CATENAX_ID: (import.meta.env.VITE_GENERATE_MATERIAL_CATENAX_ID ?? "true").trim() === "true",
+    IRS_ADAPTER_ENABLED: (import.meta.env.VITE_IRS_ADAPTER_ENABLED ?? "false").trim() === "true",
     ENDPOINT_ALL_PARTNERS: import.meta.env.VITE_ENDPOINT_ALL_PARTNERS.trim() as string,
     ENDPOINT_MATERIAL_PARTNER_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_PARTNER_RELATIONS.trim() as string,
     ENDPOINT_PARTNER_DATA_UPDATE_BATCH: import.meta.env.VITE_ENDPOINT_PARTNER_DATA_UPDATE_BATCH.trim() as string,
@@ -54,7 +56,6 @@ const app = {
     ENDPOINT_DATA_EXCHANGE_APPROVAL: import.meta.env.VITE_ENDPOINT_DATA_EXCHANGE_APPROVAL.trim() as string,
     ENDPOINT_MATERIAL_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_RELATIONS.trim() as string,
     ENDPOINT_AGGREGATED_DATA: import.meta.env.VITE_ENDPOINT_AGGREGATED_DATA.trim() as string,
-    ENDPOINT_IRS_JOBS: import.meta.env.VITE_ENDPOINT_IRS_JOBS.trim() as string,
 };
 
 const auth = {

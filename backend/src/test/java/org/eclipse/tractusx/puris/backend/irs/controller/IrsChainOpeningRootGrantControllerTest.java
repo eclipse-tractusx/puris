@@ -102,7 +102,8 @@ public class IrsChainOpeningRootGrantControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validFrom").value(VALID_FROM.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validTo").value(VALID_TO.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].syncStatus").value("SYNCED"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnlSet", Matchers.contains(SUPPLIER_BPNL)));
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnlSet", Matchers.contains(SUPPLIER_BPNL)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].reportedNotificationIds", Matchers.contains(NOTIFICATION_ID.toString())));
  
         verify(irsChainOpeningRootGrantService).findAll();
     }
