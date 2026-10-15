@@ -123,12 +123,12 @@ public class DataExchangeRequestController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     public DataExchangeRequestDto createDataExchangeRequest(@RequestBody DataExchangeRequestDto requestDto) {
-        var validate = requestDto == null ? null : validator.validate(requestDto);
-        if (requestDto == null || !validate.isEmpty()) {
+        var validate = validator.validate(requestDto);
+        if (!validate.isEmpty()) {
             log.warn("Rejected own data exchange request, constraint violations: {}", validate);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Malformed data exchange request.");
         }
- 
+
         OwnDataExchangeRequest ownDataExchangeRequest = requestDto.getNotificationId() != null
                 ? buildRequestFromNotification(requestDto)
                 : buildRequestWithoutNotification(requestDto);
@@ -139,7 +139,8 @@ public class DataExchangeRequestController {
         } catch (KeyAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Own Data Exchange Request already exists.");
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request is invalid.");
+            log.warn("Rejected own data exchange request {}: {}", ownDataExchangeRequest.getRequestId(), e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Own Data Exchange Request is invalid. " + e.getMessage());
         } catch (Exception e) {
             log.error("Error while creating own data exchange request", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while creating the own data exchange request.");

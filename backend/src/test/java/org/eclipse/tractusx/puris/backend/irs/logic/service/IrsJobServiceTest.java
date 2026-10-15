@@ -21,7 +21,6 @@ package org.eclipse.tractusx.puris.backend.irs.logic.service;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
-import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
@@ -50,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,14 +85,11 @@ class IrsJobServiceTest {
     @Mock
     private MaterialRelationService materialRelationService;
 
-    @Mock
-    private OwnDataExchangeRequestRepository ownDataExchangeRequestRepository;
+    @InjectMocks
+    private IrsJobService irsJobService;
 
     @Mock
     private ReportedDataExchangeApprovalService reportedDataExchangeApprovalService;
-
-    @InjectMocks
-    private IrsJobService irsJobService;
 
     private IrsJob validJob;
     private Material material;
@@ -113,11 +108,7 @@ class IrsJobServiceTest {
 
         approvedRequest = ownRequest(CHILD_MATERIAL_NUMBER);
 
-        lenient().when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(true);
-        lenient().when(materialRelationService.resolveChildOwnMaterialNumbers(any(), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        lenient().when(ownDataExchangeRequestRepository.findAll()).thenReturn(List.of(approvedRequest));
-        lenient().when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(approvedRequest.getUuid()))
-            .thenReturn(new ReportedDataExchangeApproval());
+        lenient().when(reportedDataExchangeApprovalService.findAll()).thenReturn(List.of(approvalOf(approvedRequest)));
     }
 
     // --- createAndSend ---
@@ -227,6 +218,11 @@ class IrsJobServiceTest {
         verify(irsJobRepository, times(2)).save(any(IrsJob.class));
     }
 
+    /** The approval that the partner gave for the given own request. */
+    private ReportedDataExchangeApproval approvalOf(OwnDataExchangeRequest request) {
+        return ReportedDataExchangeApproval.builder().dataExchangeRequest(request).build();
+    }
+
     /** An own request for the given materials, whose desired window runs from an hour ago to in an hour. */
     private OwnDataExchangeRequest ownRequest(String... ownMaterialNumbers) {
         List<Material> materials = new ArrayList<>();
@@ -247,14 +243,13 @@ class IrsJobServiceTest {
     }
 
     /**
-     * Stubs the request's root grant for GLOBAL_ASSET_ID and its material, and makes the request the only stored request, which
-     * overrides the approved request of setUp.
+     * Stubs the request's root grant for GLOBAL_ASSET_ID and its material. The approvals are those of setUp unless
+     * the test stubs them.
      */
     private IrsChainOpeningRootGrant stubRootGrantOfRequest(OwnDataExchangeRequest request) {
         IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, request.getSourceDisruptionId().toString());
         when(irsChainOpeningRootGrantRepository.findAllByDataExchangeRequests_Uuid(request.getUuid())).thenReturn(List.of(grant));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(material);
-        when(ownDataExchangeRequestRepository.findAll()).thenReturn(List.of(request));
         return grant;
     }
 
@@ -262,7 +257,7 @@ class IrsJobServiceTest {
     void createJobsForRequest_WhenRequestWasApproved_CreatesAndSendsJob() {
         OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
         IrsChainOpeningRootGrant grant = stubRootGrantOfRequest(request);
-        when(reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(request.getUuid())).thenReturn(new ReportedDataExchangeApproval());
+        when(reportedDataExchangeApprovalService.findAll()).thenReturn(List.of(approvalOf(request)));
         stubSuccessfulSend();
 
         irsJobService.createJobsForRequest(request);
@@ -277,8 +272,8 @@ class IrsJobServiceTest {
     void createJobsForRequest_WhenRequestWasNotApproved_SkipsGrant() {
         OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
         stubRootGrantOfRequest(request);
+        when(reportedDataExchangeApprovalService.findAll()).thenReturn(List.of());
         irsJobService.createJobsForRequest(request);
-
         verify(irsJobRepository, never()).save(any());
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
@@ -288,6 +283,7 @@ class IrsJobServiceTest {
         OwnDataExchangeRequest request = ownRequest(CHILD_MATERIAL_NUMBER);
         request.setDesiredEndDateTime(Date.from(Instant.now().minusSeconds(3600)));
         stubRootGrantOfRequest(request);
+        when(reportedDataExchangeApprovalService.findAll()).thenReturn(List.of(approvalOf(request)));
 
         irsJobService.createJobsForRequest(request);
 
@@ -298,7 +294,7 @@ class IrsJobServiceTest {
     void createJobsForRequest_WhenRequestAffectsNoChildMaterial_SkipsGrant() {
         OwnDataExchangeRequest request = ownRequest(OTHER_MATERIAL_NUMBER);
         stubRootGrantOfRequest(request);
-
+        when(reportedDataExchangeApprovalService.findAll()).thenReturn(List.of(approvalOf(request)));
         irsJobService.createJobsForRequest(request);
 
         verify(irsJobRepository, never()).save(any());

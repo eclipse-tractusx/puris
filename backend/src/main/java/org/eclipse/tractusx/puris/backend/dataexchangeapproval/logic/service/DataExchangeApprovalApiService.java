@@ -101,9 +101,9 @@ public class DataExchangeApprovalApiService {
             }
             finalizeOriginApprovalIfComplete(approval);
             if (approval.getDataExchangeRequest().getRelatedDataExchangeRequest() != null) {
-                addForwardedRequestToGrants(approval);
+                irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
             } else if (approval.isFinalized()) {
-                createIrsJobs(approval.getDataExchangeRequest());
+                irsJobService.createJobsForRequest(approval.getDataExchangeRequest());
             }
             return approval;
         }
@@ -113,13 +113,13 @@ public class DataExchangeApprovalApiService {
             finalizeOriginApprovalIfComplete(created);
             if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
                 // create root grants if the approval is for a root request
-                syncRootGrants(created.getDataExchangeRequest());
+                irsChainOpeningRootGrantService.syncGrantsForRequest(created.getDataExchangeRequest());
                 if (created.isFinalized()) {
-                    createIrsJobs(created.getDataExchangeRequest());
+                    irsJobService.createJobsForRequest(created.getDataExchangeRequest());
                 }
             } else {
                 // add the request to the affected materials' parent materials' grants if the approval is for a related request
-                addForwardedRequestToGrants(created);
+                irsChainOpeningGrantService.onRelatedApprovalReceived(created);
             }
             return created;
         } catch (KeyAlreadyExistsException e) {
@@ -135,7 +135,7 @@ public class DataExchangeApprovalApiService {
         try {
             var body = createDataExchangeApprovalBody(approval);
             edcAdapterService.doDataExchangeApprovalPostRequest(partner, body);
-            createPartnerGrants(approval);
+            irsChainOpeningGrantService.createGrantsForApproval(approval);
             log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl());
         } catch (Exception e) {
             log.error("Error in ReportedDataExchangeApproval for partner " + partner.getBpnl(), e);
@@ -179,29 +179,5 @@ public class DataExchangeApprovalApiService {
     private JsonNode createDataExchangeApprovalBody(OwnDataExchangeApproval approval) {
         var samm = sammMapper.ownDataExchangeApprovalToSamm(approval);
         return messageService.createMessage(approval.getDataExchangeRequest().getPartner(), IndustryCoreMessageContext.DATA_EXCHANGE_APPROVAL_CONTEXT, samm);
-    }
-
-    private void syncRootGrants(OwnDataExchangeRequest request) {
-        if (request.getNotification() == null) {
-            irsChainOpeningRootGrantService.syncGrantsForRequest(request);
-            return;
-        }
-        irsChainOpeningRootGrantService.syncGrantsForRequest(request);
-    }
-
-    private void createIrsJobs(OwnDataExchangeRequest request) {
-        if (request.getNotification() == null) {
-            irsJobService.createJobsForRequest(request);
-            return;
-        }
-        irsJobService.createJobsForRequest(request);
-    }
-
-    private void addForwardedRequestToGrants(ReportedDataExchangeApproval approval) {
-        irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
-    }
-
-    private void createPartnerGrants(OwnDataExchangeApproval approval) {
-        irsChainOpeningGrantService.createGrantsForApproval(approval);
     }
 }

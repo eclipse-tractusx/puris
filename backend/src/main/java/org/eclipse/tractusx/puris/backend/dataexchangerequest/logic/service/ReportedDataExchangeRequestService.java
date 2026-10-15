@@ -19,7 +19,6 @@ SPDX-License-Identifier: Apache-2.0
 package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
@@ -39,12 +38,6 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
     }
 
     public final ReportedDataExchangeRequest create(ReportedDataExchangeRequest reportedDataExchangeRequest) {
-        if (reportedDataExchangeRequest == null) {
-            throw new IllegalArgumentException("Missing data exchange request.");
-        }
-        if (reportedDataExchangeRequest.getRequestId() == null) {
-            reportedDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
-        }
         List<String> errors = validateWithDetails(reportedDataExchangeRequest);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException("Invalid data exchange request: " + String.join(" ", errors));
@@ -56,9 +49,6 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
     }
 
     public final ReportedDataExchangeRequest update(ReportedDataExchangeRequest reportedDataExchangeRequest) {
-        if (reportedDataExchangeRequest == null) {
-            throw new IllegalArgumentException("Missing data exchange request.");
-        }
         List<String> errors = validateWithDetails(reportedDataExchangeRequest);
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException("Invalid request: " + String.join(" ", errors));
@@ -68,20 +58,20 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         }
         return repository.save(reportedDataExchangeRequest);
     }
-    
+
     @Override
     public List<String> validateWithDetails(ReportedDataExchangeRequest dataExchangeRequest) {
-        if (dataExchangeRequest == null) {
-            return List.of("Missing data exchange request.");
-        }
         List<String> errors = new ArrayList<>();
+        if (dataExchangeRequest.getRequestId() == null || dataExchangeRequest.getRequestId().isBlank()) {
+            errors.add("Missing requestId.");
+        }
         errors.addAll(basicValidation(dataExchangeRequest));
         errors.addAll(validateMaterials(dataExchangeRequest));
         errors.addAll(validateSites(dataExchangeRequest, dataExchangeRequest.getPartner(), partnerService.getOwnPartnerEntity()));
         OwnDemandAndCapacityNotification notification = dataExchangeRequest.getNotification();
-        if (notification != null) {
-            errors.addAll(validateDesiredDates(dataExchangeRequest, notification.getStartDateOfEffect(), notification.getExpectedEndDateOfEffect()));
-        }
+        errors.addAll(validateDesiredDates(dataExchangeRequest,
+            notification != null ? notification.getStartDateOfEffect() : null,
+            notification != null ? notification.getExpectedEndDateOfEffect() : null));
         return errors;
     }
 }

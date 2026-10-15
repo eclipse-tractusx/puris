@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service.ReportedDataExchangeApprovalService;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
@@ -213,13 +214,9 @@ public class IrsJobService {
 		Date now = new Date();
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(parent.getOwnMaterialNumber(), now);
 
-		return ownDataExchangeRequestRepository.findAll().stream()
-			.filter(request -> request.getDesiredEndDateTime() != null && !request.getDesiredEndDateTime().before(now))
-			.filter(request -> request.getMaterials() != null && request.getMaterials().stream()
-				.filter(Objects::nonNull)
-				.map(Material::getOwnMaterialNumber)
-				.anyMatch(childMaterialNumbers::contains))
-			.anyMatch(request -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(request.getUuid()) != null);
+		return reportedDataExchangeApprovalService.findAll().stream()
+			.map(ReportedDataExchangeApproval::getDataExchangeRequest)
+			.filter(request -> IrsChainOpeningGrantSyncUtils.affectsAnyMaterial(request, childMaterialNumbers))
+			.anyMatch(request -> IrsChainOpeningGrantSyncUtils.isRequestActiveNow(request, now));
 	}
-
 }

@@ -53,6 +53,22 @@ databaseChangeLog:
               - column:
                   name: effect
                   type: SMALLINT
+        - sql:
+            sql: >-
+              UPDATE own_data_exchange_request r
+              SET partner_uuid = n.partner_uuid,
+                  source_disruption_id = COALESCE(n.source_disruption_id, gen_random_uuid()),
+                  effect = n.effect
+              FROM reported_demand_and_capacity_notification n
+              WHERE r.notification_uuid = n.uuid
+        - sql:
+            sql: >-
+              UPDATE reported_data_exchange_request r
+              SET partner_uuid = n.partner_uuid,
+                  source_disruption_id = COALESCE(n.source_disruption_id, gen_random_uuid()),
+                  effect = n.effect
+              FROM own_demand_and_capacity_notification n
+              WHERE r.notification_uuid = n.uuid
         - addNotNullConstraint:
             tableName: own_data_exchange_request
             columnName: partner_uuid

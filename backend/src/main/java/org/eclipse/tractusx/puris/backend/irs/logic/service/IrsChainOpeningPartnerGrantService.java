@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
  * {@link IrsChainOpeningPartnerGrantRepository}) and at the IRS.
  * <p>
  * A grant's {@code requesterBpn} is the partner we approved a data exchange request for; its
- * {@code globalAssetId} is a material directly affected by directly affected by that request
+ * {@code globalAssetId} is a material directly affected by that request
  * (no parent-walk, unlike {@link IrsChainOpeningRootGrantService})and its validity window is the request's desired window.
  * {@code dataExchangeRequests} are the requests we forwarded along the bill of material &rarr;
  * ({@code OwnDataExchangeRequest.relatedDataExchangeRequest}) that their partner approved: further-upstream partners
