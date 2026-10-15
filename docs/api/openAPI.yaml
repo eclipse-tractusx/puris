@@ -3526,28 +3526,44 @@ paths:
         content:
           application/json:
             example:
-              content: {}
+              content:
+                digitalTwinType: PartType
+                information: Usage as Planned information for parts supplied by the
+                  receiver.
+                listOfItems:
+                - catenaXId: urn:uuid:5d8e2f1a-6b3c-4d7e-8f9a-1b2c3d4e5f6a
+                  parentItems:
+                  - businessPartner: BPNL4444444444XX
+                    catenaXId: urn:uuid:9a3f1b2c-7d4e-4f5a-8b6c-0e1d2f3a4b5c
+                    createdOn: '2025-01-15T10:30:00.000Z'
+                    lastModifiedOn: '2025-01-15T10:30:00.000Z'
+                    quantity:
+                      unit: unit:piece
+                      value: 2.0
+                    validityPeriod:
+                      validFrom: '2025-01-01T00:00:00.000Z'
               header:
-                context: IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0
-                messageId: 3b4edc05-e214-47a1-b0c2-1d831cdd9ba9
-                receiverBpn: BPNL4444444444XX
-                senderBpn: BPNL1234567890ZZ
-                sentDateTime: '2026-10-09T10:00:00+02:00'
+                context: IndustryCore-DigitalTwinEvent-ConnectToChild:3.0.0
+                messageId: urn:uuid:3e7c5d2a-1b4f-4a8e-9d6c-2f0e1a3b5c7d
+                receiverBpn: BPNL1234567890ZZ
+                senderBpn: BPNL4444444444XX
+                sentDateTime: '2025-01-15T10:30:00.000Z'
                 version: 3.0.0
             schema:
               $ref: '#/components/schemas/JsonNode'
               additionalProperties: false
         required: true
       responses:
+        '200':
+          description: 'OK: the ConnectToChild event has been processed'
         '400':
           description: 'Bad Request: invalid edc-bpn header, message header or context'
         '401':
-          description: 'Access forbidden. '
+          description: Unauthorized. Missing API key.
         '403':
-          description: Access forbidden - self-access only
+          description: Forbidden - Insufficient permissions or invalid API key
         '404':
-          description: 'Not Found: a child material is unknown or not supplied to
-            the sender'
+          description: 'Not Found: the sender is not a known partner'
         '501':
           description: Handling of the operation is not implemented yet
       summary: Receives Digital Twin Events 3.0. This endpoint is meant to be accessed
@@ -3815,6 +3831,7 @@ paths:
           additionalProperties: false
           enum:
           - DTR
+          - DIGITAL_TWIN_EVENT
           - ITEM_STOCK_SUBMODEL
           - PRODUCTION_SUBMODEL
           - DEMAND_SUBMODEL

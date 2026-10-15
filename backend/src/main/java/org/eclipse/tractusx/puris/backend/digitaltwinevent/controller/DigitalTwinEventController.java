@@ -23,12 +23,17 @@
  */
 package org.eclipse.tractusx.puris.backend.digitaltwinevent.controller;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.dto.UniqueIdPushConnectTochildPayload;
+import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service.ConnectToChildService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -46,6 +51,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -57,6 +64,12 @@ public class DigitalTwinEventController {
 
     @Autowired
     private PartnerService partnerService;
+    
+    @Autowired 
+    private ConnectToChildService connectToChildService;
+
+    @Autowired
+    private Validator validator;
 
     private final Pattern bpnlPattern = PatternStore.BPNL_PATTERN;
 
@@ -68,7 +81,8 @@ public class DigitalTwinEventController {
         @ApiResponse(responseCode = "401", description = "Unauthorized. Missing API key.", content = @Content),
         @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions or invalid API key", content = @Content),
         @ApiResponse(responseCode = "404", description = "Not Found: the sender is not a known partner", content = @Content),
-        @ApiResponse(responseCode = "501", description = "Handling of the operation is not implemented yet", content = @Content)
+        @ApiResponse(responseCode = "501", description = "Handling of the operation is not implemented yet", content = @Content),
+        @ApiResponse(responseCode = "200", description = "OK: the ConnectToChild event has been processed", content = @Content),
     })
     @PostMapping
     public ResponseEntity<?> postDigitalTwinEvent(
@@ -127,8 +141,28 @@ public class DigitalTwinEventController {
         return notImplemented("ConnectToParent", bpnl, body);
     }
 
+    /**
+     * Stores the parent items of a ConnectToChild event as relations of the own child materials to the parent
+     * materials of the sender.
+     *
+     * @throws IllegalArgumentException if the content does not match the OpenAPI specification or a parent item does not belong to the sender
+     */
     private ResponseEntity<?> handleConnectToChild(String bpnl, JsonNode body) {
-        return notImplemented("ConnectToChild", bpnl, body);
+        UniqueIdPushConnectTochildPayload payload = messageService.validateAndParse(body, IndustryCoreMessageContext.DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT, bpnl,
+            UniqueIdPushConnectTochildPayload.class);
+        Set<ConstraintViolation<UniqueIdPushConnectTochildPayload>> errors = validator.validate(payload);
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Invalid content: " + errors.stream()
+                .map(error -> error.getPropertyPath() + " " + error.getMessage())
+                .collect(Collectors.joining("; ")));
+        }
+        try {
+            connectToChildService.handleConnectToChild(bpnl, payload);
+        } catch (NoSuchElementException e) {
+            log.warn("Rejecting ConnectToChild event: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage()));
+        }
+        return ResponseEntity.ok().build();
     }
 
     private ResponseEntity<?> handleSubmodelUpdate(String bpnl, JsonNode body) {
@@ -150,13 +184,36 @@ public class DigitalTwinEventController {
 
     private static final String EXAMPLE_MESSAGE = "{\n" +
         "  \"header\": {\n" +
-        "    \"messageId\": \"3b4edc05-e214-47a1-b0c2-1d831cdd9ba9\",\n" +
-        "    \"context\": \"IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0\",\n" +
-        "    \"sentDateTime\": \"2026-10-09T10:00:00+02:00\",\n" +
-        "    \"senderBpn\": \"BPNL1234567890ZZ\",\n" +
-        "    \"receiverBpn\": \"BPNL4444444444XX\",\n" +
+        "    \"messageId\": \"urn:uuid:3e7c5d2a-1b4f-4a8e-9d6c-2f0e1a3b5c7d\",\n" +
+        "    \"context\": \"IndustryCore-DigitalTwinEvent-ConnectToChild:3.0.0\",\n" +
+        "    \"sentDateTime\": \"2025-01-15T10:30:00.000Z\",\n" +
+        "    \"senderBpn\": \"BPNL4444444444XX\",\n" +
+        "    \"receiverBpn\": \"BPNL1234567890ZZ\",\n" +
         "    \"version\": \"3.0.0\"\n" +
         "  },\n" +
-        "  \"content\": {}\n" +
-        "}";
+        "  \"content\": {\n" +
+        "    \"digitalTwinType\": \"PartType\",\n" +
+        "    \"information\": \"Usage as Planned information for parts supplied by the receiver.\",\n" +
+        "    \"listOfItems\": [\n" +
+        "      {\n" +
+        "        \"catenaXId\": \"urn:uuid:5d8e2f1a-6b3c-4d7e-8f9a-1b2c3d4e5f6a\",\n" +
+        "        \"parentItems\": [\n" +
+        "          {\n" +
+        "            \"catenaXId\": \"urn:uuid:9a3f1b2c-7d4e-4f5a-8b6c-0e1d2f3a4b5c\",\n" +
+        "            \"businessPartner\": \"BPNL4444444444XX\",\n" +
+        "            \"quantity\": {\n" +
+        "              \"value\": 2.0,\n" +
+        "              \"unit\": \"unit:piece\"\n" +
+        "            },\n" +
+        "            \"validityPeriod\": {\n" +
+        "              \"validFrom\": \"2025-01-01T00:00:00.000Z\"\n" +
+        "            },\n" +
+        "            \"createdOn\": \"2025-01-15T10:30:00.000Z\",\n" +
+        "            \"lastModifiedOn\": \"2025-01-15T10:30:00.000Z\"\n" +
+        "          }\n" +
+        "        ]\n" +
+        "      }\n" +
+        "    ]\n" +
+        "  }\n" +
+    "}";
 }
