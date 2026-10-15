@@ -31,8 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
-import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningRootGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
@@ -43,25 +41,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReportedDemandAndCapacityNotificationService extends DemandAndCapacityNotificationService<ReportedDemandAndCapacityNotification, ReportedDemandAndCapacityNotificationRepository> {
 
-    private final IrsChainOpeningRootGrantService irsChainOpeningRootGrantService;
-
-    private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
-
     private final MaterialRelationService materialRelationService;
 
     public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
-            PartnerService partnerService, MaterialPartnerRelationService mpr, IrsChainOpeningRootGrantService irsChainOpeningRootGrantService,
-            IrsChainOpeningPartnerGrantService irsChainOpeningGrantService, MaterialRelationService materialRelationService) {
+            PartnerService partnerService, MaterialPartnerRelationService mpr, MaterialRelationService materialRelationService) {
         super(reportedNotificationRepository, partnerService, mpr);
-        this.irsChainOpeningRootGrantService = irsChainOpeningRootGrantService;
-        this.irsChainOpeningGrantService = irsChainOpeningGrantService;
         this.materialRelationService = materialRelationService;
-    }
-
-    @Override
-    protected void afterUpdate(ReportedDemandAndCapacityNotification previous, ReportedDemandAndCapacityNotification updated) {
-        irsChainOpeningRootGrantService.onReportedNotificationUpdated(previous, updated);
-        irsChainOpeningGrantService.onReportedNotificationUpdated(updated);
     }
 
     public List<ReportedDemandAndCapacityNotification> findAllByPartnerBpnl(String bpnl) {

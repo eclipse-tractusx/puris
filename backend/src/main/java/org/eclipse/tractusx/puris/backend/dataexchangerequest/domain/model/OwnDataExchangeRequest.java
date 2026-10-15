@@ -21,7 +21,6 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,7 +39,6 @@ public class OwnDataExchangeRequest extends DataExchangeRequest {
     @ManyToOne(optional = false)
     @JoinColumn(name = "notification_uuid", nullable = false, unique = true)
     @ToString.Exclude
-    @NotNull
     protected ReportedDemandAndCapacityNotification notification;
     
     /**

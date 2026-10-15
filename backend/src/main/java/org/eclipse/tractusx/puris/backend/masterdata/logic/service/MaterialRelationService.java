@@ -185,4 +185,15 @@ public class MaterialRelationService {
 			.map(MaterialRelation::getChildOwnMaterialNumber)
 			.collect(Collectors.toSet());
 	}
+
+    /**
+	 * Resolves the set of currently-valid parent own-material-numbers of the given child
+	 * own-material-number.
+	 */
+	public Set<String> resolveParentOwnMaterialNumbers(String childOwnMaterialNumber, Date now) {
+		return findAllParents(childOwnMaterialNumber).stream()
+			.filter(relation -> isRelationValidNow(relation, now))
+			.map(MaterialRelation::getParentOwnMaterialNumber)
+			.collect(Collectors.toSet());
+	}
 }
