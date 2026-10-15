@@ -27,6 +27,7 @@ import { Table } from '@catena-x/portal-shared-components';
 import { Box } from '@mui/material';
 import { useEffect } from 'react';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
+import { InfoButton } from '@components/ui/InfoButton';
 import { useTitle } from '@contexts/titleProvider';
 import { useIrsRootGrants } from '@hooks/irs/useIrsRootGrants';
 import { useIrsPartnerGrants } from '@hooks/irs/useIrsPartnerGrants';
@@ -34,38 +35,39 @@ import { useIrsJobs } from '@hooks/irs/useIrsJobs';
 import { useIrsRequests } from '@hooks/irs/useIrsRequests';
 import { IrsChainOpeningGrant } from '@models/types/irs/irs-grant';
 
-const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString() : '-');
+const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString('en-GB') : '-');
+const formatValue = (params: { value: unknown }) => (params.value == null || params.value === '' ? '-' : String(params.value));
 
 const grantColumns = [
-    { headerName: 'Global Asset Id', field: 'globalAssetId', flex: 1.25 },
-    { headerName: 'Source Disruption Id', field: 'sourceDisruptionId', flex: 1 },
-    { headerName: 'Requester BPN', field: 'requesterBpn', flex: 1 },
+    { headerName: 'Global Asset Id', field: 'globalAssetId', flex: 1.25, valueFormatter: formatValue },
+    { headerName: 'Source Disruption Id', field: 'sourceDisruptionId', flex: 1, valueFormatter: formatValue },
+    { headerName: 'Requester BPN', field: 'requesterBpn', flex: 1, valueFormatter: formatValue },
     {
         headerName: 'Allowed BPNLs',
         field: 'allowedBpnlSet',
         flex: 1,
-        valueGetter: (params: { row: IrsChainOpeningGrant }) => params.row.allowedBpnlSet?.join(', ') ?? '-',
+        valueGetter: (params: { row: IrsChainOpeningGrant }) => (params.row.allowedBpnlSet?.length ? params.row.allowedBpnlSet.join(', ') : '-'),
     },
     {
         headerName: 'Valid From',
         field: 'validFrom',
         flex: 0.75,
-        valueGetter: (params: { row: IrsChainOpeningGrant }) => formatInstant(params.row.validFrom),
+        valueFormatter: (params: { value: string | null }) => formatInstant(params.value),
     },
     {
         headerName: 'Valid To',
         field: 'validTo',
         flex: 0.75,
-        valueGetter: (params: { row: IrsChainOpeningGrant }) => formatInstant(params.row.validTo),
+        valueFormatter: (params: { value: string | null }) => formatInstant(params.value),
     },
-    { headerName: 'Sync Status', field: 'syncStatus', flex: 0.75 },
+    { headerName: 'Sync Status', field: 'syncStatus', flex: 0.75, valueFormatter: formatValue },
 ];
 
 export const IrsView = () => {
-    const { rootGrants } = useIrsRootGrants();
-    const { partnerGrants } = useIrsPartnerGrants();
-    const { jobs } = useIrsJobs();
-    const { requests } = useIrsRequests();
+    const { rootGrants, rootGrantsError, isLoadingRootGrants } = useIrsRootGrants();
+    const { partnerGrants, partnerGrantsError, isLoadingPartnerGrants } = useIrsPartnerGrants();
+    const { jobs, jobsError, isLoadingJobs } = useIrsJobs();
+    const { requests, requestsError, isLoadingRequests } = useIrsRequests();
     const { setTitle } = useTitle();
 
     useEffect(() => {
@@ -79,8 +81,9 @@ export const IrsView = () => {
                 title="Root Grants"
                 columns={grantColumns}
                 rows={rootGrants ?? []}
+                loading={isLoadingRootGrants}
                 getRowId={(row) => row.uuid}
-                noRowsMsg="No root grants found"
+                noRowsMsg={rootGrantsError != null ? 'There was an error loading the root grants' : 'No root grants found'}
                 getRowHeight={() => 'auto'}
                 rowSelection={false}
             />
@@ -88,33 +91,35 @@ export const IrsView = () => {
                 title="Partner Grants"
                 columns={grantColumns}
                 rows={partnerGrants ?? []}
+                loading={isLoadingPartnerGrants}
                 getRowId={(row) => row.uuid}
-                noRowsMsg="No partner grants found"
+                noRowsMsg={partnerGrantsError != null ? 'There was an error loading the partner grants' : 'No partner grants found'}
                 getRowHeight={() => 'auto'}
                 rowSelection={false}
             />
             <Table
                 title="Jobs"
                 columns={[
-                    { headerName: 'Job Id', field: 'jobId', flex: 1 },
-                    { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1 },
-                    { headerName: 'Source Disruption Id', field: 'sourceDisruptionId', flex: 1 },
-                    { headerName: 'State', field: 'state', flex: 0.75 },
-                    { headerName: 'Request Status', field: 'requestStatus', flex: 0.75 },
+                    { headerName: 'Job Id', field: 'jobId', flex: 1, valueFormatter: formatValue },
+                    { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1, valueFormatter: formatValue },
+                    { headerName: 'Source Disruption Id', field: 'sourceDisruptionId', flex: 1, valueFormatter: formatValue },
+                    { headerName: 'State', field: 'state', flex: 0.75, valueFormatter: formatValue },
+                    { headerName: 'Request Status', field: 'requestStatus', flex: 0.75, valueFormatter: formatValue },
                 ]}
                 rows={jobs ?? []}
+                loading={isLoadingJobs}
                 getRowId={(row) => row.uuid}
-                noRowsMsg="No jobs found"
+                noRowsMsg={jobsError != null ? 'There was an error loading the jobs' : 'No jobs found'}
                 getRowHeight={() => 'auto'}
                 rowSelection={false}
             />
             <Table
                 title="Requests"
                 columns={[
-                    { headerName: 'Type', field: 'type', flex: 1.25 },
-                    { headerName: 'Method', field: 'method', flex: 0.5 },
-                    { headerName: 'Path', field: 'path', flex: 1 },
-                    { headerName: 'Status', field: 'status', flex: 0.75 },
+                    { headerName: 'Type', field: 'type', flex: 1.25, valueFormatter: formatValue },
+                    { headerName: 'Method', field: 'method', flex: 0.5, valueFormatter: formatValue },
+                    { headerName: 'Path', field: 'path', flex: 1, valueFormatter: formatValue },
+                    { headerName: 'Status', field: 'status', flex: 0.75, valueFormatter: formatValue },
                     {
                         headerName: 'Attempts',
                         field: 'attemptCount',
@@ -125,13 +130,13 @@ export const IrsView = () => {
                         headerName: 'Created At',
                         field: 'createdAt',
                         flex: 0.75,
-                        valueGetter: (params) => formatInstant(params.row.createdAt),
+                        valueFormatter: (params) => formatInstant(params.value),
                     },
                     {
                         headerName: 'Last Attempt At',
                         field: 'lastAttemptAt',
                         flex: 0.75,
-                        valueGetter: (params) => formatInstant(params.row.lastAttemptAt),
+                        valueFormatter: (params) => formatInstant(params.value),
                     },
                     {
                         headerName: 'Next Attempt At',
@@ -139,11 +144,17 @@ export const IrsView = () => {
                         flex: 0.75,
                         valueGetter: (params) => formatInstant(params.row.nextAttemptAt),
                     },
-                    { headerName: 'Last Error', field: 'lastErrorMessage', flex: 1.25 },
+                    {
+                        headerName: 'Last Error',
+                        field: 'lastErrorMessage',
+                        flex: 1.25,
+                        renderCell: (params) => (params.value ? <InfoButton text={params.value} /> : '-'),
+                    },
                 ]}
                 rows={requests ?? []}
+                loading={isLoadingRequests}
                 getRowId={(row) => row.uuid}
-                noRowsMsg="No requests found"
+                noRowsMsg={requestsError != null ? 'There was an error loading the requests' : 'No requests found'}
                 getRowHeight={() => 'auto'}
                 rowSelection={false}
             />
