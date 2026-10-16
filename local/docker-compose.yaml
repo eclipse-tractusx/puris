@@ -49,7 +49,7 @@ services:
       - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
       - ENDPOINT_IRS_JOBS=irs/jobs
       - ENDPOINT_IRS_REQUESTS=irs/requests
-      - IRS_ADAPTER_ENABLED=false
+      - IRS_ADAPTER_ENABLED=true
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
@@ -255,7 +255,7 @@ services:
       - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
       - ENDPOINT_IRS_JOBS=irs/jobs
       - ENDPOINT_IRS_REQUESTS=irs/requests
-      - IRS_ADAPTER_ENABLED=false
+      - IRS_ADAPTER_ENABLED=true
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production

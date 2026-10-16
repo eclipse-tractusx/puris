@@ -32,6 +32,7 @@ import ListItemText from '@mui/material/ListItemText';
 import AuthenticationService from '@services/authentication-service';
 import { useAuth } from '@hooks/useAuth';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { Stack, SvgIconTypeMap, Typography } from '@mui/material';
 import { Role } from '@models/types/auth/role';
 import {
     AccountTreeOutlined,
