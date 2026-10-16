@@ -106,7 +106,7 @@ public class MaterialRelationController {
         try {
             MaterialRelation entity = modelMapper.map(materialRelationDto, MaterialRelation.class);
             MaterialRelation createdRelation = materialRelationService.create(entity);
-            executorService.submit(() -> connectToChildService.sendConnectToChild(createdRelation));
+            executorService.submit(() -> connectToChildService.sendConnectToChild(createdRelation, parentMaterial));
             MaterialRelationDto responseDto = modelMapper.map(createdRelation, MaterialRelationDto.class);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         } catch (KeyAlreadyExistsException e) {

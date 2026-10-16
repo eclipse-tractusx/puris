@@ -101,11 +101,13 @@ public class ConnectToChildService {
     /**
      * Informs the suppliers of the child material of a new material relation with a ConnectToChild event. The parent
      * is identified by its Catena-X ID (materialNumberCx), which is the globalAssetId of its Digital Twin.
+     * <p>
+     * Suppliers whose Catena-X ID for the child material is not known yet are skipped.
      *
      * @param materialRelation the new material relation
+     * @param parent           the parent product of the material relation
      */
-    public void sendConnectToChild(MaterialRelation materialRelation) {
-        Material parent = materialService.findByOwnMaterialNumber(materialRelation.getParentOwnMaterialNumber());
+    public void sendConnectToChild(MaterialRelation materialRelation, Material parent) {
         for (MaterialPartnerRelation supplierRelation : mprService.findAllSupplierRelations(materialRelation.getChildOwnMaterialNumber())) {
             Partner supplier = supplierRelation.getPartner();
             if (supplierRelation.getPartnerCXNumber() == null) {
@@ -155,24 +157,25 @@ public class ConnectToChildService {
         relation.setPartner(partner);
         relation.setParentGlobalAssetId(parent.getCatenaXId());
         relation.setValidityPeriod(validityPeriod);
+        relation.setCreatedOn(parent.getCreatedOn());
+        relation.setLastModifiedOn(parent.getLastModifiedOn());
         return relation;
     }
 
     private void createOrUpdate(ExternalMaterialRelation relation) {
-        Date now = new Date();
         ExternalMaterialRelation existingRelation = externalMaterialRelationRepository
-            .findByMaterialAndPartnerAndParentGlobalAssetId(relation.getMaterial(), relation.getPartner(), relation.getParentGlobalAssetId())
+            .findByMaterialAndPartnerAndParentGlobalAssetId(relation.getMaterial(), relation.getPartner(),
+                relation.getParentGlobalAssetId())
             .orElse(null);
         if (existingRelation != null) {
             existingRelation.setValidityPeriod(relation.getValidityPeriod());
-            existingRelation.setLastModifiedOn(now);
+            existingRelation.setLastModifiedOn(relation.getLastModifiedOn());
             externalMaterialRelationRepository.save(existingRelation);
             log.info("Updated relation of material {} to parent {}", relation.getMaterial().getOwnMaterialNumber(), relation.getParentGlobalAssetId());
             return;
         }
-        relation.setCreatedOn(now);
-        relation.setLastModifiedOn(now);
         externalMaterialRelationRepository.save(relation);
+        log.info("Stored relation of material {} to parent {} of {}", relation.getMaterial().getOwnMaterialNumber(), relation.getParentGlobalAssetId(), relation.getPartner().getBpnl());
     }
 
     private UniqueIdPushConnectTochildPayload createPayload(MaterialRelation materialRelation, Material parent, String childCatenaXId) {

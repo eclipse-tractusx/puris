@@ -31,6 +31,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Named.named;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -223,7 +224,7 @@ public class DigitalTwinEventControllerTest {
 
     private ResultActions postViaEdc(String body) throws Exception {
         return mockMvc.perform(post("/digital-twin-events")
-        .header("X-API-KEY", variablesService.getApiKey())
+            .header("X-API-KEY", variablesService.getApiKey())
             .header("edc-bpn", PARTNER_BPNL)
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
@@ -252,7 +253,7 @@ public class DigitalTwinEventControllerTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("contentsNotMatchingSpecification")
-    void connectToChildNotMatchingSpecification_post_returnsBadRequest(String description, Consumer<ObjectNode> invalidate, String expectedDetailStart) throws Exception {
+    void connectToChildNotMatchingSpecification_post_returnsBadRequest(Consumer<ObjectNode> invalidate, String expectedDetailStart) throws Exception {
         ObjectNode body = connectToChildMessage();
         invalidate.accept((ObjectNode) body.get("content"));
 
@@ -267,38 +268,35 @@ public class DigitalTwinEventControllerTest {
         String invalid = "Invalid content: ";
         String parentPath = invalid + "listOfItems[0].parentItems[0].";
         return Stream.of(
-            Arguments.of("digitalTwinType missing", (Consumer<ObjectNode>) content -> content.remove("digitalTwinType"),
+            Arguments.of(named("digitalTwinType missing", (Consumer<ObjectNode>) content -> content.remove("digitalTwinType")),
                 invalid + "digitalTwinType "),
-            Arguments.of("PartInstance twin", (Consumer<ObjectNode>) content -> content.put("digitalTwinType", "PartInstance"),
+            Arguments.of(named("PartInstance twin", (Consumer<ObjectNode>) content -> content.put("digitalTwinType", "PartInstance")),
                 invalid + "digitalTwinType must be PartType, other Digital Twin types are not supported"),
-            Arguments.of("information too long", (Consumer<ObjectNode>) content -> content.put("information", "x".repeat(1001)),
+            Arguments.of(named("information too long", (Consumer<ObjectNode>) content -> content.put("information", "x".repeat(1001))),
                 invalid + "information "),
-            Arguments.of("listOfItems missing", (Consumer<ObjectNode>) content -> content.remove("listOfItems"),
+            Arguments.of(named("listOfItems missing", (Consumer<ObjectNode>) content -> content.remove("listOfItems")),
                 invalid + "listOfItems "),
-            Arguments.of("child catenaXId missing", (Consumer<ObjectNode>) content -> item(content).remove("catenaXId"),
+            Arguments.of(named("child catenaXId missing", (Consumer<ObjectNode>) content -> item(content).remove("catenaXId")),
                 invalid + "listOfItems[0].catenaXId "),
-            Arguments.of("child catenaXId no UUID", (Consumer<ObjectNode>) content -> item(content).put("catenaXId", "MNR-8101"),
+            Arguments.of(named("child catenaXId no UUID", (Consumer<ObjectNode>) content -> item(content).put("catenaXId", "MNR-8101")),
                 invalid + "listOfItems[0].catenaXId "),
-            Arguments.of("parentItems missing", (Consumer<ObjectNode>) content -> item(content).remove("parentItems"),
+            Arguments.of(named("parentItems missing", (Consumer<ObjectNode>) content -> item(content).remove("parentItems")),
                 invalid + "listOfItems[0].parentItems "),
-            Arguments.of("parent catenaXId missing", (Consumer<ObjectNode>) content -> parent(content).remove("catenaXId"),
+            Arguments.of(named("parent catenaXId missing", (Consumer<ObjectNode>) content -> parent(content).remove("catenaXId")),
                 parentPath + "catenaXId "),
-            Arguments.of("businessPartner missing", (Consumer<ObjectNode>) content -> parent(content).remove("businessPartner"),
+            Arguments.of(named("businessPartner missing", (Consumer<ObjectNode>) content -> parent(content).remove("businessPartner")),
                 parentPath + "businessPartner "),
-            Arguments.of("businessPartner no BPNL",
-                (Consumer<ObjectNode>) content -> parent(content).put("businessPartner", "BPNS1234567890ZZ"),
+            Arguments.of(named("businessPartner no BPNL", (Consumer<ObjectNode>) content -> parent(content).put("businessPartner", "BPNS1234567890ZZ")),
                 parentPath + "businessPartner "),
-            Arguments.of("createdOn missing", (Consumer<ObjectNode>) content -> parent(content).remove("createdOn"),
+            Arguments.of(named("createdOn missing", (Consumer<ObjectNode>) content -> parent(content).remove("createdOn")),
                 parentPath + "createdOn "),
-            Arguments.of("quantity missing", (Consumer<ObjectNode>) content -> parent(content).remove("quantity"),
+            Arguments.of(named("quantity missing", (Consumer<ObjectNode>) content -> parent(content).remove("quantity")),
                 parentPath + "quantity "),
-            Arguments.of("quantity value missing",
-                (Consumer<ObjectNode>) content -> ((ObjectNode) parent(content).get("quantity")).remove("value"),
+            Arguments.of(named("quantity value missing", (Consumer<ObjectNode>) content -> ((ObjectNode) parent(content).get("quantity")).remove("value")),
                 parentPath + "quantity.value "),
-            Arguments.of("unknown unit",
-                (Consumer<ObjectNode>) content -> ((ObjectNode) parent(content).get("quantity")).put("unit", "unit:banana"),
+            Arguments.of(named("unknown unit", (Consumer<ObjectNode>) content -> ((ObjectNode) parent(content).get("quantity")).put("unit", "unit:banana")),
                 "Invalid content payload"),
-            Arguments.of("createdOn no date", (Consumer<ObjectNode>) content -> parent(content).put("createdOn", "yesterday"),
+            Arguments.of(named("createdOn no date", (Consumer<ObjectNode>) content -> parent(content).put("createdOn", "yesterday")),
                 "Invalid content payload")
         );
     }
