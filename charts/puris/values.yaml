@@ -209,6 +209,8 @@ frontend:
     endpointIrsRootGrants: irs/root-grants
     # -- The endpoint for getting partner grants from the IRS adapter
     endpointIrsPartnerGrants: irs/partner-grants
+    # -- The endpoint for getting jobs from the IRS adapter
+    endpointIrsJobs: irs/jobs
     # -- The endpoint for getting queued requests from the IRS adapter
     endpointIrsRequests: irs/requests
     # -- The endpoint for partner information
@@ -243,8 +245,6 @@ frontend:
     endpointMaterialRelations: material-relations
     # -- The endpoint for interfacing with aggregated material data
     endpointAggregatedData: aggregated-data
-    # -- The endpoint for interfacing with aggregated material data
-    endpointIrsJobs: irs/jobs
     rateLimiting:
       # -- Bucket zone limit for rate limiting in nginx.
       limit: 10m

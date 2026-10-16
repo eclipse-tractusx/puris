@@ -47,7 +47,9 @@ services:
       - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
       - ENDPOINT_IRS_ROOT_GRANTS=irs/root-grants
       - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
+      - ENDPOINT_IRS_JOBS=irs/jobs
       - ENDPOINT_IRS_REQUESTS=irs/requests
+      - IRS_ADAPTER_ENABLED=true
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production
@@ -62,7 +64,6 @@ services:
       - ENDPOINT_PARTNER_DATA_UPDATE_BATCH=batch/partner-data-update
       - ENDPOINT_MATERIAL_RELATIONS=material-relations
       - ENDPOINT_AGGREGATED_DATA=aggregated-data
-      - ENDPOINT_IRS_JOBS=irs/jobs
       - IDP_URL=http://127.0.0.1:10081/
       - IDP_REALM=Catena-X
       - IDP_CLIENT_ID=puris-customer
@@ -252,7 +253,9 @@ services:
       - ENDPOINT_ERP_SCHEDULE_UPDATE=erp-adapter/trigger
       - ENDPOINT_IRS_ROOT_GRANTS=irs/root-grants
       - ENDPOINT_IRS_PARTNER_GRANTS=irs/partner-grants
+      - ENDPOINT_IRS_JOBS=irs/jobs
       - ENDPOINT_IRS_REQUESTS=irs/requests
+      - IRS_ADAPTER_ENABLED=true
       - ENDPOINT_PARTNER=partners
       - ENDPOINT_DEMAND=demand
       - ENDPOINT_PRODUCTION=production

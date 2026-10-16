@@ -87,6 +87,8 @@ spec:
               value: "{{ .Values.frontend.puris.endpointIrsRootGrants }}"
             - name: ENDPOINT_IRS_PARTNER_GRANTS
               value: "{{ .Values.frontend.puris.endpointIrsPartnerGrants }}"
+            - name: ENDPOINT_IRS_JOBS
+              value: "{{ .Values.frontend.puris.endpointIrsJobs }}"
             - name: ENDPOINT_IRS_REQUESTS
               value: "{{ .Values.frontend.puris.endpointIrsRequests }}"
             - name: ENDPOINT_PARTNER
@@ -121,8 +123,6 @@ spec:
               value: "{{ .Values.frontend.puris.endpointMaterialRelations | default "material-relations" }}"
             - name: ENDPOINT_AGGREGATED_DATA
               value: "{{ .Values.frontend.puris.endpointAggregatedData }}"
-            - name: ENDPOINT_IRS_JOBS
-              value: "{{ .Values.frontend.puris.endpointIrsJobs }}"
             - name: IDP_URL
               value: "{{ .Values.idp.url }}"
             - name: IDP_REALM
@@ -139,6 +139,8 @@ spec:
               value: "{{ .Values.frontend.puris.rateLimiting.rate }}"
             - name: FRONTEND_GENERATE_MATERIAL_CATENAX_ID
               value: "{{ .Values.backend.puris.generatematerialcatenaxid | default true }}"
+            - name: IRS_ADAPTER_ENABLED
+              value: "{{ .Values.backend.puris.irsadapter.enabled }}"
             - name: FRONTEND_DEFAULT_PRODUCTION_TIME
               value: "{{ .Values.frontend.puris.defaultProductionTime | default "23:59" }}"
             ######################################
