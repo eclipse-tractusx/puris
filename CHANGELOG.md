@@ -14,6 +14,7 @@ The **need for configuration updates** is **marked bold**
 ## Added
 
 - Added EDC asset and endpoint for DigitalTwinEventAPI ([#1260](https://github.com/eclipse-tractusx/puris/pull/1260))
+- Added logic for connect to child notifications ([#1267](https://github.com/eclipse-tractusx/puris/pull/1267))
 
 ### Changed
 

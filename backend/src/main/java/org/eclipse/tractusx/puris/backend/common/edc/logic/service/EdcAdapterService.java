@@ -853,6 +853,7 @@ public class EdcAdapterService {
         String assetId = switch (type) {
             case NOTIFICATION -> variablesService.getNotificationApiAssetId();
             case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestApiAssetId();
+            case DIGITAL_TWIN_EVENT -> variablesService.getDigitalTwinEventApiAssetId();
             default -> throw new IllegalArgumentException("Unsupported type " + type);
         };
 
@@ -865,6 +866,7 @@ public class EdcAdapterService {
                 boolean negotiated = switch (type) {
                     case NOTIFICATION -> negotiateContractForNotification(partner, type);
                     case DATA_EXCHANGE_REQUEST -> negotiateContractForDataExchangeRequest(partner, type);
+                    case DIGITAL_TWIN_EVENT -> negotiateContractForDigitalTwinEvent(partner, type);
                     default -> throw new IllegalArgumentException("Unsupported type " + type);
                 };
 
@@ -905,6 +907,7 @@ public class EdcAdapterService {
                     switch (type) {
                         case NOTIFICATION -> log.error("Failed to post Notification to Partner.");
                         case DATA_EXCHANGE_REQUEST -> log.error("Failed to post Data Exchange Request to Partner.");
+                        case DIGITAL_TWIN_EVENT -> log.error("Failed to post Digital Twin Event to Partner.");  
                         default -> throw new IllegalArgumentException("Unsupported type " + type);
                     }
                 }
@@ -932,6 +935,7 @@ public class EdcAdapterService {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
+            case DIGITAL_TWIN_EVENT -> throw new IllegalArgumentException("DigitalTwinEvent not supported");
             case ITEM_STOCK_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
@@ -1053,6 +1057,10 @@ public class EdcAdapterService {
 
     public JsonNode doDataExchangeApprovalPostRequest(Partner partner, JsonNode body) {
         return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
+    }
+
+    public JsonNode doDigitalTwinEventPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.DIGITAL_TWIN_EVENT, body, 2);
     }
 
     private boolean negotiateForPartnerDtr(Partner partner) {
@@ -1382,6 +1390,7 @@ public class EdcAdapterService {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
+            case DIGITAL_TWIN_EVENT -> throw new IllegalArgumentException("DigitalTwinEvent not supported");
             case ITEM_STOCK_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
@@ -1425,6 +1434,16 @@ public class EdcAdapterService {
             JsonLdConstants.CX_TAXO_NAMESPACE + "DataExchangeRequestApi"
         );
         return negotiateContract(partner, variablesService.getDataExchangeRequestApiAssetId(), type, partner.getEdcUrl(), equalFilters);
+    }
+
+    public boolean negotiateContractForDigitalTwinEvent(Partner partner, AssetType type) {
+        Map<String, String> equalFilters = new HashMap<>();
+        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
+        equalFilters.put(
+            "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
+            JsonLdConstants.CX_TAXO_NAMESPACE + "DigitalTwinEventAPI"
+        );
+        return negotiateContract(partner, variablesService.getDigitalTwinEventApiAssetId(), type, partner.getEdcUrl(), equalFilters);
     }
 
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {
