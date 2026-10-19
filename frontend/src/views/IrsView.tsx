@@ -186,7 +186,12 @@ export const IrsView = () => {
                         flex: 0.75,
                         valueGetter: (params) => formatInstant(params.row.nextAttemptAt),
                     },
-                    { headerName: 'Last Error', field: 'lastErrorMessage', flex: 1.25 },
+                    {
+                        headerName: 'Last Error',
+                        field: 'lastErrorMessage',
+                        flex: 1.25,
+                        renderCell: (params) => (params.value ? <InfoButton text={params.value} /> : '-'),
+                    },
                     {
                         headerName: '',
                         field: 'retry',
