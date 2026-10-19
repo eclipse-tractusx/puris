@@ -32,13 +32,12 @@ import ListItemText from '@mui/material/ListItemText';
 import AuthenticationService from '@services/authentication-service';
 import { useAuth } from '@hooks/useAuth';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { Button, Stack, SvgIconTypeMap, Typography } from '@mui/material';
+import { Stack, SvgIconTypeMap, Typography } from '@mui/material';
 import { Role } from '@models/types/auth/role';
 import {
     AccountTreeOutlined,
     AutoStoriesOutlined,
     ChevronLeftOutlined,
-    ContentCopyOutlined,
     ExitToAppOutlined,
     HandshakeOutlined,
     HelpOutlineOutlined,
@@ -54,7 +53,6 @@ import {
 import { visuallyHidden } from '@mui/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { useOwnPartner } from '@hooks/useOwnPartner';
-import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { config } from '@models/constants/config';
 

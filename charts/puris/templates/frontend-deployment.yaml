@@ -140,7 +140,7 @@ spec:
             - name: FRONTEND_GENERATE_MATERIAL_CATENAX_ID
               value: "{{ .Values.backend.puris.generatematerialcatenaxid | default true }}"
             - name: IRS_ADAPTER_ENABLED
-              value: "{{ .Values.backend.puris.irsadapter.enabled | default true }}"
+              value: "{{ .Values.backend.puris.irsadapter.enabled }}"
             - name: FRONTEND_DEFAULT_PRODUCTION_TIME
               value: "{{ .Values.frontend.puris.defaultProductionTime | default "23:59" }}"
             ######################################
