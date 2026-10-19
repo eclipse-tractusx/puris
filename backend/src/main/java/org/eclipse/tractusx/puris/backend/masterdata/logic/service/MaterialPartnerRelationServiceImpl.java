@@ -387,14 +387,8 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         flagConsistencyTest(materialPartnerRelation);
         var foundEntity = mprRepository.findById(materialPartnerRelation.getKey());
         if (foundEntity.isPresent()) {
-            String previousPartnerCXNumber = foundEntity.get().getPartnerCXNumber();
             executorService.submit(new DtrRegistrationTask(materialPartnerRelation, 3));
-            MaterialPartnerRelation updatedRelation = mprRepository.save(materialPartnerRelation);
-            if (updatedRelation.isPartnerSuppliesMaterial() && updatedRelation.getPartnerCXNumber() != null
-                && !updatedRelation.getPartnerCXNumber().equals(previousPartnerCXNumber)) {
-                executorService.submit(() -> connectToChildService.sendConnectToChild(updatedRelation));
-            }
-            return updatedRelation;
+            return mprRepository.save(materialPartnerRelation);
         }
         log.error("Could not update MaterialPartnerRelation, " + materialPartnerRelation.getKey() + " didn't exist before");
         return null;
