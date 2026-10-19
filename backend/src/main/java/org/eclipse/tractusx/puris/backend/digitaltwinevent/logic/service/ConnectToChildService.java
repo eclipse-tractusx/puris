@@ -25,8 +25,10 @@ package org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
@@ -43,6 +45,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelati
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.ExternalMaterialRelationRepository;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
+import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +79,9 @@ public class ConnectToChildService {
     @Autowired
     private EdcAdapterService edcAdapterService;
 
+    @Autowired
+    private MaterialRelationService materialRelationService;
+
     /**
      * Stores the parent items of a received ConnectToChild event as {@link ExternalMaterialRelation}s. A relation
      * that already exists for the same child material, partner and parent globalAssetId is updated.
@@ -102,30 +108,58 @@ public class ConnectToChildService {
      * Informs the suppliers of the child material of a new material relation with a ConnectToChild event. The parent
      * is identified by its Catena-X ID (materialNumberCx), which is the globalAssetId of its Digital Twin.
      * <p>
-     * Suppliers whose Catena-X ID for the child material is not known yet are skipped.
+     * For suppliers whose Catena-X ID for the child material is not known yet, the retrieval of the ID from their
+     * PartTypeInformation is triggered instead. Once the ID is stored, the MaterialPartnerRelationService calls
+     * {@link #sendConnectToChild(MaterialPartnerRelation)}.
      *
      * @param materialRelation the new material relation
      * @param parent           the parent product of the material relation
      */
     public void sendConnectToChild(MaterialRelation materialRelation, Material parent) {
+        Set<Partner> suppliersWithoutCatenaXId = new HashSet<>();
         for (MaterialPartnerRelation supplierRelation : mprService.findAllSupplierRelations(materialRelation.getChildOwnMaterialNumber())) {
-            Partner supplier = supplierRelation.getPartner();
             if (supplierRelation.getPartnerCXNumber() == null) {
-                log.warn("Not sending ConnectToChild to {}, its Catena-X ID for material {} is unknown",
-                    supplier.getBpnl(), materialRelation.getChildOwnMaterialNumber());
+                log.info("Catena-X ID of {} for material {} is unknown, ConnectToChild is sent once it has been retrieved", supplierRelation.getPartner().getBpnl(), materialRelation.getChildOwnMaterialNumber());
+                suppliersWithoutCatenaXId.add(supplierRelation.getPartner());
                 continue;
             }
-            try {
-                JsonNode message = messageService.createMessage(supplier, IndustryCoreMessageContext.DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT, createPayload(materialRelation, parent, supplierRelation.getPartnerCXNumber()));
-                if (edcAdapterService.doDigitalTwinEventPostRequest(supplier, message) == null) {
-                    log.error("Failed to send ConnectToChild for material {} to {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl());
-                } else {
-                    log.info("Sent ConnectToChild for material {} to {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl());
-                }
-            } catch (Exception e) {
+            send(materialRelation, parent, supplierRelation);
+        }
+        suppliersWithoutCatenaXId.forEach(mprService::triggerPartTypeRetrievalTask);
+    }
+
+    /**
+     * Informs the supplier about all material relations in which its material is used as child. Called when the
+     * Catena-X ID of the supplier's material has been stored/
+     * for material relations created before the ID was known, and for a supplier that has been added to a material
+     * that is already used in material relations.
+     *
+     * @param supplierRelation the supplier's relation to the child material
+     */
+    public void sendConnectToChild(MaterialPartnerRelation supplierRelation) {
+        String childOwnMaterialNumber = supplierRelation.getMaterial().getOwnMaterialNumber();
+        for (MaterialRelation materialRelation : materialRelationService.findAllParents(childOwnMaterialNumber)) {
+            Material parent = materialService.findByOwnMaterialNumber(materialRelation.getParentOwnMaterialNumber());
+            if (parent == null) {
+                log.warn("Not sending ConnectToChild for material {}, parent {} is unknown", childOwnMaterialNumber, materialRelation.getParentOwnMaterialNumber());
+                continue;
+            }
+            send(materialRelation, parent, supplierRelation);
+        }
+    }
+
+    private void send(MaterialRelation materialRelation, Material parent, MaterialPartnerRelation supplierRelation) {
+        Partner supplier = supplierRelation.getPartner();
+        try {
+            JsonNode message = messageService.createMessage(supplier, IndustryCoreMessageContext.DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT, createPayload(materialRelation, parent, supplierRelation.getPartnerCXNumber()));
+            if (edcAdapterService.doDigitalTwinEventPostRequest(supplier, message) == null) {
+                log.error("Failed to send ConnectToChild for material {} to {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl());
+            } else {
+                log.info("Sent ConnectToChild for material {} to {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl());
+            }
+        } catch (Exception e) {
                 log.error("Error sending ConnectToChild for material {} to {}: {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl(), e);
             }
-        }
     }
 
     private Material findMaterialSuppliedTo(String catenaXId, Partner partner, String bpnl) {

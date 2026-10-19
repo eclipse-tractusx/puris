@@ -58,6 +58,16 @@ databaseChangeLog:
                 - column:
                     name: last_modified_on
                     type: TIMESTAMP WITHOUT TIME ZONE
+                - column:
+                    name: quantity
+                    type: FLOAT8
+                    constraints:
+                      nullable: false
+                - column:
+                    name: measurement_unit
+                    type: SMALLINT
+                    constraints:
+                        nullable: false
           - addUniqueConstraint:
               tableName: external_material_relation
               columnNames: material_own_material_number, partner_uuid, parent_global_asset_id
