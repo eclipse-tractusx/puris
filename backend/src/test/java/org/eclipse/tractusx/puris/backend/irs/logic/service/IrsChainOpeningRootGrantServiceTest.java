@@ -19,10 +19,9 @@
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.StatusEnumeration;
-import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.repository.ReportedDemandAndCapacityNotificationRepository;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
@@ -58,7 +57,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
@@ -79,8 +77,7 @@ class IrsChainOpeningRootGrantServiceTest {
     private static final String CHILD_MATERIAL_NUMBER = "MNR-002";
     private static final String OWN_BPNL = "BPNLXXOWNCOMPANYX";
     private static final String OTHER_CHILD_MATERIAL_NUMBER = "MNR-003";
-    private static final String OTHER_PARENT_MATERIAL_NUMBER = "MNR-004";
-    private static final String OTHER_GLOBAL_ASSET_ID = "urn:uuid:00000000-0000-0000-0000-0000000000aa";
+    private static final String OTHER_SUPPLIER_BPNL = "BPNLXXOTHERSUPPLIER";
 
     @Mock
     private IrsRequestService irsRequestService;
@@ -90,9 +87,6 @@ class IrsChainOpeningRootGrantServiceTest {
 
     @Mock
     private IrsRequestQueueService irsRequestQueueService;
-
-    @Mock
-    private ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository;
 
     @Mock
     private MaterialService materialService;
@@ -113,38 +107,37 @@ class IrsChainOpeningRootGrantServiceTest {
     @BeforeEach
     void setUp() {
         IrsChainOpeningGrantGateway gateway = new IrsChainOpeningGrantGateway(irsRequestBodybuilder, irsRequestQueueService);
-        chainOpeningGrantService = new IrsChainOpeningRootGrantService(irsRequestService, gateway, reportedNotificationRepository,
+        chainOpeningGrantService = new IrsChainOpeningRootGrantService(irsRequestService, gateway,
             materialService, materialRelationService, variablesService, irsChainOpeningRootGrantRepository);
         lenient().when(irsChainOpeningRootGrantRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
+    /**
+     * A grant for the parent material, backed by one own request per given BPNL that affects the child material and is
+     * valid from VALID_FROM to VALID_TO. Its allowedBpnls are derived from those requests.
+     */
     private IrsChainOpeningRootGrant grant(Set<String> allowedBpnls) {
+        return grantBackedByRequests(requestsFor(allowedBpnls));
+    }
+
+    private Set<OwnDataExchangeRequest> requestsFor(Set<String> bpnls) {
+        Set<OwnDataExchangeRequest> requests = new HashSet<>();
+        for (String bpnl : bpnls) {
+            requests.add(ownRequest(bpnl, List.of(childMaterial(CHILD_MATERIAL_NUMBER)), VALID_FROM, VALID_TO));
+        }
+        return requests;
+    }
+
+    /** A grant for the parent material, backed by the given own requests. */
+    private IrsChainOpeningRootGrant grantBackedByRequests(Set<OwnDataExchangeRequest> requests) {
         return IrsChainOpeningRootGrant.builder()
             .globalAssetId(GLOBAL_ASSET_ID)
             .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
             .requesterBpn(OWN_BPNL)
-            .reportedNotifications(notificationsFor(allowedBpnls))
+            .dataExchangeRequests(requests)
             .validFrom(VALID_FROM)
             .validTo(VALID_TO)
             .build();
-    }
-
-    /**
-     * Builds one bare notification per given BPNL (each with a distinct uuid and a partner with
-     * that BPNL), standing in for the reported notifications that would back a grant with those
-     * allowedBpnls, since allowedBpnls is now derived from reportedNotifications.
-     */
-    private Set<ReportedDemandAndCapacityNotification> notificationsFor(Set<String> bpnls) {
-        Set<ReportedDemandAndCapacityNotification> notifications = new HashSet<>();
-        for (String bpnl : bpnls) {
-            Partner partner = new Partner();
-            partner.setBpnl(bpnl);
-            ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
-            notification.setUuid(UUID.randomUUID());
-            notification.setPartner(partner);
-            notifications.add(notification);
-        }
-        return notifications;
     }
 
     private Material parentMaterial() {
@@ -161,67 +154,39 @@ class IrsChainOpeningRootGrantServiceTest {
         return relation;
     }
 
-    private ReportedDemandAndCapacityNotification reportedNotificationAffectingChild() {
-        Material childMaterial = new Material();
-        childMaterial.setOwnMaterialNumber(CHILD_MATERIAL_NUMBER);
-
-        Partner partner = new Partner();
-        partner.setBpnl(ALLOWED_BPNL);
-
-        ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
-        notification.setPartner(partner);
-        notification.setStatus(StatusEnumeration.OPEN);
-        notification.setStartDateOfEffect(Date.from(Instant.now().minusSeconds(3600)));
-        notification.setMaterials(List.of(childMaterial));
-        return notification;
-    }
-
     private Material childMaterial(String ownMaterialNumber) {
         Material material = new Material();
         material.setOwnMaterialNumber(ownMaterialNumber);
         return material;
     }
 
-    private Material otherParentMaterial() {
-        Material material = new Material();
-        material.setOwnMaterialNumber(OTHER_PARENT_MATERIAL_NUMBER);
-        material.setMaterialNumberCx(OTHER_GLOBAL_ASSET_ID);
-        return material;
-    }
-
-    private MaterialRelation otherChildRelation() {
-        MaterialRelation relation = new MaterialRelation();
-        relation.setParentOwnMaterialNumber(OTHER_PARENT_MATERIAL_NUMBER);
-        relation.setChildOwnMaterialNumber(OTHER_CHILD_MATERIAL_NUMBER);
-        return relation;
-    }
-
-    private ReportedDemandAndCapacityNotification notificationWithMaterials(UUID uuid, List<Material> materials) {
-        Partner partner = new Partner();
-        partner.setBpnl(ALLOWED_BPNL);
-        ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
-        notification.setUuid(uuid);
-        notification.setSourceDisruptionId(SOURCE_DISRUPTION_ID);
-        notification.setPartner(partner);
-        notification.setStatus(StatusEnumeration.OPEN);
-        notification.setStartDateOfEffect(Date.from(VALID_FROM));
-        notification.setExpectedEndDateOfEffect(Date.from(VALID_TO));
-        notification.setMaterials(materials);
-        return notification;
-    }
-
     /**
-     * A bare notification instance sharing the given uuid, standing in for the same underlying
-     * notification row as loaded into a grant's reportedNotifications by a separate query, since
-     * removal must be matched by uuid rather than by reference or default entity equality.
+     * An own request to the given partner for the given materials with the given desired window. The requestId is set
+     * because the request's equals/hashCode are based on it.
      */
-    private ReportedDemandAndCapacityNotification bareNotificationCopy(UUID uuid) {
+    private OwnDataExchangeRequest ownRequest(String bpnl, List<Material> materials, Instant start, Instant end) {
         Partner partner = new Partner();
-        partner.setBpnl(ALLOWED_BPNL);
-        ReportedDemandAndCapacityNotification copy = new ReportedDemandAndCapacityNotification();
-        copy.setUuid(uuid);
-        copy.setPartner(partner);
-        return copy;
+        partner.setBpnl(bpnl);
+        UUID uuid = UUID.randomUUID();
+        OwnDataExchangeRequest request = new OwnDataExchangeRequest();
+        request.setUuid(uuid);
+        request.setRequestId("urn:uuid:" + uuid);
+        request.setPartner(partner);
+        request.setSourceDisruptionId(SOURCE_DISRUPTION_ID);
+        request.setMaterials(materials);
+        request.setDesiredStartDateTime(Date.from(start));
+        request.setDesiredEndDateTime(Date.from(end));
+        return request;
+    }
+
+    /** An own request to ALLOWED_BPNL for the child material, valid from VALID_FROM to VALID_TO. */
+    private OwnDataExchangeRequest ownRequestAffectingChild() {
+        return ownRequest(ALLOWED_BPNL, List.of(childMaterial(CHILD_MATERIAL_NUMBER)), VALID_FROM, VALID_TO);
+    }
+
+    /** Date has millisecond precision, Instant.now() does not, so the grant's window is compared against the truncated value. */
+    private Instant asDateInstant(Instant instant) {
+        return Date.from(instant).toInstant();
     }
 
     // --- createGrant ---
@@ -238,7 +203,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
     @Test
     void createGrant_WhenEnabled_BuildsBodyAndSends() {
-        IrsChainOpeningRootGrant grant = grant(Set.of());
+        IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL));
         ObjectMapper mapper = new ObjectMapper();
         var body = mapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
@@ -246,8 +211,6 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
@@ -261,7 +224,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
     @Test
     void createGrant_WhenGrantAlreadySynced_SendsPut() {
-        IrsChainOpeningRootGrant grant = grant(Set.of());
+        IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL));
         grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
         var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
@@ -269,8 +232,6 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
@@ -282,7 +243,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
     @Test
     void createGrant_WhenGrantOutOfSync_SendsPut() {
-        IrsChainOpeningRootGrant grant = grant(Set.of());
+        IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL));
         grant.setSyncStatus(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
         var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
@@ -290,8 +251,6 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
@@ -303,7 +262,7 @@ class IrsChainOpeningRootGrantServiceTest {
 
     @Test
     void createGrant_WhenGrantWasDeletedAtIrs_SendsPostToRecreate() {
-        IrsChainOpeningRootGrant grant = grant(Set.of());
+        IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL));
         grant.setSyncStatus(IrsGrantSyncStatusEnumeration.DELETED);
         var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
@@ -311,8 +270,6 @@ class IrsChainOpeningRootGrantServiceTest {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
@@ -335,11 +292,10 @@ class IrsChainOpeningRootGrantServiceTest {
     }
 
     @Test
-    void createGrant_WhenNoMatchingActiveReportedNotification_Throws() {
+    void createGrant_WhenNoRequestBacksGrant_Throws() {
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID)).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
@@ -347,16 +303,16 @@ class IrsChainOpeningRootGrantServiceTest {
     }
 
     @Test
-    void createGrant_WhenMatchingActiveReportedNotification_Succeeds() {
-        IrsChainOpeningRootGrant grant = grant(Set.of());
+    void createGrant_WhenRequestHasNotStartedYet_Succeeds() {
+        OwnDataExchangeRequest futureRequest = ownRequest(ALLOWED_BPNL, List.of(childMaterial(CHILD_MATERIAL_NUMBER)),
+            Instant.now().plusSeconds(24 * 3600L), Instant.now().plusSeconds(8 * 24 * 3600L));
+        IrsChainOpeningRootGrant grant = grantBackedByRequests(new HashSet<>(Set.of(futureRequest)));
         var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
         IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(reportedNotificationAffectingChild()));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
@@ -366,33 +322,45 @@ class IrsChainOpeningRootGrantServiceTest {
     }
 
     @Test
-    void createGrant_WhenAllowedBpnlHasNoMatchingReportedNotification_Throws() {
-        ReportedDemandAndCapacityNotification fromOtherSupplier = reportedNotificationAffectingChild();
-        fromOtherSupplier.getPartner().setBpnl("BPNLXXOTHERSUPPLIER");
+    void createGrant_WhenRequestHasExpired_Throws() {
+        OwnDataExchangeRequest expired = ownRequest(ALLOWED_BPNL, List.of(childMaterial(CHILD_MATERIAL_NUMBER)),
+            Instant.now().minusSeconds(14 * 24 * 3600L), Instant.now().minusSeconds(7 * 24 * 3600L));
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(fromOtherSupplier));
 
         assertThrows(IllegalArgumentException.class,
-            () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of(ALLOWED_BPNL))));
+            () -> chainOpeningGrantService.createOrUpdateGrant(grantBackedByRequests(new HashSet<>(Set.of(expired)))));
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
 
     @Test
-    void createGrant_WhenEveryAllowedBpnlHasValidRelatedReportedNotification_Succeeds() {
-        IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL));
-        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
-        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+    void createGrant_WhenRequestAffectsNoChildMaterial_Throws() {
+        OwnDataExchangeRequest unrelated = ownRequest(ALLOWED_BPNL, List.of(childMaterial(OTHER_CHILD_MATERIAL_NUMBER)), VALID_FROM, VALID_TO);
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
-        when(reportedNotificationRepository.findAllBySourceDisruptionId(SOURCE_DISRUPTION_ID))
-            .thenReturn(List.of(reportedNotificationAffectingChild()));
+
+        assertThrows(IllegalArgumentException.class,
+            () -> chainOpeningGrantService.createOrUpdateGrant(grantBackedByRequests(new HashSet<>(Set.of(unrelated)))));
+
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void createGrant_WhenEveryAllowedBpnlIsBackedByARequest_Succeeds() {
+        IrsChainOpeningRootGrant grant = grant(Set.of(ALLOWED_BPNL, OTHER_SUPPLIER_BPNL));
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+
+        assertThat(grant.getAllowedBpnls()).containsExactlyInAnyOrder(ALLOWED_BPNL, OTHER_SUPPLIER_BPNL);
+
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(irsRequestBodybuilder.buildGrantCreationRequestBody(grant)).thenReturn(body);
         when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
 
@@ -401,101 +369,21 @@ class IrsChainOpeningRootGrantServiceTest {
         assertThat(result).isEqualTo(queuedRequest);
     }
 
-    // --- syncGrantsForNotification ---
-
-    private ReportedDemandAndCapacityNotification incomingReportedNotification() {
-        Material childMaterial = new Material();
-        childMaterial.setOwnMaterialNumber(CHILD_MATERIAL_NUMBER);
-
-        Partner partner = new Partner();
-        partner.setBpnl(ALLOWED_BPNL);
-
-        ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
-        notification.setSourceDisruptionId(SOURCE_DISRUPTION_ID);
-        notification.setPartner(partner);
-        notification.setStatus(StatusEnumeration.OPEN);
-        notification.setStartDateOfEffect(Date.from(VALID_FROM));
-        notification.setExpectedEndDateOfEffect(Date.from(VALID_TO));
-        notification.setMaterials(List.of(childMaterial));
-        return notification;
-    }
-
     @Test
-    void syncGrantsForNotification_WhenNoExistingGrant_CreatesNewGrantWithAllowedBpnl() {
-        ReportedDemandAndCapacityNotification notification = incomingReportedNotification();
+    void createGrant_WhenTheRequestBackingAnAllowedBpnlHasExpired_Throws() {
+        OwnDataExchangeRequest expired = ownRequest(OTHER_SUPPLIER_BPNL, List.of(childMaterial(CHILD_MATERIAL_NUMBER)),
+            Instant.now().minusSeconds(14 * 24 * 3600L), Instant.now().minusSeconds(7 * 24 * 3600L));
+        Set<OwnDataExchangeRequest> requests = new HashSet<>(requestsFor(Set.of(ALLOWED_BPNL)));
+        requests.add(expired);
+        IrsChainOpeningRootGrant grant = grantBackedByRequests(requests);
 
-        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
-        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
-        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
-        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        when(irsRequestService.isEnabled()).thenReturn(false);
-
-        chainOpeningGrantService.syncGrantsForNotification(notification);
-
-        ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
-        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
-        IrsChainOpeningRootGrant saved = captor.getValue();
-
-        assertThat(saved.getRequesterBpn()).isEqualTo(OWN_BPNL);
-        assertThat(saved.getGlobalAssetId()).isEqualTo(GLOBAL_ASSET_ID);
-        assertThat(saved.getSourceDisruptionId()).isEqualTo(SOURCE_DISRUPTION_ID.toString());
-        assertThat(saved.getAllowedBpnls()).containsExactly(ALLOWED_BPNL);
-        assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
-    }
-
-    @Test
-    void syncGrantsForNotification_WhenExistingSyncedGrantChanges_TransitionsToOutOfSync() {
-        ReportedDemandAndCapacityNotification notification = incomingReportedNotification();
-
-        IrsChainOpeningRootGrant existing = IrsChainOpeningRootGrant.builder()
-            .requesterBpn(OWN_BPNL)
-            .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
-            .reportedNotifications(notificationsFor(new HashSet<>(Set.of("BPNLXXOTHERSUPPLIER"))))
-            .validFrom(VALID_FROM)
-            .validTo(VALID_TO)
-            .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
-            .build();
-
-        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
-        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
-        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
-        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(existing));
-        when(irsRequestService.isEnabled()).thenReturn(false);
-
-        chainOpeningGrantService.syncGrantsForNotification(notification);
-
-        ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
-        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
-        IrsChainOpeningRootGrant saved = captor.getValue();
-
-        assertThat(saved.getAllowedBpnls()).containsExactlyInAnyOrder(ALLOWED_BPNL, "BPNLXXOTHERSUPPLIER");
-        assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-    }
-
-    @Test
-    void syncGrantsForNotification_WhenIrsSyncFails_SetsOutOfSyncWithoutThrowing() {
-        ReportedDemandAndCapacityNotification notification = incomingReportedNotification();
-
-        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
-        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
-        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
-        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
-        // IRS enabled, but eligibility fails (globalAssetId does not resolve to a material during the push),
-        // simulating an IRS/eligibility failure that must not propagate out of syncGrantsForNotification.
         when(irsRequestService.isEnabled()).thenReturn(true);
-        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
 
-        assertDoesNotThrow(() -> chainOpeningGrantService.syncGrantsForNotification(notification));
+        assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant));
 
-        ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
-        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
-        IrsChainOpeningRootGrant saved = captor.getValue();
-
-        assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
     }
 
     // --- deleteGrant ---
@@ -544,111 +432,151 @@ class IrsChainOpeningRootGrantServiceTest {
             .containsEntry("globalAssetId", "my-global-asset-id");
     }
 
-    // --- onReportedNotificationUpdated ---
+    // --- syncGrantsForRequest ---
 
     @Test
-    void onReportedNotificationUpdated_WhenResolvedAndGrantBecomesEmpty_EnqueuesDeleteAndSetsPending() {
-        UUID notificationUuid = UUID.randomUUID();
-        ReportedDemandAndCapacityNotification previous = notificationWithMaterials(notificationUuid, List.of(childMaterial(CHILD_MATERIAL_NUMBER)));
-        ReportedDemandAndCapacityNotification updated = notificationWithMaterials(notificationUuid, List.of());
-        updated.setStatus(StatusEnumeration.RESOLVED);
-
-        IrsChainOpeningRootGrant grant = IrsChainOpeningRootGrant.builder()
-            .requesterBpn(OWN_BPNL)
-            .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
-            .reportedNotifications(new HashSet<>(Set.of(bareNotificationCopy(notificationUuid))))
-            .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
-            .build();
-
-        when(irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notificationUuid)).thenReturn(List.of(grant));
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
-        when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
-
-        chainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
-
-        assertThat(grant.getReportedNotifications()).isEmpty();
-        assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.PENDING);
-        verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.DELETE), eq(GRANTS_PATH), isNull(), any(),
-            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_DELETE), eq(grant.getUuid()));
-    }
-
-    @Test
-    void onReportedNotificationUpdated_WhenResolvedButGrantStillHasOtherNotifications_MarksOutOfSyncAndRePushes() {
-        UUID notificationUuid = UUID.randomUUID();
-        UUID otherNotificationUuid = UUID.randomUUID();
-        ReportedDemandAndCapacityNotification previous = notificationWithMaterials(notificationUuid, List.of(childMaterial(CHILD_MATERIAL_NUMBER)));
-        ReportedDemandAndCapacityNotification updated = notificationWithMaterials(notificationUuid, List.of());
-        updated.setStatus(StatusEnumeration.RESOLVED);
-
-        Set<ReportedDemandAndCapacityNotification> notifications = new HashSet<>();
-        notifications.add(bareNotificationCopy(notificationUuid));
-        notifications.add(bareNotificationCopy(otherNotificationUuid));
-
-        IrsChainOpeningRootGrant grant = IrsChainOpeningRootGrant.builder()
-            .requesterBpn(OWN_BPNL)
-            .globalAssetId(GLOBAL_ASSET_ID)
-            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
-            .reportedNotifications(notifications)
-            .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
-            .build();
-
-        when(irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notificationUuid)).thenReturn(List.of(grant));
-        when(irsRequestService.isEnabled()).thenReturn(false);
-
-        chainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
-
-        assertThat(grant.getReportedNotifications()).extracting(ReportedDemandAndCapacityNotification::getUuid)
-            .containsExactly(otherNotificationUuid);
-        assertThat(grant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
-        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
-    }
-
-    @Test
-    void onReportedNotificationUpdated_WhenAffectedMaterialsChange_MovesNotificationBetweenParentGrants() {
-        UUID notificationUuid = UUID.randomUUID();
-        UUID unrelatedNotificationUuid = UUID.randomUUID();
-        ReportedDemandAndCapacityNotification previous = notificationWithMaterials(notificationUuid, List.of(childMaterial(CHILD_MATERIAL_NUMBER)));
-        ReportedDemandAndCapacityNotification updated = notificationWithMaterials(notificationUuid, List.of(childMaterial(OTHER_CHILD_MATERIAL_NUMBER)));
+    void syncGrantsForRequest_WhenNoExistingGrant_CreatesGrantBackedByRequestForItsWindow() {
+        OwnDataExchangeRequest request = ownRequestAffectingChild();
 
         when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
         when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
-        when(materialRelationService.findAllParents(OTHER_CHILD_MATERIAL_NUMBER)).thenReturn(List.of(otherChildRelation()));
         when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
-        when(materialService.findByOwnMaterialNumber(OTHER_PARENT_MATERIAL_NUMBER)).thenReturn(otherParentMaterial());
+        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+        when(irsRequestService.isEnabled()).thenReturn(false);
 
-        Set<ReportedDemandAndCapacityNotification> oldGrantNotifications = new HashSet<>();
-        oldGrantNotifications.add(bareNotificationCopy(notificationUuid));
-        oldGrantNotifications.add(bareNotificationCopy(unrelatedNotificationUuid));
+        chainOpeningGrantService.syncGrantsForRequest(request);
 
-        IrsChainOpeningRootGrant oldParentGrant = IrsChainOpeningRootGrant.builder()
+        ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
+        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
+        IrsChainOpeningRootGrant saved = captor.getValue();
+
+        assertThat(saved.getRequesterBpn()).isEqualTo(OWN_BPNL);
+        assertThat(saved.getGlobalAssetId()).isEqualTo(GLOBAL_ASSET_ID);
+        assertThat(saved.getSourceDisruptionId()).isEqualTo(SOURCE_DISRUPTION_ID.toString());
+        assertThat(saved.getDataExchangeRequests()).containsExactly(request);
+        assertThat(saved.getAllowedBpnls()).containsExactly(ALLOWED_BPNL);
+        assertThat(saved.getValidFrom()).isEqualTo(asDateInstant(VALID_FROM));
+        assertThat(saved.getValidTo()).isEqualTo(asDateInstant(VALID_TO));
+        assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
+    }
+
+    @Test
+    void syncGrantsForRequest_WhenGrantIsWidenedByRequest_TransitionsToOutOfSync() {
+        Instant requestStart = VALID_FROM.minusSeconds(3600);
+        Instant requestEnd = VALID_TO.plusSeconds(3600);
+        OwnDataExchangeRequest request = ownRequest(ALLOWED_BPNL, List.of(childMaterial(CHILD_MATERIAL_NUMBER)), requestStart, requestEnd);
+        OwnDataExchangeRequest otherRequest = ownRequest(OTHER_SUPPLIER_BPNL, List.of(childMaterial(CHILD_MATERIAL_NUMBER)), VALID_FROM, VALID_TO);
+
+        IrsChainOpeningRootGrant existing = IrsChainOpeningRootGrant.builder()
             .requesterBpn(OWN_BPNL)
             .globalAssetId(GLOBAL_ASSET_ID)
             .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
-            .reportedNotifications(oldGrantNotifications)
+            .dataExchangeRequests(new HashSet<>(Set.of(otherRequest)))
+            .validFrom(VALID_FROM)
+            .validTo(VALID_TO)
             .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
             .build();
 
+        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
+        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
         when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(oldParentGrant));
-        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
-            OWN_BPNL, OTHER_GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(existing));
         when(irsRequestService.isEnabled()).thenReturn(false);
 
-        chainOpeningGrantService.onReportedNotificationUpdated(previous, updated);
-
-        assertThat(oldParentGrant.getReportedNotifications()).extracting(ReportedDemandAndCapacityNotification::getUuid)
-            .containsExactly(unrelatedNotificationUuid);
-        assertThat(oldParentGrant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+        chainOpeningGrantService.syncGrantsForRequest(request);
 
         ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
-        verify(irsChainOpeningRootGrantRepository, atLeastOnce()).save(captor.capture());
-        IrsChainOpeningRootGrant newParentGrant = captor.getAllValues().stream()
-            .filter(candidate -> OTHER_GLOBAL_ASSET_ID.equals(candidate.getGlobalAssetId()))
-            .findFirst().orElseThrow();
-        assertThat(newParentGrant.getReportedNotifications()).extracting(ReportedDemandAndCapacityNotification::getUuid)
-            .containsExactly(notificationUuid);
-        assertThat(newParentGrant.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.NOT_SYNCED);
+        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
+        IrsChainOpeningRootGrant saved = captor.getValue();
+
+        assertThat(saved.getAllowedBpnls()).containsExactlyInAnyOrder(ALLOWED_BPNL, OTHER_SUPPLIER_BPNL);
+        assertThat(saved.getDataExchangeRequests()).containsExactlyInAnyOrder(request, otherRequest);
+        assertThat(saved.getValidFrom()).isEqualTo(asDateInstant(requestStart));
+        assertThat(saved.getValidTo()).isEqualTo(asDateInstant(requestEnd));
+        assertThat(saved.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+    }
+
+    @Test
+    void syncGrantsForRequest_WhenRequestAlreadyOnGrantWithinItsWindow_KeepsSyncedStatus() {
+        OwnDataExchangeRequest request = ownRequestAffectingChild();
+
+        IrsChainOpeningRootGrant existing = IrsChainOpeningRootGrant.builder()
+            .requesterBpn(OWN_BPNL)
+            .globalAssetId(GLOBAL_ASSET_ID)
+            .sourceDisruptionId(SOURCE_DISRUPTION_ID.toString())
+            .dataExchangeRequests(new HashSet<>(Set.of(request)))
+            .validFrom(asDateInstant(VALID_FROM))
+            .validTo(asDateInstant(VALID_TO))
+            .syncStatus(IrsGrantSyncStatusEnumeration.SYNCED)
+            .build();
+
+        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
+        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
+        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(existing));
+        when(irsRequestService.isEnabled()).thenReturn(false);
+
+        chainOpeningGrantService.syncGrantsForRequest(request);
+
+        assertThat(existing.getDataExchangeRequests()).containsExactly(request);
+        assertThat(existing.getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.SYNCED);
+    }
+
+    @Test
+    void syncGrantsForRequest_WhenIrsEnabledAndGrantEligible_EnqueuesAndSetsPending() {
+        OwnDataExchangeRequest request = ownRequestAffectingChild();
+        var body = objectMapper.createObjectNode().put("openingId", SOURCE_DISRUPTION_ID.toString());
+        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+
+        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
+        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
+        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(parentMaterial());
+        when(materialRelationService.resolveChildOwnMaterialNumbers(eq(PARENT_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
+        when(irsRequestBodybuilder.buildGrantCreationRequestBody(any(IrsChainOpeningGrant.class))).thenReturn(body);
+        when(irsRequestQueueService.enqueue(any(), any(), any(), any(), any(), any())).thenReturn(queuedRequest);
+
+        chainOpeningGrantService.syncGrantsForRequest(request);
+
+        ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
+        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
+        assertThat(captor.getValue().getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.PENDING);
+        verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.POST), eq(GRANTS_PATH), eq(body.toString()), isNull(),
+            eq(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_CREATE), any());
+    }
+
+    @Test
+    void syncGrantsForRequest_WhenIrsSyncFails_SetsOutOfSyncWithoutThrowing() {
+        OwnDataExchangeRequest request = ownRequestAffectingChild();
+
+        when(variablesService.getOwnBpnl()).thenReturn(OWN_BPNL);
+        when(materialRelationService.findAllParents(CHILD_MATERIAL_NUMBER)).thenReturn(List.of(childRelation()));
+        when(materialService.findByOwnMaterialNumber(PARENT_MATERIAL_NUMBER)).thenReturn(parentMaterial());
+        when(irsChainOpeningRootGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
+            OWN_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
+
+        assertDoesNotThrow(() -> chainOpeningGrantService.syncGrantsForRequest(request));
+
+        ArgumentCaptor<IrsChainOpeningRootGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningRootGrant.class);
+        verify(irsChainOpeningRootGrantRepository, times(2)).save(captor.capture());
+        assertThat(captor.getValue().getSyncStatus()).isEqualTo(IrsGrantSyncStatusEnumeration.OUT_OF_SYNC);
+    }
+
+    @Test
+    void syncGrantsForRequest_WhenRequestHasNoMaterials_DoesNothing() {
+        OwnDataExchangeRequest request = ownRequestAffectingChild();
+        request.setMaterials(null);
+
+        chainOpeningGrantService.syncGrantsForRequest(request);
+
+        verify(irsChainOpeningRootGrantRepository, never()).save(any());
     }
 }

@@ -115,8 +115,10 @@ public class DemandAndCapacityNotificationSammMapper {
             case CAPACITY_INCREASE, CAPACITY_REDUCTION -> {
                 // sender of Samm is supplier, we are customer
                 for (var material: samm.getMaterialsAffected()) {
-                    if (material.getMaterialGlobalAssetId() != null) {
-                        materialsSet.add(mprService.findByPartnerAndPartnerCXNumber(partner, material.getMaterialGlobalAssetId()).getMaterial());
+                    var mprByCxNumber = material.getMaterialGlobalAssetId() != null
+                            ? mprService.findByPartnerAndPartnerCXNumber(partner, material.getMaterialGlobalAssetId()) : null;
+                    if (mprByCxNumber != null) {
+                        materialsSet.add(mprByCxNumber.getMaterial());
                     } else if (material.getMaterialNumberCustomer() != null) {
                         materialsSet.add(materialService.findByOwnMaterialNumber(material.getMaterialNumberCustomer()));
                     } else if (material.getMaterialNumberSupplier() != null) {

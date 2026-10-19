@@ -84,7 +84,7 @@ public class DataExchangeApprovalApiService {
         }
 
         OwnDataExchangeRequest ownRequest = approval.getDataExchangeRequest();
-        if (!partner.getBpnl().equals(ownRequest.getNotification().getPartner().getBpnl())) {
+        if (!partner.getBpnl().equals(ownRequest.getPartner().getBpnl())) {
             log.error("Partner {} is not the recipient of request {}", partner.getBpnl(), ownRequest.getRequestId());
             return null;
         }
@@ -103,7 +103,7 @@ public class DataExchangeApprovalApiService {
             if (approval.getDataExchangeRequest().getRelatedDataExchangeRequest() != null) {
                 irsChainOpeningGrantService.onRelatedApprovalReceived(approval);
             } else if (approval.isFinalized()) {
-                irsJobService.createJobsForNotification(approval.getDataExchangeRequest().getNotification());
+                irsJobService.createJobsForRequest(approval.getDataExchangeRequest());
             }
             return approval;
         }
@@ -112,13 +112,13 @@ public class DataExchangeApprovalApiService {
             ReportedDataExchangeApproval created = reportedDataExchangeApprovalService.create(approval);
             finalizeOriginApprovalIfComplete(created);
             if (created.getDataExchangeRequest().getRelatedDataExchangeRequest() == null) {
-                // create root grants for the notification if the approval is for a root request
-                irsChainOpeningRootGrantService.syncGrantsForNotification(created.getDataExchangeRequest().getNotification());
+                // create root grants if the approval is for a root request
+                irsChainOpeningRootGrantService.syncGrantsForRequest(created.getDataExchangeRequest());
                 if (created.isFinalized()) {
-                    irsJobService.createJobsForNotification(created.getDataExchangeRequest().getNotification());
+                    irsJobService.createJobsForRequest(created.getDataExchangeRequest());
                 }
             } else {
-                // add the notification to the affected materials' parent materials' grants if the approval is for a related request
+                // add the request to the affected materials' parent materials' grants if the approval is for a related request
                 irsChainOpeningGrantService.onRelatedApprovalReceived(created);
             }
             return created;
@@ -132,8 +132,8 @@ public class DataExchangeApprovalApiService {
     }
 
     public void sendDataExchangeApproval(OwnDataExchangeApproval approval, Partner partner) {
-        var body = createDataExchangeApprovalBody(approval);
         try {
+            var body = createDataExchangeApprovalBody(approval);
             edcAdapterService.doDataExchangeApprovalPostRequest(partner, body);
             irsChainOpeningGrantService.createGrantsForApproval(approval);
             log.info("Successfully sent Data Exchange Approval to partner " + partner.getBpnl());
@@ -172,12 +172,12 @@ public class DataExchangeApprovalApiService {
             log.error("Failed to finalize approval {}", originApproval.getApprovalId());
             return;
         }
-        Partner partner = origin.getNotification().getPartner();
+        Partner partner = origin.getPartner();
         executorService.submit(() -> sendDataExchangeApproval(originApproval, partner));
     }
 
     private JsonNode createDataExchangeApprovalBody(OwnDataExchangeApproval approval) {
         var samm = sammMapper.ownDataExchangeApprovalToSamm(approval);
-        return messageService.createMessage(approval.getDataExchangeRequest().getNotification().getPartner(), IndustryCoreMessageContext.DATA_EXCHANGE_APPROVAL_CONTEXT, samm);
+        return messageService.createMessage(approval.getDataExchangeRequest().getPartner(), IndustryCoreMessageContext.DATA_EXCHANGE_APPROVAL_CONTEXT, samm);
     }
 }

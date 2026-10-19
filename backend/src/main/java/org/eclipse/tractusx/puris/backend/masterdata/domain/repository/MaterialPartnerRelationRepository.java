@@ -26,6 +26,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,4 +58,8 @@ public interface MaterialPartnerRelationRepository extends JpaRepository<Materia
     List<MaterialPartnerRelation> findAllByPartnerAndAndPartnerCXNumber(Partner partner, String partnerCXNumber);
 
     List<MaterialPartnerRelation> findAllByPartner_BpnlAndMaterial_OwnMaterialNumber(String bpnl, String ownMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumberInAndPartnerSuppliesMaterialIsTrue(Collection<String> ownMaterialNumbers);
+ 
+    List<MaterialPartnerRelation> findAllByMaterial_OwnMaterialNumberInAndPartnerBuysMaterialIsTrue(Collection<String> ownMaterialNumbers);
 }

@@ -17,9 +17,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
@@ -324,8 +322,8 @@ public class DataExchangeApprovalApiServiceTest {
 
         apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
 
-        verify(irsChainOpeningRootGrantService).syncGrantsForNotification(approval.getDataExchangeRequest().getNotification());
-        verify(irsJobService).createJobsForNotification(approval.getDataExchangeRequest().getNotification());
+        verify(irsChainOpeningRootGrantService).syncGrantsForRequest(approval.getDataExchangeRequest());
+        verify(irsJobService).createJobsForRequest(approval.getDataExchangeRequest());
         verify(irsChainOpeningGrantService, never()).onRelatedApprovalReceived(any());
     }
 
@@ -339,8 +337,8 @@ public class DataExchangeApprovalApiServiceTest {
 
         apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
 
-        verify(irsChainOpeningRootGrantService).syncGrantsForNotification(approval.getDataExchangeRequest().getNotification());
-        verify(irsJobService, never()).createJobsForNotification(any());
+        verify(irsChainOpeningRootGrantService).syncGrantsForRequest(approval.getDataExchangeRequest());
+        verify(irsJobService, never()).createJobsForRequest(any());
     }
 
     @Test
@@ -355,8 +353,8 @@ public class DataExchangeApprovalApiServiceTest {
         apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
 
         verify(irsChainOpeningGrantService).onRelatedApprovalReceived(approval);
-        verify(irsChainOpeningRootGrantService, never()).syncGrantsForNotification(any());
-        verify(irsJobService, never()).createJobsForNotification(any());
+        verify(irsChainOpeningRootGrantService, never()).syncGrantsForRequest(any());
+        verify(irsJobService, never()).createJobsForRequest(any());
     }
 
     // --- update branch ---
@@ -373,7 +371,7 @@ public class DataExchangeApprovalApiServiceTest {
 
         apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
 
-        verify(irsJobService).createJobsForNotification(incoming.getDataExchangeRequest().getNotification());
+        verify(irsJobService).createJobsForRequest(incoming.getDataExchangeRequest());
         verify(irsChainOpeningGrantService, never()).onRelatedApprovalReceived(any());
     }
 
@@ -389,8 +387,8 @@ public class DataExchangeApprovalApiServiceTest {
 
         apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
 
-        verify(irsJobService, never()).createJobsForNotification(any());
-        verify(irsChainOpeningRootGrantService, never()).syncGrantsForNotification(any());
+        verify(irsJobService, never()).createJobsForRequest(any());
+        verify(irsChainOpeningRootGrantService, never()).syncGrantsForRequest(any());
         verify(irsChainOpeningGrantService, never()).onRelatedApprovalReceived(any());
     }
 
@@ -408,7 +406,7 @@ public class DataExchangeApprovalApiServiceTest {
         apiService.handleIncomingDataExchangeApproval(SUPPLIER_BPNL, incomingSamm);
 
         verify(irsChainOpeningGrantService).onRelatedApprovalReceived(incoming);
-        verify(irsJobService, never()).createJobsForNotification(any());
+        verify(irsJobService, never()).createJobsForRequest(any());
     }
  
     private void createNewApproval (ReportedDataExchangeApproval incoming) {
@@ -441,10 +439,10 @@ public class DataExchangeApprovalApiServiceTest {
         return ReportedDataExchangeRequest.builder()
             .uuid(UUID.randomUUID())
             .requestId(UUID.randomUUID().toString())
+            .partner(customerPartner)
             .notification(ownNotification)
             .criticality(CriticalityEnumeration.HIGH)
             .desiredStartDateTime(dateFromString("01-01-2026 00:00:00"))
-            .desiredEndDateTime(dateFromString("31-12-2026 00:00:00"))
             .requestedTypes(new ArrayList<>(List.of(RequestedTypeEnumeration.N_TIER)))
             .text("Please provide the requested data.")
             .build();
@@ -461,16 +459,13 @@ public class DataExchangeApprovalApiServiceTest {
                 .build();
  
         return OwnDataExchangeRequest.builder()
-            .uuid(UUID.randomUUID())
-            .requestId(UUID.randomUUID().toString())
-            .notification(supplierNotification)
-            .relatedDataExchangeRequest(origin)
-            .criticality(CriticalityEnumeration.HIGH)
-            .desiredStartDateTime(dateFromString("01-01-2026 00:00:00"))
-            .desiredEndDateTime(dateFromString("31-12-2026 00:00:00"))
-            .requestedTypes(new ArrayList<>(List.of(RequestedTypeEnumeration.N_TIER)))
-            .text("Please provide the requested data.")
-            .build();
+             .uuid(UUID.randomUUID())
+             .requestId(UUID.randomUUID().toString())
+             .partner(supplier)
+             .notification(supplierNotification)
+             .relatedDataExchangeRequest(origin)
+             .criticality(CriticalityEnumeration.HIGH)
+             .build();
     }
  
     static ReportedDataExchangeApproval approval(boolean finalized, ReportedDataExchangeRequest relatedRequest) {

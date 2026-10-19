@@ -657,4 +657,14 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
         }
         return results.getFirst();
     }
+
+    @Override
+    public List<MaterialPartnerRelation> findAllSupplierRelationsForOwnMaterialNumbers(Collection<String> ownMaterialNumbers) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumberInAndPartnerSuppliesMaterialIsTrue(ownMaterialNumbers);
+    }
+    
+    @Override
+    public List<MaterialPartnerRelation> findAllCustomerRelationsForOwnMaterialNumbers(Collection<String> ownMaterialNumbers) {
+        return mprRepository.findAllByMaterial_OwnMaterialNumberInAndPartnerBuysMaterialIsTrue(ownMaterialNumbers);
+    }
 }
