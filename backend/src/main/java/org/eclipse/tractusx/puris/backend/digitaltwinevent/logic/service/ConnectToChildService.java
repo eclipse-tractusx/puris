@@ -159,6 +159,8 @@ public class ConnectToChildService {
         relation.setValidityPeriod(validityPeriod);
         relation.setCreatedOn(parent.getCreatedOn());
         relation.setLastModifiedOn(parent.getLastModifiedOn());
+        relation.setQuantity(parent.getQuantity().getValue());
+        relation.setMeasurementUnit(parent.getQuantity().getUnit());
         return relation;
     }
 
@@ -170,6 +172,8 @@ public class ConnectToChildService {
         if (existingRelation != null) {
             existingRelation.setValidityPeriod(relation.getValidityPeriod());
             existingRelation.setLastModifiedOn(relation.getLastModifiedOn());
+            existingRelation.setQuantity(relation.getQuantity());
+            existingRelation.setMeasurementUnit(relation.getMeasurementUnit());
             externalMaterialRelationRepository.save(existingRelation);
             log.info("Updated relation of material {} to parent {}", relation.getMaterial().getOwnMaterialNumber(), relation.getParentGlobalAssetId());
             return;

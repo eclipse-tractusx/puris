@@ -25,6 +25,8 @@ package org.eclipse.tractusx.puris.backend.masterdata.domain.model;
 
 import java.util.Date;
 import java.util.UUID;
+
+import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemUnitEnumeration;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 
 import jakarta.persistence.Embeddable;
@@ -68,6 +70,11 @@ public class ExternalMaterialRelation {
     private Date createdOn;
 
     private Date lastModifiedOn;
+    
+    private double quantity;
+
+    @NotNull
+    private ItemUnitEnumeration measurementUnit;
 
     @Embeddable
     @Getter
