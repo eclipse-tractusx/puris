@@ -174,7 +174,6 @@ public class DataExchangeRequestController {
             }
         }
  
- 
         OwnDataExchangeApproval ownDataExchangeApproval = modelMapper.map(requestDto, OwnDataExchangeApproval.class);
         ownDataExchangeApproval.setDataExchangeRequest(reportedRequest);
         ownDataExchangeApproval.setFinalized(!forward);
@@ -327,7 +326,7 @@ public class DataExchangeRequestController {
  
     private DataExchangeRequestDto convertBaseToDto(DataExchangeRequest entity) {
         DataExchangeRequestDto dto = modelMapper.map(entity, DataExchangeRequestDto.class);
-        dto.setPartnerBpnl(entity.getPartner() != null ? entity.getPartner().getBpnl() : null);
+        dto.setPartnerBpnl(entity.getPartner().getBpnl());
         dto.setAffectedMaterialNumbers(entity.getMaterials() == null ? new ArrayList<>()
             : entity.getMaterials().stream().map(Material::getOwnMaterialNumber).toList());
         dto.setAffectedSitesBpnsSender(entity.getAffectedSitesSender() == null ? new ArrayList<>()

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
@@ -108,7 +107,7 @@ public class DataExchangeRequestSammMapper {
             return null;
         }
  
-        OwnDemandAndCapacityNotification notification = findOwnNotification(partner, samm.getSourceDisruptionId());
+        OwnDemandAndCapacityNotification notification = ownDemandAndCapacityNotificationService.findByBpnlAndSourceDisruptionId(partner.getBpnl(), samm.getSourceDisruptionId());
         if (notification == null) {
             log.info("No own notification to {} for source disruption id {}", partner.getBpnl(), samm.getSourceDisruptionId());
         }
@@ -140,10 +139,7 @@ public class DataExchangeRequestSammMapper {
             if (materialSamm == null) {
                 continue;
             }
-            Material material = resolveMaterialDeliveredToSender(sender, materialSamm);
-            if (material == null) {
-                material = resolveMaterialDeliveredBySender(sender, materialSamm);
-            }
+            Material material = resolveMaterial(sender, materialSamm);
             if (material == null) {
                 continue;
             }
@@ -152,14 +148,31 @@ public class DataExchangeRequestSammMapper {
         return new ArrayList<>(materials.values());
     }
  
-    private Material resolveMaterialDeliveredToSender(Partner sender, MaterialSamm materialSamm) {
+    private Material resolveMaterial(Partner sender, MaterialSamm materialSamm) {
         if (materialSamm.getMaterialGlobalAssetId() != null) {
-            Material material = materialService.findByMaterialNumberCx(materialSamm.getMaterialGlobalAssetId());
-            MaterialPartnerRelation mpr = material != null ? mprService.find(material, sender) : null;
-            if (mpr != null && mpr.isPartnerBuysMaterial()) {
-                return material;
-            }
+            return resolveMaterialByGlobalAssetId(sender, materialSamm.getMaterialGlobalAssetId());
         }
+        Material material = resolveMaterialDeliveredToSender(sender, materialSamm);
+        if (material == null) {
+            material = resolveMaterialDeliveredBySender(sender, materialSamm);
+        }
+        return material;
+    }
+
+    private Material resolveMaterialByGlobalAssetId(Partner sender, String globalAssetId) {
+        Material material = materialService.findByMaterialNumberCx(globalAssetId);
+        MaterialPartnerRelation mpr = material != null ? mprService.find(material, sender) : null;
+        if (mpr != null && mpr.isPartnerBuysMaterial()) {
+            return material;
+        }
+        mpr = mprService.findByPartnerAndPartnerCXNumber(sender, globalAssetId);
+        if (mpr != null && mpr.isPartnerSuppliesMaterial()) {
+            return mpr.getMaterial();
+        }
+        return null;
+    }
+ 
+    private Material resolveMaterialDeliveredToSender(Partner sender, MaterialSamm materialSamm) {
         if (materialSamm.getMaterialNumberSupplier() != null) {
             Material material = materialService.findByOwnMaterialNumber(materialSamm.getMaterialNumberSupplier());
             MaterialPartnerRelation mpr = material != null ? mprService.find(material, sender) : null;
@@ -177,12 +190,6 @@ public class DataExchangeRequestSammMapper {
     }
  
     private Material resolveMaterialDeliveredBySender(Partner sender, MaterialSamm materialSamm) {
-        if (materialSamm.getMaterialGlobalAssetId() != null) {
-            MaterialPartnerRelation mpr = mprService.findByPartnerAndPartnerCXNumber(sender, materialSamm.getMaterialGlobalAssetId());
-            if (mpr != null && mpr.isPartnerSuppliesMaterial()) {
-                return mpr.getMaterial();
-            }
-        }
         if (materialSamm.getMaterialNumberCustomer() != null) {
             Material material = materialService.findByOwnMaterialNumber(materialSamm.getMaterialNumberCustomer());
             MaterialPartnerRelation mpr = material != null ? mprService.find(material, sender) : null;
@@ -197,13 +204,6 @@ public class DataExchangeRequestSammMapper {
             }
         }
         return null;
-    }
- 
-    private OwnDemandAndCapacityNotification findOwnNotification(Partner partner, UUID sourceDisruptionId) {
-        if (sourceDisruptionId == null) {
-            return null;
-        }
-        return ownDemandAndCapacityNotificationService.findByBpnlAndSourceDisruptionId(partner.getBpnl(), sourceDisruptionId);
     }
  
     /**

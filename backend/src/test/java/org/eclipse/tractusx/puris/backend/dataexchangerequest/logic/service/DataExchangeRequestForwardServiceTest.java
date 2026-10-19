@@ -248,11 +248,10 @@ public class DataExchangeRequestForwardServiceTest {
         Material parent = material("MNR-PARENT");
         MaterialPartnerRelation customerBuysParent = relation(parent, customerPartner, false, true);
         ReportedDataExchangeRequest origin = requestWithoutNotification(customerPartner, List.of(parent), dateFromString("01-01-2026 00:00:00"), dateFromString("31-12-2026 00:00:00"));
-
-        when(mprService.find(same(parent), same(customerPartner))).thenReturn(customerBuysParent);
-        when(mprService.findAll()).thenReturn(List.of(customerBuysParent));
+ 
+        stubRelations(List.of(customerBuysParent));
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq("MNR-PARENT"), any(Date.class))).thenReturn(Set.of());
-
+ 
         Assertions.assertTrue(forwardingService.resolveForwardTargets(origin).isEmpty());
         verify(materialService, never()).findByOwnMaterialNumber(anyString());
     }
@@ -330,6 +329,17 @@ public class DataExchangeRequestForwardServiceTest {
 
         Assertions.assertEquals(2, created.size());
         verify(ownDataExchangeRequestService, times(3)).create(any());
+    }
+
+    // The relation service answers per own material number: the partners that supply it and the partners that buy it.
+    private void stubRelations(List<MaterialPartnerRelation> relations) {
+        for (String ownMaterialNumber : relations.stream().map(relation -> relation.getMaterial().getOwnMaterialNumber()).distinct().toList()) {
+            List<MaterialPartnerRelation> ofMaterial = relations.stream().filter(relation -> relation.getMaterial().getOwnMaterialNumber().equals(ownMaterialNumber)).toList();
+            List<Partner> suppliers = ofMaterial.stream().filter(MaterialPartnerRelation::isPartnerSuppliesMaterial).map(MaterialPartnerRelation::getPartner).toList();
+            List<Partner> customers = ofMaterial.stream().filter(MaterialPartnerRelation::isPartnerBuysMaterial).map(MaterialPartnerRelation::getPartner).toList();
+            when(mprService.findAllSuppliersForOwnMaterialNumber(ownMaterialNumber)).thenReturn(suppliers);
+            when(mprService.findAllCustomersForOwnMaterialNumber(ownMaterialNumber)).thenReturn(customers);
+        }
     }
 
     static Material material(String ownMaterialNumber) {

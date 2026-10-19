@@ -21,6 +21,7 @@ package org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,10 +38,10 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
-import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,26 +57,25 @@ public class DataExchangeRequestForwardService {
     @Autowired
     private MaterialRelationService materialRelationService;
     @Autowired
-    private MaterialService materialService;
-    @Autowired
     private MaterialPartnerRelationService mprService;
-
-    
+ 
     public record ForwardTarget(Partner partner, ReportedDemandAndCapacityNotification notification, List<Material> materials, Date start, Date end) {}
-
+ 
     /**
      * Resolves the partners a request can be forwarded to.
      * If the origin is linked to an OwnDemandAndCapacityNotification, its related notifications are followed. Notifications belonging to the
-     * requesting partner, without affected materials are skipped.
-     * Otherwise the request continues along the bill of material in the direction it came from
+     * requesting partner, without affected materials.
+     * Otherwise the request continues along the bill of material, in the direction its effect gives: a capacity effect
+     * to the suppliers of the child materials, a demand effect to the customers of the parent materials. Each such
+     * partner becomes a target with its materials.
      */
     public List<ForwardTarget> resolveForwardTargets(ReportedDataExchangeRequest origin) {
         if (origin.getNotification() != null) {
             return resolveTargetsFromRelatedNotifications(origin);
         }
-        return resolveTargetsFromBillOfMaterial(origin);
+        return resolveTargetsFromMaterialRelation(origin);
     }
-
+ 
     private List<ForwardTarget> resolveTargetsFromRelatedNotifications(ReportedDataExchangeRequest origin) {
         OwnDemandAndCapacityNotification originNotification = origin.getNotification();
         List<UUID> relatedIds = originNotification.getRelatedNotificationIds();
@@ -84,7 +84,7 @@ public class DataExchangeRequestForwardService {
         }
         String requesterBpnl = origin.getPartner().getBpnl();
         List<ForwardTarget> targets = new ArrayList<>();
-
+ 
         for (ReportedDemandAndCapacityNotification target : reportedNotificationService.findByNotificationIdIn(relatedIds)) {
             if (requesterBpnl.equals(target.getPartner().getBpnl())) {
                 log.info("Skipping forward target {}: notification belongs to the requesting partner", target.getNotificationId());
@@ -96,7 +96,7 @@ public class DataExchangeRequestForwardService {
             }
             Date start = maxDate(origin.getDesiredStartDateTime(), target.getStartDateOfEffect());
             Date end = target.getExpectedEndDateOfEffect() == null ? origin.getDesiredEndDateTime() : minDate(origin.getDesiredEndDateTime(), target.getExpectedEndDateOfEffect());
-
+ 
             if (!start.before(end)) {
                 log.info("Skipping forward target {}: requested window does not overlap the notification window", target.getNotificationId());
                 continue;
@@ -105,52 +105,55 @@ public class DataExchangeRequestForwardService {
         }
         return targets;
     }
-
-    private List<ForwardTarget> resolveTargetsFromBillOfMaterial(ReportedDataExchangeRequest origin) {
+ 
+    private List<ForwardTarget> resolveTargetsFromMaterialRelation(ReportedDataExchangeRequest origin) {
         if (origin.getMaterials() == null || origin.getMaterials().isEmpty()) {
             return List.of();
         }
         Date now = new Date();
-        Partner requester = origin.getPartner();
+        String requesterBpnl = origin.getPartner().getBpnl();
+ 
+        // The effect gives the direction, which keeps requests from running in circles: capacity effects go on to the
+        // suppliers of the child materials, demand effects to the customers of the parent materials.
         boolean demand = isDemandEffect(origin.getEffect());
-        Map<String, List<MaterialPartnerRelation>> relationsByMaterial = mprService.findAll().stream()
-            .filter(demand ? MaterialPartnerRelation::isPartnerBuysMaterial : MaterialPartnerRelation::isPartnerSuppliesMaterial)
-            .collect(Collectors.groupingBy(mpr -> mpr.getMaterial().getOwnMaterialNumber()));
  
-        Map<String, Partner> partners = new LinkedHashMap<>();
-        Map<String, Map<String, Material>> materialsByPartner = new LinkedHashMap<>();
- 
+        // 1. Collect the related materials, as own material numbers since that is all a relation holds: the parents
+        // for a demand effect, the children for a capacity effect, as far as their relation is valid now.
+        Set<String> relatedMaterialNumbers = new LinkedHashSet<>();
         for (Material material : origin.getMaterials()) {
-            Set<String> nextMaterialNumbers = demand
-                ? materialRelationService.resolveParentOwnMaterialNumbers(material.getOwnMaterialNumber(), now)
-                : materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
-            if (nextMaterialNumbers == null || nextMaterialNumbers.isEmpty()) {
-                log.info("Material {} has no currently valid {} materials, nothing to forward for it", material.getOwnMaterialNumber(), demand ? "parent" : "child");
-                continue;
-            }
-            for (String nextMaterialNumber : nextMaterialNumbers) {
-                Material next = materialService.findByOwnMaterialNumber(nextMaterialNumber);
-                if (next == null) {
-                    continue;
-                }
-                for (MaterialPartnerRelation relation : relationsByMaterial.getOrDefault(nextMaterialNumber, List.of())) {
-                    Partner partner = relation.getPartner();
-                    if (requester.getBpnl().equals(partner.getBpnl())) {
-                        continue;
-                    }
-                    partners.putIfAbsent(partner.getBpnl(), partner);
-                    materialsByPartner.computeIfAbsent(partner.getBpnl(), bpnl -> new LinkedHashMap<>()).putIfAbsent(next.getOwnMaterialNumber(), next);
+            List<MaterialRelation> relations = demand
+                ? materialRelationService.findAllParents(material.getOwnMaterialNumber())
+                : materialRelationService.findAllChildren(material.getOwnMaterialNumber());
+            for (MaterialRelation relation : relations) {
+                if (MaterialRelationService.isRelationValidNow(relation, now)) {
+                    relatedMaterialNumbers.add(demand ? relation.getParentOwnMaterialNumber() : relation.getChildOwnMaterialNumber());
                 }
             }
         }
+        if (relatedMaterialNumbers.isEmpty()) {
+            log.info("The affected materials have no currently valid {} materials, nothing to forward", demand ? "parent" : "child");
+            return List.of();
+        }
  
+        // 2. Look up the partner relations of the related materials, customers for a demand effect and suppliers for a
+        // capacity effect, and group them by partner. The requester is never a target.
+        List<MaterialPartnerRelation> partnerRelations = demand
+            ? mprService.findAllCustomerRelationsForOwnMaterialNumbers(relatedMaterialNumbers)
+            : mprService.findAllSupplierRelationsForOwnMaterialNumbers(relatedMaterialNumbers);
+        Map<String, List<MaterialPartnerRelation>> relationsByPartner = partnerRelations.stream()
+            .filter(relation -> !requesterBpnl.equals(relation.getPartner().getBpnl()))
+            .collect(Collectors.groupingBy(relation -> relation.getPartner().getBpnl(), LinkedHashMap::new, Collectors.toList()));
+ 
+        // 3. One target for each partner, with the related materials it is related to.
         List<ForwardTarget> targets = new ArrayList<>();
-        for (var entry : materialsByPartner.entrySet()) {
-            targets.add(new ForwardTarget(partners.get(entry.getKey()), null, new ArrayList<>(entry.getValue().values()), origin.getDesiredStartDateTime(), origin.getDesiredEndDateTime()));
+        for (List<MaterialPartnerRelation> relationsOfPartner : relationsByPartner.values()) {
+            List<Material> materials = relationsOfPartner.stream().map(MaterialPartnerRelation::getMaterial).toList();
+            targets.add(new ForwardTarget(relationsOfPartner.getFirst().getPartner(), null, materials,
+                origin.getDesiredStartDateTime(), origin.getDesiredEndDateTime()));
         }
         return targets;
     }
-
+ 
     public List<OwnDataExchangeRequest> createForwardedRequests(ReportedDataExchangeRequest origin, List<ForwardTarget> targets) throws KeyAlreadyExistsException {
         List<OwnDataExchangeRequest> created = new ArrayList<>();
         for (ForwardTarget target : targets) {
@@ -183,11 +186,11 @@ public class DataExchangeRequestForwardService {
     private static boolean isDemandEffect(EffectEnumeration effect) {
         return effect == EffectEnumeration.DEMAND_INCREASE || effect == EffectEnumeration.DEMAND_REDUCTION;
     }
-
+ 
     private static <T> List<T> copyOf(List<T> list) {
         return list == null ? new ArrayList<>() : new ArrayList<>(list);
     }
-
+ 
     private static Date maxDate(Date a, Date b) { return a.before(b) ? b : a; }
     private static Date minDate(Date a, Date b) { return a.before(b) ? a : b; }
 }

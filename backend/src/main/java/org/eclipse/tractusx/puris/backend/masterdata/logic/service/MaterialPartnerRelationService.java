@@ -25,6 +25,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,4 +79,8 @@ public interface MaterialPartnerRelationService {
     MaterialPartnerRelation findByPartnerAndPartnerCXNumber(Partner partner, String partnerCXNumber);
 
     MaterialPartnerRelation find(String bpnl, String ownMaterialNumber);
+
+    List<MaterialPartnerRelation> findAllSupplierRelationsForOwnMaterialNumbers(Collection<String> ownMaterialNumbers);
+ 
+    List<MaterialPartnerRelation> findAllCustomerRelationsForOwnMaterialNumbers(Collection<String> ownMaterialNumbers);
 }
