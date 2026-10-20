@@ -23,6 +23,7 @@
  */
 package org.eclipse.tractusx.puris.backend.masterdata.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,5 +36,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExternalMaterialRelationRepository extends JpaRepository<ExternalMaterialRelation, UUID> {
     Optional<ExternalMaterialRelation> findByMaterialAndPartnerAndParentGlobalAssetId(Material material, Partner partner, String parentGlobalAssetId);
+    List<ExternalMaterialRelation> findAllByMaterial(Material material);
     
 }

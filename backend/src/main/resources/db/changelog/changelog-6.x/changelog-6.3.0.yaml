@@ -98,3 +98,17 @@ databaseChangeLog:
                       nullable: false
                       primaryKey: true
                       primaryKeyName: digital_twin_event_contract_mapping_pkey
+  - changeSet:
+        id: "3"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+                columns:
+                  - column:
+                      constraints:
+                        nullable: false
+                        primaryKey: true
+                        primaryKeyName: single_level_usage_as_planned_contract_mapping_pkey
+                      name: partner_bpnl
+                      type: VARCHAR(255)
+                tableName: single_level_usage_as_planned_contract_mapping
