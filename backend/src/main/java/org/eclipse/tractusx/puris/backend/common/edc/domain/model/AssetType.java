@@ -24,6 +24,7 @@ package org.eclipse.tractusx.puris.backend.common.edc.domain.model;
 
 public enum AssetType {
     DTR("none", "none", "none", "none"),
+    DIGITAL_TWIN_EVENT("none", "none", "none", "3.0"),
     ITEM_STOCK_SUBMODEL("urn:samm:io.catenax.item_stock:2.0.0#ItemStock", "$value", "ItemStock", "2.0"),
     PRODUCTION_SUBMODEL("urn:samm:io.catenax.planned_production_output:2.0.0#PlannedProductionOutput", "$value", "PlannedProductionOutput", "2.0"),
     DEMAND_SUBMODEL("urn:samm:io.catenax.short_term_material_demand:1.0.0#ShortTermMaterialDemand", "$value", "ShortTermMaterialDemand", "1.0"),

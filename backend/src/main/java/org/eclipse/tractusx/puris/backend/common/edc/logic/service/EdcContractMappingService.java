@@ -32,6 +32,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DeliveryC
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandAndCapacityNotificationContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DataExchangeRequestContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DemandContractMappingRepository;
+import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DigitalTwinEventContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.DtrContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.GeneralContractMappingRepository;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.repository.ItemStockAnonymizedContractMappingRepository;
@@ -88,7 +89,12 @@ public class EdcContractMappingService {
 
     @Autowired
     private DataExchangeRequestContractMappingRepository dataExchangeRequestContractMappingRepository;
+
+    @Autowired 
     private SingleLevelBomAsPlannedContractMappingRepository singleLevelBomAsPlannedContractMappingRepository;
+
+    @Autowired 
+    private DigitalTwinEventContractMappingRepository digitalTwinEventContractMappingRepository;
 
     private final String SEPARATOR = "\n@\n";
 
@@ -158,6 +164,7 @@ public class EdcContractMappingService {
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> partTypeLegacyContractMappingRepository;
             case PART_TYPE_INFORMATION_SUBMODEL -> partTypeContractMappingRepository;
             case DATA_EXCHANGE_REQUEST -> dataExchangeRequestContractMappingRepository;
+            case DIGITAL_TWIN_EVENT -> digitalTwinEventContractMappingRepository;
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> singleLevelBomAsPlannedContractMappingRepository;
         };
         return repository;
