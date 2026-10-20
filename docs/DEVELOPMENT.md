@@ -80,15 +80,15 @@ This line runs the maven license tool with the parameters specified in the
 
 ### Frontend
 
-Download the Eclipse Dash License Tool JAR (version 1.0.1) from the
+Download the Eclipse Dash License Tool JAR (version 1.1.0) from the
 [official dash-licenses repository](https://github.com/eclipse-dash/dash-licenses).
 
 ```
 # move to a persistent folder. Could also be ~/jars.
-mv org.eclipse.dash.licenses-1.0.1.jar ~/coding/org.eclipse.dash.licenses-1.0.1.jar
+mv org.eclipse.dash.licenses-1.1.0.jar ~/coding/org.eclipse.dash.licenses-1.1.0.jar
 vim ~/.bashrc
 # add following line using i
-alias eclipseDashTool='java -jar ~/coding/org.eclipse.dash.licenses-1.0.1.jar'
+alias eclipseDashTool='java -jar ~/coding/org.eclipse.dash.licenses-1.1.0.jar'
 # esc, :wq -> enter to save and exit
 source ~/.bashrc
 # cd to puris-frontend
