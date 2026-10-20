@@ -96,7 +96,7 @@ public class ConnectToChildService {
         Partner sender = partnerService.findByBpnl(senderBpnl);
         List<ExternalMaterialRelation> relations = new ArrayList<>();
         for (UsageAsPlannedItem item : payload.getListOfItems()) {
-            Material child = findMaterialSuppliedTo(item.getCatenaXId(), sender, senderBpnl);
+            Material child = findMaterialSuppliedTo(item.getCatenaXId(), sender);
             for (ParentData parent : item.getParentItems()) {
                 relations.add(toRelation(child, sender, parent));
             }
@@ -162,13 +162,13 @@ public class ConnectToChildService {
             }
     }
 
-    private Material findMaterialSuppliedTo(String catenaXId, Partner partner, String bpnl) {
+    private Material findMaterialSuppliedTo(String catenaXId, Partner partner) {
         Material material = materialService.findByMaterialNumberCx(catenaXId);
         if (material == null) {
             throw new NoSuchElementException("Unknown child material " + catenaXId);
         }
         if (partner == null || !mprService.partnerOrdersProduct(material, partner)) {
-            throw new NoSuchElementException("Child material " + catenaXId + " is not supplied to " + bpnl);
+            throw new NoSuchElementException("Child material " + catenaXId + " is not supplied to partner " + partner.getBpnl());
         }
         return material;
     }
