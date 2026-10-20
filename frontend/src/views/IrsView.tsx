@@ -122,7 +122,7 @@ export const IrsView = () => {
                         headerName: 'Body',
                         field: 'body',
                         flex: 0.5,
-                        renderCell: (params) => (params.value ? <InfoButton text={params.value} /> : '-'),
+                        renderCell: (params) => (params.value ? <InfoButton text={JSON.stringify(JSON.parse(params.value), null, 2)} /> : '-'),
                     },
                     { headerName: 'Status', field: 'status', flex: 0.75, valueFormatter: formatValue },
                     {
