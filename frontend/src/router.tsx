@@ -25,6 +25,7 @@ import { NotFoundView } from '@views/errors/NotFoundView';
 import { CatalogView } from '@views/CatalogView';
 import { NegotiationView } from '@views/NegotiationView';
 import { TransferView } from '@views/TransferView';
+import { IrsView } from '@views/IrsView';
 import { AboutLicenseView } from '@views/AboutLicenseView';
 import { UnauthorizedView } from '@views/errors/UnauthorizedView';
 import { ErrorView } from '@views/errors/ErrorView';
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
                     {
                         path: 'transfers',
                         element: <TransferView />,
+                    },
+                    {
+                        path: 'irs',
+                        element: <IrsView />,
                     },
                     {
                         path: 'import',
