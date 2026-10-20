@@ -28,7 +28,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Fixed incorrect OpenAPI Position schemas for ItemStock and Delivery submodels ([#1262](https://github.com/eclipse-tractusx/puris/pull/1262))
 
 ### Version Bumps
 
