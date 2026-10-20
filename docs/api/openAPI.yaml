@@ -3555,7 +3555,7 @@ paths:
         required: true
       responses:
         '200':
-          description: 'OK: the ConnectToChild event has been processed'
+          description: 'OK: The Digital Twin event has been processed'
         '400':
           description: 'Bad Request: invalid edc-bpn header, message header or context'
         '401':

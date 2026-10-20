@@ -105,13 +105,15 @@ public class DigitalTwinEventControllerTest {
     @MockitoBean
     private ConnectToChildService connectToChildService;
 
+    private Partner partner;
+
     @BeforeEach
     void setUp() {
         Partner ownPartner = new Partner();
         ownPartner.setBpnl(OWN_BPNL);
         when(partnerService.getOwnPartnerEntity()).thenReturn(ownPartner);
 
-        Partner partner = new Partner();
+        partner = new Partner();
         partner.setBpnl(PARTNER_BPNL);
         when(partnerService.findByBpnl(PARTNER_BPNL)).thenReturn(partner);
     }
@@ -237,7 +239,7 @@ public class DigitalTwinEventControllerTest {
             .andExpect(content().string(""));
 
         ArgumentCaptor<UniqueIdPushConnectTochildPayload> payload = ArgumentCaptor.forClass(UniqueIdPushConnectTochildPayload.class);
-        verify(connectToChildService).handleConnectToChild(eq(PARTNER_BPNL), payload.capture());
+        verify(connectToChildService).handleConnectToChild(eq(partner), payload.capture());
         assertEquals("PartType", payload.getValue().getDigitalTwinType());
         UsageAsPlannedItem item = payload.getValue().getListOfItems().get(0);
         assertEquals(CHILD_CATENA_X_ID, item.getCatenaXId());
@@ -305,7 +307,7 @@ public class DigitalTwinEventControllerTest {
     void connectToChildForMaterialNotSuppliedToSender_post_returnsNotFound() throws Exception {
         String detail = "Child material " + CHILD_CATENA_X_ID + " is not supplied to " + PARTNER_BPNL;
         doThrow(new NoSuchElementException(detail))
-            .when(connectToChildService).handleConnectToChild(eq(PARTNER_BPNL), any());
+            .when(connectToChildService).handleConnectToChild(eq(partner), any());
 
         postViaEdc(connectToChildMessage().toString())
             .andExpect(status().isNotFound())
@@ -316,7 +318,7 @@ public class DigitalTwinEventControllerTest {
     void connectToChildWithParentOfOtherPartner_post_returnsBadRequest() throws Exception {
         String detail = "businessPartner of parent " + PARENT_CATENA_X_ID + " does not match the sender " + PARTNER_BPNL;
         doThrow(new IllegalArgumentException(detail))
-            .when(connectToChildService).handleConnectToChild(eq(PARTNER_BPNL), any());
+            .when(connectToChildService).handleConnectToChild(eq(partner), any());
 
         postViaEdc(connectToChildMessage().toString())
             .andExpect(status().isBadRequest())
