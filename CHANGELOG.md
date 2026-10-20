@@ -357,7 +357,7 @@ The **need for configuration updates** is **marked bold**.
 
 ### Fixes
 
-- /
+- Fixed Eclipse Dash License Tool setup instructions in DEVELOPMENT.md ([#1263](https://github.com/eclipse-tractusx/puris/pull/1263))
 
 ### Version Bumps
 
