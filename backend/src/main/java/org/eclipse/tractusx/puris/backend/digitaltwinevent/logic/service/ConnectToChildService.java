@@ -86,14 +86,13 @@ public class ConnectToChildService {
      * Stores the parent items of a received ConnectToChild event as {@link ExternalMaterialRelation}s. A relation
      * that already exists for the same child material, partner and parent globalAssetId is updated.
      *
-     * @param senderBpnl the BPNL of the partner who sent the event
+     * @param sender     the partner who sent the event
      * @param payload    the content of the event, already validated against the OpenAPI specification
      * @throws NoSuchElementException   if a child material is unknown or not supplied to the sender
      * @throws IllegalArgumentException if a parent item does not belong to the sender or its validity period ends before it starts
      */
     @Transactional
-    public void handleConnectToChild(String senderBpnl, UniqueIdPushConnectTochildPayload payload) {
-        Partner sender = partnerService.findByBpnl(senderBpnl);
+    public void handleConnectToChild(Partner sender, UniqueIdPushConnectTochildPayload payload) {
         List<ExternalMaterialRelation> relations = new ArrayList<>();
         for (UsageAsPlannedItem item : payload.getListOfItems()) {
             Material child = findMaterialSuppliedTo(item.getCatenaXId(), sender);
@@ -167,7 +166,7 @@ public class ConnectToChildService {
         if (material == null) {
             throw new NoSuchElementException("Unknown child material " + catenaXId);
         }
-        if (partner == null || !mprService.partnerOrdersProduct(material, partner)) {
+        if (!mprService.partnerOrdersProduct(material, partner)) {
             throw new NoSuchElementException("Child material " + catenaXId + " is not supplied to partner " + partner.getBpnl());
         }
         return material;

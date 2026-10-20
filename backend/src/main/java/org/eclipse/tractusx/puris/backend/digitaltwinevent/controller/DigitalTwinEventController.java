@@ -31,6 +31,7 @@ import java.util.Set;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageContext;
 import org.eclipse.tractusx.puris.backend.common.industrycore.IndustryCoreMessageService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
 import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.dto.UniqueIdPushConnectTochildPayload;
 import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service.ConnectToChildService;
@@ -95,7 +96,8 @@ public class DigitalTwinEventController {
             log.warn("Rejecting Digital Twin Event. Invalid BPNL in edc-bpn header");
             return badRequest("Invalid BPNL in edc-bpn header");
         }
-        if (partnerService.findByBpnl(bpnl) == null) {
+        Partner sender = partnerService.findByBpnl(bpnl);
+        if (sender == null) {
             log.warn("Rejecting Digital Twin Event. Unknown partner {}", bpnl);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Unknown partner " + bpnl));
         }
@@ -103,10 +105,10 @@ public class DigitalTwinEventController {
             IndustryCoreMessageContext context = getContext(body);
             messageService.validate(body.get("header"), bpnl, context);
             return switch (context) {
-                case DIGITAL_TWIN_EVENT_CONNECT_TO_PARENT_CONTEXT -> handleConnectToParent(bpnl, body);
-                case DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT -> handleConnectToChild(bpnl, body);
-                case DIGITAL_TWIN_EVENT_SUBMODEL_UPDATE_CONTEXT -> handleSubmodelUpdate(bpnl, body);
-                case DIGITAL_TWIN_EVENT_FEEDBACK_CONTEXT -> handleFeedback(bpnl, body);
+                case DIGITAL_TWIN_EVENT_CONNECT_TO_PARENT_CONTEXT -> handleConnectToParent(sender, body);
+                case DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT -> handleConnectToChild(sender, body);
+                case DIGITAL_TWIN_EVENT_SUBMODEL_UPDATE_CONTEXT -> handleSubmodelUpdate(sender, body);
+                case DIGITAL_TWIN_EVENT_FEEDBACK_CONTEXT -> handleFeedback(sender, body);
                 default -> throw new IllegalArgumentException("Unsupported operation in context " + context.getValue());
             };
         } catch (IllegalArgumentException e) {
@@ -137,8 +139,8 @@ public class DigitalTwinEventController {
             .orElseThrow(() -> new IllegalArgumentException("Context does not match IndustryCore-DigitalTwinEvent-<ConnectToParent | ConnectToChild | SubmodelUpdate | Feedback>:3.0.0"));
     }
 
-    private ResponseEntity<?> handleConnectToParent(String bpnl, JsonNode body) {
-        return notImplemented("ConnectToParent", bpnl, body);
+    private ResponseEntity<?> handleConnectToParent(Partner sender, JsonNode body) {
+        return notImplemented("ConnectToParent", sender, body);
     }
 
     /**
@@ -147,8 +149,8 @@ public class DigitalTwinEventController {
      *
      * @throws IllegalArgumentException if the content does not match the OpenAPI specification or a parent item does not belong to the sender
      */
-    private ResponseEntity<?> handleConnectToChild(String bpnl, JsonNode body) {
-        UniqueIdPushConnectTochildPayload payload = messageService.validateAndParse(body, IndustryCoreMessageContext.DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT, bpnl,
+    private ResponseEntity<?> handleConnectToChild(Partner sender, JsonNode body) {
+        UniqueIdPushConnectTochildPayload payload = messageService.validateAndParse(body, IndustryCoreMessageContext.DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT, sender.getBpnl(),
             UniqueIdPushConnectTochildPayload.class);
         Set<ConstraintViolation<UniqueIdPushConnectTochildPayload>> errors = validator.validate(payload);
         if (!errors.isEmpty()) {
@@ -157,7 +159,7 @@ public class DigitalTwinEventController {
                 .collect(Collectors.joining("; ")));
         }
         try {
-            connectToChildService.handleConnectToChild(bpnl, payload);
+            connectToChildService.handleConnectToChild(sender, payload);
         } catch (NoSuchElementException e) {
             log.warn("Rejecting ConnectToChild event: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage()));
@@ -165,16 +167,16 @@ public class DigitalTwinEventController {
         return ResponseEntity.ok().build();
     }
 
-    private ResponseEntity<?> handleSubmodelUpdate(String bpnl, JsonNode body) {
-        return notImplemented("SubmodelUpdate", bpnl, body);
+    private ResponseEntity<?> handleSubmodelUpdate(Partner sender, JsonNode body) {
+        return notImplemented("SubmodelUpdate", sender, body);
     }
 
-    private ResponseEntity<?> handleFeedback(String bpnl, JsonNode body) {
-        return notImplemented("Feedback", bpnl, body);
+    private ResponseEntity<?> handleFeedback(Partner sender, JsonNode body) {
+        return notImplemented("Feedback", sender, body);
     }
 
-    private ResponseEntity<ProblemDetail> notImplemented(String operation, String bpnl, JsonNode body) {
-        log.info("Received {} event from {}. Handling is not implemented yet. Full message: {}", operation, bpnl, body.toPrettyString() );
+    private ResponseEntity<ProblemDetail> notImplemented(String operation, Partner sender, JsonNode body) {
+        log.info("Received {} event from {}. Handling is not implemented yet. Full message: {}", operation, sender.getBpnl(), body.toPrettyString() );
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_IMPLEMENTED, operation + " is not implemented yet"));
     }
 
