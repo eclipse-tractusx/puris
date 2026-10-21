@@ -1290,6 +1290,35 @@ components:
         page:
           $ref: '#/components/schemas/PageMetadata'
       type: object
+    ParentData:
+      additionalProperties: false
+      properties:
+        businessPartner:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        createdOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastModifiedOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        validityPeriod:
+          $ref: '#/components/schemas/ValidityPeriodEntity'
+      required:
+      - businessPartner
+      - catenaXId
+      - createdOn
+      - quantity
+      type: object
     PartSitesInformationAsPlanned:
       additionalProperties: false
       properties:
@@ -2184,6 +2213,31 @@ components:
           uniqueItems: true
       required:
       - catenaXId
+      type: object
+    SingleLevelUsageAsPlanned:
+      additionalProperties: false
+      properties:
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        customers:
+          items:
+            maxItems: 50
+            pattern: ^BPNL[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        parentItems:
+          items:
+            $ref: '#/components/schemas/ParentData'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+      required:
+      - catenaXId
+      - customers
+      - parentItems
       type: object
     Site:
       additionalProperties: false
@@ -3845,6 +3899,7 @@ paths:
           - DELIVERY_ANONYMIZED_SUBMODEL
           - PRODUCTION_ANONYMIZED_SUBMODEL
           - SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL
+          - SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
@@ -5253,6 +5308,53 @@ paths:
           description: 'Unsupported representation requested. '
       tags:
       - single-level-bom-as-planned-request-api-controller
+  /single-level-usage-as-planned/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      description: 'Endpoint that delivers SingleLevelUsageAsPlanned of own products.
+        This endpoint is meant for self-access only via EDC. '
+      operationId: getSingleLevelUsageAsPlannedMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: The CatenaX material number (UUID) of the material in question
+        in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: Must be set to '$value'
+        in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SingleLevelUsageAsPlanned'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: 'Invalid request parameters. '
+        '403':
+          description: 'Access forbidden - self-access only. '
+        '404':
+          description: 'Product not found for given parameters. '
+        '501':
+          description: 'Unsupported representation requested. '
+      tags:
+      - single-level-usage-as-planned-request-api-controller
   /stockView/customer:
     get:
       description: Returns a list of all Partners that are ordering the given material
