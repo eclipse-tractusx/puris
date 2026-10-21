@@ -161,6 +161,12 @@ export const IrsView = () => {
                     { headerName: 'Type', field: 'type', flex: 1.25, valueFormatter: formatValue },
                     { headerName: 'Method', field: 'method', flex: 0.5, valueFormatter: formatValue },
                     { headerName: 'Path', field: 'path', flex: 1, valueFormatter: formatValue },
+                    {
+                        headerName: 'Body',
+                        field: 'body',
+                        flex: 0.5,
+                        renderCell: (params) => (params.value ? <InfoButton text={JSON.stringify(JSON.parse(params.value), null, 2)} /> : '-'),
+                    },
                     { headerName: 'Status', field: 'status', flex: 0.75, valueFormatter: formatValue },
                     {
                         headerName: 'Attempts',
