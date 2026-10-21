@@ -1297,13 +1297,13 @@ components:
           maxItems: 50
           pattern: ^BPNL[0-9a-zA-Z]{12}$
           type: string
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
         createdOn:
           format: date-time
           maxItems: 50
-          type: string
-        globalAssetId:
-          maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         lastModifiedOn:
           format: date-time
@@ -1315,8 +1315,8 @@ components:
           $ref: '#/components/schemas/ValidityPeriodEntity'
       required:
       - businessPartner
+      - catenaXId
       - createdOn
-      - globalAssetId
       - quantity
       type: object
     PartSitesInformationAsPlanned:
@@ -2217,6 +2217,10 @@ components:
     SingleLevelUsageAsPlanned:
       additionalProperties: false
       properties:
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
         customers:
           items:
             maxItems: 50
@@ -2224,10 +2228,6 @@ components:
             type: string
           maxItems: 50
           type: array
-        globalAssetId:
-          maxItems: 50
-          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
-          type: string
         parentItems:
           items:
             $ref: '#/components/schemas/ParentData'
@@ -2235,8 +2235,8 @@ components:
           type: array
           uniqueItems: true
       required:
+      - catenaXId
       - customers
-      - globalAssetId
       - parentItems
       type: object
     Site:

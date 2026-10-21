@@ -61,7 +61,7 @@ public class ParentData {
  
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
-    private String globalAssetId;
+    private String catenaXId;
  
     @Nullable
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -76,13 +76,13 @@ public class ParentData {
     public ParentData(@JsonProperty(value = "quantity") ItemQuantityEntity quantity,
                       @JsonProperty(value = "createdOn") Date createdOn,
                       @JsonProperty(value = "businessPartner") String businessPartner,
-                      @JsonProperty(value = "globalAssetId") String globalAssetId,
+                      @JsonProperty(value = "catenaXId") String catenaXId,
                       @JsonProperty(value = "lastModifiedOn") Date lastModifiedOn,
                       @JsonProperty(value = "validityPeriod") ValidityPeriodEntity validityPeriod) {
         this.quantity = quantity;
         this.createdOn = createdOn;
         this.businessPartner = businessPartner;
-        this.globalAssetId = globalAssetId;
+        this.catenaXId = catenaXId;
         this.lastModifiedOn = lastModifiedOn;
         this.validityPeriod = validityPeriod;
     }
@@ -100,13 +100,13 @@ public class ParentData {
         return Objects.equals(quantity, that.quantity)
                 && Objects.equals(createdOn, that.createdOn)
                 && Objects.equals(businessPartner, that.businessPartner)
-                && Objects.equals(globalAssetId, that.globalAssetId)
+                && Objects.equals(catenaXId, that.catenaXId)
                 && Objects.equals(lastModifiedOn, that.lastModifiedOn)
                 && Objects.equals(validityPeriod, that.validityPeriod);
     }
  
     @Override
     public int hashCode() {
-        return Objects.hash(quantity, createdOn, businessPartner, globalAssetId, lastModifiedOn, validityPeriod);
+        return Objects.hash(quantity, createdOn, businessPartner, catenaXId, lastModifiedOn, validityPeriod);
     }
 }

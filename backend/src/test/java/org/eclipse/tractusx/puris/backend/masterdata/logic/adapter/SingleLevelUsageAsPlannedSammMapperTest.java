@@ -98,7 +98,7 @@ public class SingleLevelUsageAsPlannedSammMapperTest {
 
         SingleLevelUsageAsPlanned samm = mapper.productToSingleLevelUsageAsPlannedSamm(product);
 
-        assertEquals(PRODUCT_CATENA_X_ID, samm.getGlobalAssetId());
+        assertEquals(PRODUCT_CATENA_X_ID, samm.getCatenaXId());
         assertEquals(List.of(customer.getBpnl()), samm.getCustomers());
         assertEquals(1, samm.getParentItems().size());
         ParentData parent = findParent(samm, PARENT_CATENA_X_ID);
@@ -155,7 +155,7 @@ public class SingleLevelUsageAsPlannedSammMapperTest {
 
         SingleLevelUsageAsPlanned samm = mapper.productToSingleLevelUsageAsPlannedSamm(product);
 
-        assertEquals(PRODUCT_CATENA_X_ID, samm.getGlobalAssetId());
+        assertEquals(PRODUCT_CATENA_X_ID, samm.getCatenaXId());
         assertTrue(samm.getParentItems().isEmpty());
         assertEquals(List.of(customer.getBpnl()), samm.getCustomers());
     }
@@ -184,11 +184,11 @@ public class SingleLevelUsageAsPlannedSammMapperTest {
         return relation;
     }
 
-    private static ParentData findParent(SingleLevelUsageAsPlanned samm, String globalAssetId) {
+    private static ParentData findParent(SingleLevelUsageAsPlanned samm, String catenaXId) {
         return samm.getParentItems().stream()
-            .filter(parent -> globalAssetId.equals(parent.getGlobalAssetId()))
+            .filter(parent -> catenaXId.equals(parent.getCatenaXId()))
             .findFirst()
-            .orElseThrow(() -> new AssertionError("No parent item " + globalAssetId));
+            .orElseThrow(() -> new AssertionError("No parent item " + catenaXId));
     }
 
     private static Partner partner(String bpnl) {

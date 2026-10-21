@@ -49,7 +49,7 @@ import lombok.ToString;
 public class SingleLevelUsageAsPlanned {
     @NotNull
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
-    private String globalAssetId;
+    private String catenaXId;
  
     @NotNull
     @Valid
@@ -59,10 +59,10 @@ public class SingleLevelUsageAsPlanned {
     private List<@Pattern(regexp = PatternStore.BPNL_STRING) String> customers = new ArrayList<>();
  
     @JsonCreator
-    public SingleLevelUsageAsPlanned(@JsonProperty(value = "globalAssetId") String globalAssetId,
+    public SingleLevelUsageAsPlanned(@JsonProperty(value = "catenaXId") String catenaXId,
             @JsonProperty(value = "parentItems") Set<ParentData> parentItems,
             @JsonProperty(value = "customers") List<String> customers) {
-        this.globalAssetId = globalAssetId;
+        this.catenaXId = catenaXId;
         this.parentItems = parentItems;
         this.customers = customers;
     }
@@ -77,13 +77,13 @@ public class SingleLevelUsageAsPlanned {
         }
  
         final SingleLevelUsageAsPlanned that = (SingleLevelUsageAsPlanned) o;
-        return Objects.equals(globalAssetId, that.globalAssetId)
+        return Objects.equals(catenaXId, that.catenaXId)
                 && Objects.equals(parentItems, that.parentItems)
                 && Objects.equals(customers, that.customers);
     }
  
     @Override
     public int hashCode() {
-        return Objects.hash(globalAssetId, parentItems, customers);
+        return Objects.hash(catenaXId, parentItems, customers);
     }
 }
