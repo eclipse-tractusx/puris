@@ -23,13 +23,11 @@ Assisted-by: Claude Code Opus 5.5
 */
 
 import { Table } from '@catena-x/portal-shared-components';
-import { Box, Button, Stack } from '@mui/material';
-import { Add, Replay } from '@mui/icons-material';
-import { useEffect, useState } from 'react';
+import { Box } from '@mui/material';
+import { useEffect } from 'react';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { InfoButton } from '@components/ui/InfoButton';
 import { useTitle } from '@contexts/titleProvider';
-import { useNotifications } from '@contexts/notificationContext';
 import { useIrsRootGrants } from '@hooks/irs/useIrsRootGrants';
 import { useIrsPartnerGrants } from '@hooks/irs/useIrsPartnerGrants';
 import { useIrsJobs } from '@hooks/irs/useIrsJobs';
@@ -39,6 +37,7 @@ import { IrsChainOpeningGrant } from '@models/types/irs/irs-grant';
 import { IrsJobCreationModal } from '@features/irs/components/IrsJobCreationModal';
 import { IrsQueuedRequest } from '@models/types/irs/irs-queued-request';
 import { retryIrsRequest } from '@services/irs-service';
+import { IrsChainOpeningGrant } from '@models/types/irs/irs-grant';
 
 const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString('en-GB') : '-');
 const formatValue = (params: { value: unknown }) => (params.value == null || params.value === '' ? '-' : String(params.value));
