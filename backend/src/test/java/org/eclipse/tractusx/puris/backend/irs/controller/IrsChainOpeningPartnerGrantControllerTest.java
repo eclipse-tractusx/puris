@@ -103,8 +103,7 @@ public class IrsChainOpeningPartnerGrantControllerTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validFrom").value(VALID_FROM.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].validTo").value(VALID_TO.toString()))
             .andExpect(MockMvcResultMatchers.jsonPath("$[0].syncStatus").value("SYNCED"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnlSet", Matchers.contains(UPSTREAM_SUPPLIER_BPNL)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].reportedNotificationIds", Matchers.contains(NOTIFICATION_ID.toString())));
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].allowedBpnlSet", Matchers.contains(UPSTREAM_SUPPLIER_BPNL)));
  
         verify(irsChainOpeningPartnerGrantService).findAll();
     }

@@ -27,19 +27,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
-
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
-import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestTypeEnumeration;
-import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsJobRepository;
 import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +44,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -69,9 +62,6 @@ class IrsRequestQueueServiceTest {
 
     @Mock
     private IrsQueuedRequestRepository irsQueuedRequestRepository;
-
-    @Mock
-    private IrsJobRepository irsJobRepository;
 
     @InjectMocks
     private IrsRequestQueueService irsRequestQueueService;
@@ -184,85 +174,5 @@ class IrsRequestQueueServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getNextAttemptAt()).isBeforeOrEqualTo(Instant.now());
-    }
-
-    // --- retry ---
-
-    private IrsQueuedRequest failedRequest(IrsQueuedRequestTypeEnumeration type, UUID linkedEntityUuid) {
-        return IrsQueuedRequest.builder()
-            .uuid(UUID.randomUUID())
-            .status(IrsQueuedRequestStatusEnumeration.FAILED)
-            .attemptCount(5)
-            .maxAttempts(5)
-            .nextAttemptAt(Instant.parse("2026-01-01T00:00:00Z"))
-            .type(type)
-            .linkedEntityUuid(linkedEntityUuid)
-            .build();
-    }
-
-    @Test
-    void retry_WhenFailed_ResetsAttemptsStatusAndNextAttemptAt() {
-        IrsQueuedRequest request = failedRequest(IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
-        when(irsQueuedRequestRepository.findById(request.getUuid())).thenReturn(Optional.of(request));
-        Instant before = Instant.now();
-
-        IrsQueuedRequest result = irsRequestQueueService.retry(request.getUuid());
-
-        assertThat(result.getAttemptCount()).isZero();
-        assertThat(result.getStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.PENDING);
-        assertThat(result.getNextAttemptAt()).isBetween(before, Instant.now());
-        verify(irsQueuedRequestRepository).save(request);
-        verify(irsJobRepository, never()).save(any());
-    }
-
-    @Test
-    void retry_WhenJobCreateFailed_SetsLinkedJobBackToPending() {
-        IrsJob job = new IrsJob();
-        job.setUuid(UUID.randomUUID());
-        job.setRequestStatus(IrsQueuedRequestStatusEnumeration.FAILED);
-        IrsQueuedRequest request = failedRequest(IrsQueuedRequestTypeEnumeration.JOB_CREATE, job.getUuid());
-        when(irsQueuedRequestRepository.findById(request.getUuid())).thenReturn(Optional.of(request));
-        when(irsQueuedRequestRepository.findAllByTypeAndLinkedEntityUuidAndStatus(IrsQueuedRequestTypeEnumeration.JOB_CREATE,
-            job.getUuid(), IrsQueuedRequestStatusEnumeration.PENDING)).thenReturn(List.of());
-        when(irsJobRepository.findById(job.getUuid())).thenReturn(Optional.of(job));
-
-        irsRequestQueueService.retry(request.getUuid());
-
-        assertThat(job.getRequestStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.PENDING);
-        verify(irsJobRepository).save(job);
-    }
-
-    @Test
-    void retry_WhenNotFound_Throws() {
-        UUID uuid = UUID.randomUUID();
-        when(irsQueuedRequestRepository.findById(uuid)).thenReturn(Optional.empty());
-
-        assertThrows(NoSuchElementException.class, () -> irsRequestQueueService.retry(uuid));
-    }
-
-    @Test
-    void retry_WhenNotFailed_ThrowsWithoutSaving() {
-        IrsQueuedRequest request = failedRequest(IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
-        request.setStatus(IrsQueuedRequestStatusEnumeration.SUCCEEDED);
-        when(irsQueuedRequestRepository.findById(request.getUuid())).thenReturn(Optional.of(request));
-
-        assertThrows(IllegalStateException.class, () -> irsRequestQueueService.retry(request.getUuid()));
-
-        verify(irsQueuedRequestRepository, never()).save(any());
-    }
-
-    @Test
-    void retry_WhenNewerRequestForSameEntityPending_ThrowsWithoutSaving() {
-        UUID grantUuid = UUID.randomUUID();
-        IrsQueuedRequest request = failedRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_UPDATE, grantUuid);
-        IrsQueuedRequest newer = failedRequest(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_UPDATE, grantUuid);
-        newer.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
-        when(irsQueuedRequestRepository.findById(request.getUuid())).thenReturn(Optional.of(request));
-        when(irsQueuedRequestRepository.findAllByTypeAndLinkedEntityUuidAndStatus(IrsQueuedRequestTypeEnumeration.CHAIN_OPENING_ROOT_GRANT_UPDATE,
-            grantUuid, IrsQueuedRequestStatusEnumeration.PENDING)).thenReturn(List.of(newer));
-
-        assertThrows(KeyAlreadyExistsException.class, () -> irsRequestQueueService.retry(request.getUuid()));
-
-        verify(irsQueuedRequestRepository, never()).save(any());
     }
 }

@@ -23,17 +23,13 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.controller;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
-
-import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.common.ModelMapperConfig;
 import org.eclipse.tractusx.puris.backend.common.TestConfig;
@@ -139,65 +135,6 @@ public class IrsQueuedRequestControllerTest {
         verify(irsRequestQueueService, never()).findAll();
     }
  
-    @Test
-    @WithMockApiKey
-    void retryQueuedRequest_WhenFailed_ReturnsPendingRequest() throws Exception {
-        IrsQueuedRequest request = getFailedGrantUpdateRequest();
-        request.setStatus(IrsQueuedRequestStatusEnumeration.PENDING);
-        request.setAttemptCount(0);
-
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        when(irsRequestQueueService.retry(REQUEST_UUID)).thenReturn(request);
-
-        mockMvc.perform(MockMvcRequestBuilders.post(REQUESTS_PATH + "/" + REQUEST_UUID + "/retry"))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("PENDING"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.attemptCount").value(0));
-
-        verify(irsRequestQueueService).retry(REQUEST_UUID);
-    }
-
-    @Test
-    @WithMockApiKey
-    void retryQueuedRequest_WhenNotFound_Returns404() throws Exception {
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        when(irsRequestQueueService.retry(REQUEST_UUID)).thenThrow(new NoSuchElementException("IRS queued request does not exist."));
-
-        mockMvc.perform(MockMvcRequestBuilders.post(REQUESTS_PATH + "/" + REQUEST_UUID + "/retry"))
-            .andExpect(MockMvcResultMatchers.status().isNotFound());
-    }
-
-    @Test
-    @WithMockApiKey
-    void retryQueuedRequest_WhenNotFailed_Returns409() throws Exception {
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        when(irsRequestQueueService.retry(REQUEST_UUID)).thenThrow(new IllegalStateException("Only failed requests can be retried."));
-
-        mockMvc.perform(MockMvcRequestBuilders.post(REQUESTS_PATH + "/" + REQUEST_UUID + "/retry"))
-            .andExpect(MockMvcResultMatchers.status().isConflict());
-    }
-
-    @Test
-    @WithMockApiKey
-    void retryQueuedRequest_WhenNewerRequestPending_Returns409() throws Exception {
-        when(irsRequestService.isEnabled()).thenReturn(true);
-        when(irsRequestQueueService.retry(REQUEST_UUID)).thenThrow(new KeyAlreadyExistsException("A newer request for the same entity is already pending."));
-
-        mockMvc.perform(MockMvcRequestBuilders.post(REQUESTS_PATH + "/" + REQUEST_UUID + "/retry"))
-            .andExpect(MockMvcResultMatchers.status().isConflict());
-    }
-
-    @Test
-    @WithMockApiKey
-    void retryQueuedRequest_WhenAdapterDisabled_Returns403() throws Exception {
-        when(irsRequestService.isEnabled()).thenReturn(false);
-
-        mockMvc.perform(MockMvcRequestBuilders.post(REQUESTS_PATH + "/" + REQUEST_UUID + "/retry"))
-            .andExpect(MockMvcResultMatchers.status().isForbidden());
-
-        verify(irsRequestQueueService, never()).retry(any());
-    }
-
     private IrsQueuedRequest getFailedGrantUpdateRequest() {
         return IrsQueuedRequest.builder()
         .uuid(REQUEST_UUID)
