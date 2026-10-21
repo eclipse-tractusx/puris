@@ -47,7 +47,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * This class offers the endpoint for requesting the SingleLevelUsageAsPlanned
- * Submodel 3.0.0
+ * Submodel 2.0.0
  */
 @RestController
 @RequestMapping("single-level-usage-as-planned")
