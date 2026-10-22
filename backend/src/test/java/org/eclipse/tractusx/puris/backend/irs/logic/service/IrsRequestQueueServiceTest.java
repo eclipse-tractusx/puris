@@ -14,12 +14,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  *
- * AI-Disclosure: This file was largely AI-generated. The AI-generated portions are made
- * available under CC0-1.0 and not subject to the project's licence.
- * The human contributor has reviewed and verified that the code is correct.
- *
  * SPDX-License-Identifier: Apache-2.0
- * Assisted-by: Claude Code Opus 5.5
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 

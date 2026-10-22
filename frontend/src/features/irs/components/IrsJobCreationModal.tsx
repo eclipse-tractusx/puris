@@ -1,6 +1,5 @@
 /*
 Copyright (c) 2026 Volkswagen AG
-Copyright (c) 2026 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
@@ -37,13 +36,8 @@ import { postIrsJob } from '@services/irs-service';
 
 const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString() : '-');
 
-type MaterialOption = {
-    globalAssetId: string;
-    label: string;
-};
-
-type NotificationOption = {
-    notificationId: string;
+type Option = {
+    id: string;
     label: string;
 };
 
@@ -66,17 +60,17 @@ export const IrsJobCreationModal = ({ open, rootGrants, materials, onClose, onSa
     const grants = useMemo(() => rootGrants.filter((grant) => grant.syncStatus !== 'DELETED'), [rootGrants]);
     const grantHasNotification = (grant: IrsChainOpeningGrant, id: string) => !!grant.reportedNotificationIds?.includes(id);
 
-    const materialOptions = useMemo<MaterialOption[]>(() => {
+    const materialOptions = useMemo<Option[]>(() => {
         const globalAssetIds = new Set(
             grants.filter((grant) => !notificationId || grantHasNotification(grant, notificationId)).map((grant) => grant.globalAssetId)
         );
         return [...globalAssetIds].map((id) => {
             const material = materials.find((m) => m.materialNumberCx === id);
-            return { globalAssetId: id, label: material ? `${material.name} (${material.ownMaterialNumber})` : id };
+            return { id, label: material ? `${material.name} (${material.ownMaterialNumber})` : id };
         });
     }, [grants, materials, notificationId]);
 
-    const notificationOptions = useMemo<NotificationOption[]>(() => {
+    const notificationOptions = useMemo<Option[]>(() => {
         const notificationIds = new Set(
             grants
                 .filter((grant) => !globalAssetId || grant.globalAssetId === globalAssetId)
@@ -85,7 +79,7 @@ export const IrsJobCreationModal = ({ open, rootGrants, materials, onClose, onSa
         return [...notificationIds].map((id) => {
             const notification = reportedNotifications.find((n) => n.notificationId === id);
             return {
-                notificationId: id,
+                id,
                 label: notification ? `${notification.text || notification.effect} (${notification.partnerBpnl})` : id,
             };
         });
@@ -110,16 +104,16 @@ export const IrsJobCreationModal = ({ open, rootGrants, materials, onClose, onSa
             .catch(() => setReportedNotifications([]));
     }, [open]);
 
-    const handleMaterialChange = (value: MaterialOption | null) => {
-        const id = value?.globalAssetId ?? null;
+    const handleMaterialChange = (value: Option | null) => {
+        const id = value?.id ?? null;
         setGlobalAssetId(id);
         if (id && notificationId && !grants.some((grant) => grant.globalAssetId === id && grantHasNotification(grant, notificationId))) {
             setNotificationId(null);
         }
     };
 
-    const handleNotificationChange = (value: NotificationOption | null) => {
-        const id = value?.notificationId ?? null;
+    const handleNotificationChange = (value: Option | null) => {
+        const id = value?.id ?? null;
         setNotificationId(id);
         if (id && globalAssetId && !grants.some((grant) => grant.globalAssetId === globalAssetId && grantHasNotification(grant, id))) {
             setGlobalAssetId(null);
@@ -176,9 +170,9 @@ export const IrsJobCreationModal = ({ open, rootGrants, materials, onClose, onSa
                             options={materialOptions}
                             disabled={grants.length === 0}
                             getOptionLabel={(option) => option.label}
-                            isOptionEqualToValue={(option, value) => option.globalAssetId === value.globalAssetId}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
                             onChange={(_, value) => handleMaterialChange(value)}
-                            value={materialOptions.find((option) => option.globalAssetId === globalAssetId) ?? null}
+                            value={materialOptions.find((option) => option.id === globalAssetId) ?? null}
                             label="Material*"
                             placeholder={grants.length === 0 ? 'No root grants available' : 'Select material'}
                             error={formError && !globalAssetId}
@@ -191,9 +185,9 @@ export const IrsJobCreationModal = ({ open, rootGrants, materials, onClose, onSa
                             options={notificationOptions}
                             disabled={grants.length === 0}
                             getOptionLabel={(option) => option.label}
-                            isOptionEqualToValue={(option, value) => option.notificationId === value.notificationId}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
                             onChange={(_, value) => handleNotificationChange(value)}
-                            value={notificationOptions.find((option) => option.notificationId === notificationId) ?? null}
+                            value={notificationOptions.find((option) => option.id === notificationId) ?? null}
                             label="Notification*"
                             placeholder={grants.length === 0 ? 'No root grants available' : 'Select notification'}
                             error={formError && !notificationId}
