@@ -14,11 +14,20 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  *
+ * AI-Disclosure: This file was largely AI-generated. The AI-generated portions are made
+ * available under CC0-1.0 and not subject to the project's licence.
+ * The human contributor has reviewed and verified that the code is correct.
+ *
  * SPDX-License-Identifier: Apache-2.0
+ * Assisted-by: Claude Code Opus 5.5
  */
 package org.eclipse.tractusx.puris.backend.irs.controller;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
 import org.eclipse.tractusx.puris.backend.irs.logic.dto.IrsQueuedRequestDto;
@@ -41,7 +50,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Exposes the IRS request queue to the frontend. Read-only
+ * Exposes the IRS request queue to the frontend and allows retrying failed requests.
  * The class level {@code @PreAuthorize} applies so all endpoints are admin-only.
  */
 @RestController
@@ -79,6 +88,34 @@ public class IrsQueuedRequestController {
         return irsRequestQueueService.findAll().stream().map(this::convertToDto).toList();
     }
  
+    @PreAuthorize("hasRole('PURIS_ADMIN')")
+    @PostMapping("{uuid}/retry")
+    @Operation(summary = "Retry a failed IRS request -- ADMIN ONLY",
+        description = "Resets the attempt count of a failed queued IRS request to 0, sets its status to PENDING and makes it " +
+            "due immediately. Only available if the IRS adapter is enabled.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Request was reset and will be retried."),
+        @ApiResponse(responseCode = "401", description = "Not authenticated.", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Caller is not an admin or the IRS adapter is disabled.", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Queued request not found.", content = @Content),
+        @ApiResponse(responseCode = "409", description = "Request is not failed, or a newer request for the same entity is already pending.", content = @Content),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error.", content = @Content)
+    })
+    public IrsQueuedRequestDto retryQueuedRequest(@PathVariable UUID uuid) {
+        if (!irsRequestService.isEnabled()) {
+            log.warn("Rejected retry of IRS queued request because the IRS adapter is disabled.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "IRS adapter is disabled. Enable it via puris.irsadapter.enabled to access IRS requests.");
+        }
+        try {
+            return convertToDto(irsRequestQueueService.retry(uuid));
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (IllegalStateException | KeyAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
     private IrsQueuedRequestDto convertToDto(IrsQueuedRequest entity) {
         return modelMapper.map(entity, IrsQueuedRequestDto.class);
     }

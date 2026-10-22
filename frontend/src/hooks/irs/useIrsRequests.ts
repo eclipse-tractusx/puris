@@ -27,10 +27,11 @@ import { IrsQueuedRequest } from '@models/types/irs/irs-queued-request';
 import { useFetch } from '../useFetch';
 
 export const useIrsRequests = () => {
-    const { data, error, isLoading } = useFetch<IrsQueuedRequest[]>(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_IRS_REQUESTS);
+    const { data, error, isLoading, refresh } = useFetch<IrsQueuedRequest[]>(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_IRS_REQUESTS);
     return {
         requests: Array.isArray(data) ? data : null,
         requestsError: error,
         isLoadingRequests: isLoading,
+        refreshRequests: refresh,
     };
 };

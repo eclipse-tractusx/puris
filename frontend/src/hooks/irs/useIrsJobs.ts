@@ -27,10 +27,11 @@ import { IrsJob } from '@models/types/irs/irs-job';
 import { useFetch } from '../useFetch';
 
 export const useIrsJobs = () => {
-    const { data, error, isLoading } = useFetch<IrsJob[]>(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_IRS_JOBS);
+    const { data, error, isLoading, refresh } = useFetch<IrsJob[]>(config.app.BACKEND_BASE_URL + config.app.ENDPOINT_IRS_JOBS);
     return {
         jobs: Array.isArray(data) ? data : null,
         jobsError: error,
         isLoadingJobs: isLoading,
+        refreshJobs: refresh,
     };
 };
