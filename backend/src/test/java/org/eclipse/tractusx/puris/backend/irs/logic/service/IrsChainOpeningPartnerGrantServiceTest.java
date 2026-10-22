@@ -271,7 +271,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.empty());
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matching.getUuid())).thenReturn(List.of());
 
         assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
 
@@ -285,7 +285,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matching.getUuid())).thenReturn(List.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> chainOpeningGrantService.createOrUpdateGrant(grant(Set.of())));
@@ -301,7 +301,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matching.getUuid())).thenReturn(List.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of());
@@ -324,7 +324,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matching.getUuid())).thenReturn(List.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
@@ -353,7 +353,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matching.getUuid())).thenReturn(List.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
@@ -385,7 +385,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsRequestService.isEnabled()).thenReturn(true);
         when(ownNotificationRepository.findBySourceDisruptionIdAndPartnerBpnl(SOURCE_DISRUPTION_ID, PARTNER_BPNL)).thenReturn(List.of(matching));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(matching.getUuid())).thenReturn(Optional.of(triggering));
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matching.getUuid())).thenReturn(List.of(triggering));
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
         when(materialRelationService.resolveChildOwnMaterialNumbers(eq(OWN_MATERIAL_NUMBER), any())).thenReturn(Set.of(CHILD_MATERIAL_NUMBER));
         when(ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(List.of(forwarded));
@@ -602,7 +602,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         ReportedDemandAndCapacityNotification updated = reportedNotification(notificationUuid, SUPPLIER_BPNL, List.of(childMaterial));
         OwnDataExchangeRequest forwarded = forwardedRequest(UUID.randomUUID(), updated, triggering);
 
-        when(ownDataExchangeRequestRepository.findByNotification_Uuid(notificationUuid)).thenReturn(Optional.of(forwarded));
+        when(ownDataExchangeRequestRepository.findAllByNotification_Uuid(notificationUuid)).thenReturn(List.of(forwarded));
         when(ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(sentApproval);
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.empty());
@@ -625,7 +625,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         UUID notificationUuid = UUID.randomUUID();
         ReportedDemandAndCapacityNotification updated = reportedNotification(notificationUuid, SUPPLIER_BPNL, List.of());
 
-        when(ownDataExchangeRequestRepository.findByNotification_Uuid(notificationUuid)).thenReturn(Optional.empty());
+        when(ownDataExchangeRequestRepository.findAllByNotification_Uuid(notificationUuid)).thenReturn(List.of());
 
         chainOpeningGrantService.onReportedNotificationUpdated(updated);
 
@@ -679,7 +679,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
             PARTNER_BPNL, OTHER_GLOBAL_ASSET_ID, SOURCE_DISRUPTION_ID.toString())).thenReturn(Optional.of(removedGrant));
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(notificationUuid)).thenReturn(Optional.empty());
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(notificationUuid)).thenReturn(List.of());
         when(irsRequestService.isEnabled()).thenReturn(false);
 
         chainOpeningGrantService.onOwnNotificationUpdated(previous, updated);
@@ -698,7 +698,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         ReportedDataExchangeRequest triggering = triggeringRequest(UUID.randomUUID(), updated);
         OwnDataExchangeApproval sentApproval = sentApproval(triggering);
 
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(notificationUuid)).thenReturn(Optional.of(triggering));
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(notificationUuid)).thenReturn(List.of(triggering));
         when(ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggering.getUuid())).thenReturn(sentApproval);
         when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(grantMaterial());
         when(irsChainOpeningPartnerGrantRepository.findByRequesterBpnAndGlobalAssetIdAndSourceDisruptionId(
@@ -720,7 +720,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         OwnDemandAndCapacityNotification previous = ownNotification(notificationUuid, List.of());
         OwnDemandAndCapacityNotification updated = ownNotification(notificationUuid, List.of(grantMaterial()));
 
-        when(reportedDataExchangeRequestRepository.findByNotification_Uuid(notificationUuid)).thenReturn(Optional.empty());
+        when(reportedDataExchangeRequestRepository.findAllByNotification_Uuid(notificationUuid)).thenReturn(List.of());
 
         chainOpeningGrantService.onOwnNotificationUpdated(previous, updated);
 
