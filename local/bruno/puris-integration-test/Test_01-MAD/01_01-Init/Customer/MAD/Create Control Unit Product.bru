@@ -29,3 +29,8 @@ tests {
       expect(res.getStatus()).to.equal(200);
   })
 }
+
+script:post-response {
+  // SingleLevelUsageAsPlanned checks that the supplier has been informed about this parent
+  bru.setVar("CONTROL_UNIT_MATERIAL_NUMBER_CX", res.getBody().materialNumberCx);
+}

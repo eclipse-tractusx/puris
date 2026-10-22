@@ -1,0 +1,50 @@
+meta {
+  name: 06-Get SingleLevelUsageAsPlanned of Semiconductor
+  type: http
+  seq: 6
+  tags: [
+    single-level-usage-as-planned
+  ]
+}
+
+get {
+  url: {{SLUAP_EDR_ENDPOINT}}/{{SEMICONDUCTOR_MATERIAL_NUMBER_CX}}/submodel/$value
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{SLUAP_EDR_AUTH}}
+}
+
+tests {
+  if (bru.getVar("__retryPending")) return;
+  const body = res.getBody();
+  const parentItemsOf = catenaXId => (body.parentItems || []).filter(parent => parent.catenaXId === catenaXId);
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Submodel belongs to the Semiconductor", function () {
+      expect(body.catenaXId).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CX"));
+  });
+
+  test("Customer is listed", function () {
+      expect(body.customers).to.include(bru.getEnvVar("CUSTOMER_BPNL"));
+  });
+
+  test("Parent of the material relation created in Test_01-MAD has been sent by the customer", function () {
+      const parents = parentItemsOf(bru.getVar("CONTROL_UNIT_MATERIAL_NUMBER_CX"));
+      expect(parents).to.have.lengthOf(1);
+      expect(parents[0].businessPartner).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+  });
+
+  test("Parent sent in Digital Twin Event ConnectToChild has been updated, not duplicated", function () {
+      const parents = parentItemsOf(bru.getVar("DTE_PARENT_CATENA_X_ID"));
+      expect(parents).to.have.lengthOf(1);
+      expect(parents[0].businessPartner).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+      expect(parents[0].quantity.value).to.equal(7);
+      expect(parents[0].validityPeriod.validTo).to.exist;
+  });
+}

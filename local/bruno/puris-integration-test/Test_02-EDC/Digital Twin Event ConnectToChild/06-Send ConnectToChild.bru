@@ -1,0 +1,62 @@
+meta {
+  name: 06-Send ConnectToChild
+  type: http
+  seq: 6
+  tags: [
+    digital-twin-event
+  ]
+}
+
+post {
+  url: {{DTE_EDR_ENDPOINT}}
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: {{DTE_EDR_AUTH}}
+}
+
+body:json {
+  {
+    "header": {
+      "messageId": "urn:uuid:3e7c5d2a-1b4f-4a8e-9d6c-2f0e1a3b5c7d",
+      "context": "IndustryCore-DigitalTwinEvent-ConnectToChild:3.0.0",
+      "sentDateTime": "2026-10-13T10:00:00.000Z",
+      "senderBpn": "{{CUSTOMER_BPNL}}",
+      "receiverBpn": "{{SUPPLIER_BPNL}}",
+      "version": "3.0.0"
+    },
+    "content": {
+      "digitalTwinType": "PartType",
+      "information": "Usage as Planned information for parts supplied by the receiver.",
+      "listOfItems": [
+        {
+          "catenaXId": "{{SEMICONDUCTOR_MATERIAL_NUMBER_CX}}",
+          "parentItems": [
+            {
+              "catenaXId": "{{DTE_PARENT_CATENA_X_ID}}",
+              "businessPartner": "{{CUSTOMER_BPNL}}",
+              "quantity": {
+                "value": 5.0,
+                "unit": "unit:piece"
+              },
+              "validityPeriod": {
+                "validFrom": "2026-01-01T00:00:00.000Z"
+              },
+              "createdOn": "2026-10-13T10:00:00.000Z",
+              "lastModifiedOn": "2026-10-13T10:00:00.000Z"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  if (bru.getVar("__retryPending")) return;
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
