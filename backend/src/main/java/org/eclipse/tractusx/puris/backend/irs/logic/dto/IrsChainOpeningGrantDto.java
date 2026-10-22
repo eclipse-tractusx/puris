@@ -58,4 +58,5 @@ public class IrsChainOpeningGrantDto {
     private IrsGrantSyncStatusEnumeration syncStatus;
  
     private List<@Pattern(regexp = PatternStore.BPNL_STRING) String> allowedBpnlSet;
+    private List<UUID> reportedNotificationIds;
 }

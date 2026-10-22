@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 import { InfoOutlined } from '@mui/icons-material';
-import { IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 
 type InfoButtonProps = {
     text: string;
@@ -27,7 +27,7 @@ type InfoButtonProps = {
 
 export function InfoButton({ text }: InfoButtonProps) {
     return (
-        <Tooltip title={text}>
+        <Tooltip title={<Box sx={{ whiteSpace: 'pre-wrap' }}>{text}</Box>}>
             <IconButton sx={{ padding: 0, fontSize: '1rem', color: '#999' }}>
                 <InfoOutlined />
             </IconButton>
