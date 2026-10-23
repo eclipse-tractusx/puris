@@ -223,6 +223,67 @@ a submodel is requested, the DTR of a partner is queried.
 Whenever a partner is created, all exchanged information APIs that comply to a Catena-X standard are registered as
 contract offer for the partner's BPNL.
 
+## IRS Adapter
+
+A demand and capacity notification may affect a material that is several tiers away in the supply chain. PURIS itself
+only exchanges data with direct partners. To get insight into deeper tiers, PURIS can be connected to an external
+[Item Relationship Service (IRS)](https://github.com/eclipse-tractusx/item-relationship-service), which recursively
+collects anonymized stock information along the bill of material (use case `PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE`,
+life cycle `asPlanned`). The IRS is not part of PURIS. The adapter is optional and disabled by default. For
+configuration refer to the [Admin Guide](../admin/Admin_Guide.md#configure-irs-adapter).
+
+### Chain Opening Grants
+
+The IRS only traverses a partner's part of the chain if that partner has opened it for the requester. Such a
+permission is called a chain opening grant. It is identified by `requesterBpn`, `globalAssetId` and
+`sourceDisruptionId` (the source disruption of the notification), is valid for a time window, and lists the
+`allowedBpnls` that may be queried recursively. PURIS derives grants from the data exchange approval flow of
+notifications:
+
+| Grant type    | Requester         | Material (`globalAssetId`)                                   | Created when                                                                    |
+| ------------- | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Root grant    | own BPNL          | parent material of a material affected by a reported notification | a data exchange approval for an own, non-forwarded request is received           |
+| Partner grant | the partner's BPNL | own material directly affected by the own notification        | an own data exchange approval has been sent to the partner                       |
+
+The `allowedBpnls` of a grant are the partners of the reported notifications that back it. For a partner grant, these
+are the further upstream partners that approved their part of the same disruption. Before a grant is sent, PURIS checks
+that every allowed BPNL is backed by an active notification covering a child material of the grant's material. When
+notifications change, are resolved, or new approvals arrive, the affected grants are recalculated and updated, or
+deleted when no notification backs them anymore.
+
+The sync status of a grant shows whether the IRS reflects the local state: `NOT_SYNCED` (never reached the IRS),
+`PENDING` (a request is queued), `SYNCED`, `OUT_OF_SYNC` (changed locally or last request failed) and `DELETED`.
+
+### Jobs
+
+An IRS job starts the recursive data collection for one product and one source disruption. A job is created
+automatically for every root grant of a notification once its data exchange approval is finalized. Admins can also
+create one manually in the frontend. A material is only eligible if it is a product and at least one of its child
+materials is affected by an active notification. Only one queued job per material and source disruption is allowed.
+
+After the job has been created, PURIS polls its status every `job.polldelayseconds`. Once the job is `COMPLETED`, the
+response is mapped to aggregated material data and stored. For the states `CANCELED` and `ERROR` nothing is stored.
+
+### Request Queue
+
+All calls to the IRS (policy registration, grant creation/update/deletion, job creation and job status polls) are not
+sent synchronously, but stored as queued requests and sent by a background worker:
+
+- The worker checks for due requests every `queue.pollintervalseconds`.
+- A failed request is retried with exponential backoff until `queue.maxattempts` is reached. Then it is marked
+  `FAILED` and the linked grant or job is updated accordingly.
+- When a new request is queued for an entity that still has a `PENDING` request, the older one is `CANCELLED`, so that
+  at most one request per entity is in flight.
+- Admins can retry `FAILED` requests via the frontend, unless a newer request for the same entity is already pending.
+
+Requests that change IRS configuration (policies, grants) are authenticated with the admin secret. Job requests use the
+regular secret.
+
+### Frontend
+
+The "IRS Integration" view (`PURIS_ADMIN` only) lists root grants, partner grants, jobs and queued requests. It allows
+creating jobs for existing root grants and retrying failed requests. See the [User Guide](../user/User_Guide.md#irs-integration).
+
 ## Security
 
 Backend APIs are secured by an API Key. The Frontend may be configured to be accessed based on keycloak authentication.
