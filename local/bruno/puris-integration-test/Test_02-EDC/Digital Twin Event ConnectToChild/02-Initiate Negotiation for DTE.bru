@@ -1,0 +1,39 @@
+meta {
+  name: 02-Initiate Negotiation for DTE
+  type: http
+  seq: 2
+  tags: [
+    digital-twin-event
+  ]
+}
+
+post {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractnegotiations
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/",
+      "odrl": "http://www.w3.org/ns/odrl/2/",
+      "cx-policy": "{{COMMON_POLICY_NAMESPACE}}"
+    },
+    "@type": "ContractRequest",
+    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "protocol": "dataspace-protocol-http",
+    "policy": {{DTE_CATALOG_OFFER}}
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  bru.setVar("DTE_NEGOTIATION_ID", jsonData["@id"]);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
