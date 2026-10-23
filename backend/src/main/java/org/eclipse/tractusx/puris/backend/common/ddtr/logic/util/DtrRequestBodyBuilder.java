@@ -36,8 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -128,10 +131,13 @@ public class DtrRequestBodyBuilder {
             specificAssetIdsArray.add(manufacturerPartIdObject);
             var manufacturerIdObject = createManufacturerIdObject(variablesService.getOwnBpnl(), partnerRefObjects);
             specificAssetIdsArray.add(manufacturerIdObject);
+            Map<String, List<String>> customerBpnlsGroupedByPartnerMaterialNumber = new LinkedHashMap<>();
             for (var mpr : mprs) {
-                var customerPartIdObject = createCustomerPartIdObject(mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
-                specificAssetIdsArray.add(customerPartIdObject);
+                customerBpnlsGroupedByPartnerMaterialNumber.computeIfAbsent(mpr.getPartnerMaterialNumber(), key -> new ArrayList<>())  .add(mpr.getPartner().getBpnl());
             }
+            customerBpnlsGroupedByPartnerMaterialNumber.forEach((partnerMaterialNumber, customerBpnls) ->
+                specificAssetIdsArray.add(createCustomerPartIdObject(partnerMaterialNumber, customerBpnls))
+            );
         } else {
             log.error("Could not create request body: Missing product flag in material {}", material.getOwnMaterialNumber());
             return null;
@@ -204,11 +210,16 @@ public class DtrRequestBodyBuilder {
     }
 
     private ObjectNode createCustomerPartIdObject(String customerPartId, String customerBpnl) {
-        return createGenericIdObject(CUSTOMER_PART_ID, customerPartId, List.of(createReferenceObject(customerBpnl)));
+        return createCustomerPartIdObject(customerPartId, List.of(customerBpnl));
     }
 
     private JsonNode createDigitalTwinObject(List<ObjectNode> refNodes) {
         return createGenericIdObject(DIGITAL_TWIN_TYPE, "PartType", refNodes);
+    }
+
+    private ObjectNode createCustomerPartIdObject(String customerPartId, List<String> customerBpnls) {
+        var refObjects = customerBpnls.stream().distinct().map(this::createReferenceObject).toList();
+        return createGenericIdObject(CUSTOMER_PART_ID, customerPartId, refObjects);
     }
 
     private ObjectNode createReferenceObject(String bpnl) {

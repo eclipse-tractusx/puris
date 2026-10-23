@@ -347,6 +347,11 @@ class DtrRequestBodyBuilderTest {
             }
         }
 
+        List<JsonNode> customerPartIds = StreamSupport.stream(specificAssetIds.spliterator(), false)
+            .filter(specificAssetId -> TEST_CONST_CUSTOMER_PART_ID.equals(specificAssetId.get("name").asText()))
+            .toList();
+        Assertions.assertEquals(2, customerPartIds.size());
+
         JsonNode submodelDescriptors = materialShellDescriptor.get("submodelDescriptors");
 
         for (JsonNode submodelDescriptor : submodelDescriptors) {
