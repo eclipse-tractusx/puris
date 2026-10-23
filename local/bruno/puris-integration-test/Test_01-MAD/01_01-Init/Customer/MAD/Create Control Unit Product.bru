@@ -20,6 +20,7 @@ body:json {
       "materialFlag": false,
       "productFlag": true,
       "ownMaterialNumber": "{{CONTROL_UNIT_MATERIAL_NUMBER_CUSTOMER}}",
+      "materialNumberCx": "{{CONTROL_UNIT_MATERIAL_NUMBER_CX}}",
       "name": "Central Control Unit"
   }
 }
@@ -28,9 +29,4 @@ tests {
   test("response is ok", function() {
       expect(res.getStatus()).to.equal(200);
   })
-}
-
-script:post-response {
-  // SingleLevelUsageAsPlanned checks that the supplier has been informed about this parent
-  bru.setVar("CONTROL_UNIT_MATERIAL_NUMBER_CX", res.getBody().materialNumberCx);
 }

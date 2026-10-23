@@ -12,7 +12,3 @@ auth:apikey {
   value: {{CUSTOMER_EDC_API_KEY}}
   placement: header
 }
-
-script:pre-request {
-  bru.setVar("DTE_PARENT_CATENA_X_ID", "urn:uuid:9a3f1b2c-7d4e-4f5a-8b6c-0e1d2f3a4b5c");
-}
