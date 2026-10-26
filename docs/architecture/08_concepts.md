@@ -228,7 +228,7 @@ contract offer for the partner's BPNL.
 A demand and capacity notification may affect a material that is several tiers away in the supply chain. PURIS itself
 only exchanges data with direct partners. To get insight into deeper tiers, PURIS can be connected to an external
 [Item Relationship Service (IRS)](https://github.com/eclipse-tractusx/item-relationship-service), which recursively
-collects anonymized stock information along the bill of material (use case `PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE`,
+collects anonymized PURIS data along the bill of materials (use case `PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE`,
 life cycle `asPlanned`). The IRS is not part of PURIS. The adapter is optional and disabled by default. For
 configuration refer to the [Admin Guide](../admin/Admin_Guide.md#configure-irs-adapter).
 
