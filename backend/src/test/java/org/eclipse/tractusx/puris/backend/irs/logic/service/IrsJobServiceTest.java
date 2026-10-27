@@ -14,7 +14,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  *
+ * AI-Disclosure: This file was largely AI-generated. The AI-generated portions are made
+ * available under CC0-1.0 and not subject to the project's licence.
+ * The human contributor has reviewed and verified that the code is correct.
+ *
  * SPDX-License-Identifier: Apache-2.0
+ * Assisted-by: Claude Code Opus 5.5
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
@@ -22,6 +27,7 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.m
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJobStateEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequest;
@@ -42,8 +48,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -151,6 +160,19 @@ class IrsJobServiceTest {
         verify(irsRequestBodybuilder, never()).buildJobCreationRequestBody(any());
     }
 
+    @Test
+    void createAndSend_WhenJobForMaterialAndDisruptionAlreadyQueued_ThrowsConflictBeforeSaving() {
+        String sourceDisruptionId = UUID.randomUUID().toString();
+        validJob.setSourceDisruptionId(sourceDisruptionId);
+        when(irsJobRepository.existsByMaterialAndSourceDisruptionIdAndRequestStatus(material, sourceDisruptionId,
+            IrsQueuedRequestStatusEnumeration.PENDING)).thenReturn(true);
+
+        assertThrows(KeyAlreadyExistsException.class, () -> irsJobService.createAndSend(validJob));
+
+        verify(irsJobRepository, never()).save(any());
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
+    }
+
     // --- createJobsForNotification ---
 
     private IrsChainOpeningRootGrant rootGrant(String globalAssetId, String sourceDisruptionId) {
@@ -205,5 +227,76 @@ class IrsJobServiceTest {
 
         // one successful create+send cycle for the eligible grant: one save on create, one on update
         verify(irsJobRepository, times(2)).save(any(IrsJob.class));
+    }
+
+    // --- createAndSendForRootGrant ---
+
+    @Test
+    void createAndSendForRootGrant_WhenGrantValid_CreatesJobFromGrant() {
+        String sourceDisruptionId = UUID.randomUUID().toString();
+        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, sourceDisruptionId);
+        grant.setUuid(UUID.randomUUID());
+        grant.setSyncStatus(IrsGrantSyncStatusEnumeration.SYNCED);
+        when(irsChainOpeningRootGrantRepository.findById(grant.getUuid())).thenReturn(Optional.of(grant));
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(material);
+        stubSuccessfulSend();
+
+        IrsJob result = irsJobService.createAndSendForRootGrant(grant.getUuid());
+
+        assertThat(result.getMaterial()).isEqualTo(material);
+        assertThat(result.getSourceDisruptionId()).isEqualTo(sourceDisruptionId);
+        assertThat(result.getRequestStatus()).isEqualTo(IrsQueuedRequestStatusEnumeration.PENDING);
+        verify(irsRequestQueueService, times(1)).enqueue(eq(IrsQueuedRequestMethodEnumeration.POST), eq("irs/recursive/jobs"), any(), any(),
+            eq(IrsQueuedRequestTypeEnumeration.JOB_CREATE), any(UUID.class));
+    }
+
+    @Test
+    void createAndSendForRootGrant_WhenGrantNotFound_Throws() {
+        UUID rootGrantUuid = UUID.randomUUID();
+        when(irsChainOpeningRootGrantRepository.findById(rootGrantUuid)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> irsJobService.createAndSendForRootGrant(rootGrantUuid));
+
+        verify(irsJobRepository, never()).save(any());
+    }
+
+    @Test
+    void createAndSendForRootGrant_WhenGrantDeleted_ThrowsBeforeSaving() {
+        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, UUID.randomUUID().toString());
+        grant.setUuid(UUID.randomUUID());
+        grant.setSyncStatus(IrsGrantSyncStatusEnumeration.DELETED);
+        when(irsChainOpeningRootGrantRepository.findById(grant.getUuid())).thenReturn(Optional.of(grant));
+
+        assertThrows(IllegalArgumentException.class, () -> irsJobService.createAndSendForRootGrant(grant.getUuid()));
+
+        verify(irsJobRepository, never()).save(any());
+    }
+
+    @Test
+    void createAndSendForRootGrant_WhenGrantMaterialNotFound_ThrowsBeforeSaving() {
+        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, UUID.randomUUID().toString());
+        grant.setUuid(UUID.randomUUID());
+        when(irsChainOpeningRootGrantRepository.findById(grant.getUuid())).thenReturn(Optional.of(grant));
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () -> irsJobService.createAndSendForRootGrant(grant.getUuid()));
+
+        verify(irsJobRepository, never()).save(any());
+    }
+
+    @Test
+    void createJobsForNotification_WhenJobAlreadyQueued_SkipsGrantWithoutThrowing() {
+        ReportedDemandAndCapacityNotification notification = new ReportedDemandAndCapacityNotification();
+        notification.setUuid(UUID.randomUUID());
+        String sourceDisruptionId = UUID.randomUUID().toString();
+        IrsChainOpeningRootGrant grant = rootGrant(GLOBAL_ASSET_ID, sourceDisruptionId);
+        when(irsChainOpeningRootGrantRepository.findAllByReportedNotifications_Uuid(notification.getUuid())).thenReturn(List.of(grant));
+        when(materialService.findByMaterialNumberCx(GLOBAL_ASSET_ID)).thenReturn(material);
+        when(irsJobRepository.existsByMaterialAndSourceDisruptionIdAndRequestStatus(material, sourceDisruptionId,
+            IrsQueuedRequestStatusEnumeration.PENDING)).thenReturn(true);
+
+        irsJobService.createJobsForNotification(notification);
+
+        verify(irsJobRepository, never()).save(any());
     }
 }

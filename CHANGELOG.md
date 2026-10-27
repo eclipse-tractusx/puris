@@ -13,7 +13,12 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- /
+- Added Irs jobs controller for getting all jobs and unit tests for the same ([#1250](https://github.com/eclipse-tractusx/puris/pull/1250))
+- Added controller for irs queue requests ([#1251](https://github.com/eclipse-tractusx/puris/pull/1251))
+- Added controller for irs root and partner grants ([#1252](https://github.com/eclipse-tractusx/puris/pull/1252))
+- Added new sidebar item "IRS Integration" with four data tables for root grants, partner grants, jobs and requests ([#1261](https://github.com/eclipse-tractusx/puris/pull/1261))
+- Added actions inside of the "IRS Integration" for adding new jobs and retrying failed requests ([#1266](https://github.com/eclipse-tractusx/puris/pull/1266))
+- Added documentation for configuring and using IRS adapter ([#1273](https://github.com/eclipse-tractusx/puris/pull/1273))
 
 ### Changed
 

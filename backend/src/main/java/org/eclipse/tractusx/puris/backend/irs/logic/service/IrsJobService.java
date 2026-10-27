@@ -14,7 +14,12 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  *
+ * AI-Disclosure: This file was largely AI-generated. The AI-generated portions are made
+ * available under CC0-1.0 and not subject to the project's licence.
+ * The human contributor has reviewed and verified that the code is correct.
+ *
  * SPDX-License-Identifier: Apache-2.0
+ * Assisted-by: Claude Code Opus 5.5
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
@@ -23,10 +28,13 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.logic.service.ReportedDemandAndCapacityNotificationService;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
+import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsGrantSyncStatusEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsJob;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestMethodEnumeration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsQueuedRequestStatusEnumeration;
@@ -59,6 +67,15 @@ public class IrsJobService {
 	private final IrsChainOpeningRootGrantRepository irsChainOpeningRootGrantRepository;
 
 	private final MaterialService materialService;
+
+	/**
+	 * Returns all IRS jobs.
+	 *
+	 * @return all persisted IRS jobs
+	 */
+	public List<IrsJob> findAll() {
+		return irsJobRepository.findAll();
+	}
 
 	/**
 	 * Persists the given IRS job locally and sends a
@@ -107,6 +124,14 @@ public class IrsJobService {
 
 		assertMaterialEligibleForIrsJob(irsJob.getMaterial());
 
+		if (irsJobRepository.existsByMaterialAndSourceDisruptionIdAndRequestStatus(irsJob.getMaterial(),
+				irsJob.getSourceDisruptionId(), IrsQueuedRequestStatusEnumeration.PENDING)) {
+			log.error("Could not create IRS job because a job for material {} and sourceDisruptionId {} is already queued",
+					irsJob.getMaterial().getOwnMaterialNumber(), irsJob.getSourceDisruptionId());
+			throw new KeyAlreadyExistsException(
+					"An IRS job for this material and source disruption is already queued.");
+		}
+
 		return irsJobRepository.save(irsJob);
 	}
 
@@ -141,24 +166,49 @@ public class IrsJobService {
 
     private void createJobsForRootGrants(List<IrsChainOpeningRootGrant> grants) {
         for (IrsChainOpeningRootGrant grant : grants) {
-            Material material = materialService.findByMaterialNumberCx(grant.getGlobalAssetId());
-            if (material == null) {
-                log.error("No material found for globalAssetId {} while creating IRS job for sourceDisruptionId {}",
-                    grant.getGlobalAssetId(), grant.getSourceDisruptionId());
-                continue;
-            }
-
-            IrsJob irsJob = new IrsJob();
-            irsJob.setMaterial(material);
-            irsJob.setSourceDisruptionId(grant.getSourceDisruptionId());
-
             try {
-                createAndSend(irsJob);
+                createAndSend(toIrsJob(grant));
             } catch (IllegalArgumentException e) {
                 log.error("Failed to create IRS job for globalAssetId {}, sourceDisruptionId {}",
                     grant.getGlobalAssetId(), grant.getSourceDisruptionId(), e);
             }
         }
+    }
+
+    /**
+     * Creates and sends a new IRS job for the root grant with the given UUID. The job's material is
+     * resolved from the grant's globalAssetId and its sourceDisruptionId is taken from the grant.
+     *
+     * @param rootGrantUuid the UUID of the root grant to create the job for
+     * @return the persisted IRS job, or {@code null} if the IRS adapter is disabled
+     * @throws NoSuchElementException   if no root grant with the given UUID exists
+     * @throws IllegalArgumentException if the grant is deleted, its material is unknown, or the
+     *                                  material is not eligible for an IRS job
+     * @throws KeyAlreadyExistsException if a job for the same material and sourceDisruptionId is
+     *                                   already queued
+     */
+    public IrsJob createAndSendForRootGrant(UUID rootGrantUuid) {
+        IrsChainOpeningRootGrant grant = irsChainOpeningRootGrantRepository.findById(rootGrantUuid)
+            .orElseThrow(() -> new NoSuchElementException("IRS root grant does not exist."));
+        if (grant.getSyncStatus() == IrsGrantSyncStatusEnumeration.DELETED) {
+            log.error("Could not create IRS job because root grant {} is deleted", rootGrantUuid);
+            throw new IllegalArgumentException("Root grant is deleted and cannot be used for an IRS job.");
+        }
+        return createAndSend(toIrsJob(grant));
+    }
+
+    private IrsJob toIrsJob(IrsChainOpeningRootGrant grant) {
+        Material material = materialService.findByMaterialNumberCx(grant.getGlobalAssetId());
+        if (material == null) {
+            log.error("No material found for globalAssetId {} while creating IRS job for sourceDisruptionId {}",
+                grant.getGlobalAssetId(), grant.getSourceDisruptionId());
+            throw new IllegalArgumentException("No material found for the root grant's globalAssetId.");
+        }
+
+        IrsJob irsJob = new IrsJob();
+        irsJob.setMaterial(material);
+        irsJob.setSourceDisruptionId(grant.getSourceDisruptionId());
+        return irsJob;
     }
 
 	/**

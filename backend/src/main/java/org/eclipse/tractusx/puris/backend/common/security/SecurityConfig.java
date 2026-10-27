@@ -123,10 +123,14 @@ public class SecurityConfig {
                         "/single-level-bom-as-planned/**",
                         "/edc/**",
                         "/erp-adapter/**",
+                        "/irs/root-grants/**",
+                        "/irs/partner-grants/**",
+                        "/irs/requests/**",
                         "/parttypeinformation/**",
                         "/files/**",
                         "/batch/**",
-                        "/material-relations/**"
+                        "/material-relations/**",
+                        "/irs/jobs/**"
                     )
                     .authenticated()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**").permitAll()

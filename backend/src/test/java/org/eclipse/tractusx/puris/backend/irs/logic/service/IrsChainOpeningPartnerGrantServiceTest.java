@@ -452,7 +452,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         ArgumentCaptor<IrsChainOpeningPartnerGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningPartnerGrant.class);
         verify(irsChainOpeningPartnerGrantRepository, atLeastOnce()).save(captor.capture());
         IrsChainOpeningPartnerGrant saved = captor.getValue();
-        assertThat(saved.getAllowedBpnls()).containsExactly(SUPPLIER_BPNL);
+        assertThat(saved.getAllowedBpnlSet()).containsExactly(SUPPLIER_BPNL);
     }
 
     @Test
@@ -477,7 +477,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         ArgumentCaptor<IrsChainOpeningPartnerGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningPartnerGrant.class);
         verify(irsChainOpeningPartnerGrantRepository, atLeastOnce()).save(captor.capture());
         IrsChainOpeningPartnerGrant saved = captor.getValue();
-        assertThat(saved.getAllowedBpnls()).isEmpty();
+        assertThat(saved.getAllowedBpnlSet()).isEmpty();
     }
 
     @Test
@@ -503,7 +503,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
         ArgumentCaptor<IrsChainOpeningPartnerGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningPartnerGrant.class);
         verify(irsChainOpeningPartnerGrantRepository, atLeastOnce()).save(captor.capture());
         IrsChainOpeningPartnerGrant saved = captor.getValue();
-        assertThat(saved.getAllowedBpnls()).isEmpty();
+        assertThat(saved.getAllowedBpnlSet()).isEmpty();
     }
 
     @Test
@@ -608,7 +608,7 @@ class IrsChainOpeningPartnerGrantServiceTest {
 
         ArgumentCaptor<IrsChainOpeningPartnerGrant> captor = ArgumentCaptor.forClass(IrsChainOpeningPartnerGrant.class);
         verify(irsChainOpeningPartnerGrantRepository, atLeastOnce()).save(captor.capture());
-        assertThat(captor.getValue().getAllowedBpnls()).containsExactly(SUPPLIER_BPNL);
+        assertThat(captor.getValue().getAllowedBpnlSet()).containsExactly(SUPPLIER_BPNL);
     }
 
     @Test

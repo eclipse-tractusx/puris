@@ -26,11 +26,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
-import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,7 +53,7 @@ import lombok.experimental.SuperBuilder;
  * Common shape of a Chain Opening Grant as it is created at and deleted from the IRS, shared by
  * {@link IrsChainOpeningRootGrant} and {@link IrsChainOpeningPartnerGrant}.
  * <p>
- * A grant allows {@link #requesterBpn} to recursively query the set of {@link #getAllowedBpnls()}
+ * A grant allows {@link #requesterBpn} to recursively query the set of {@link #getAllowedBpnlSet()}
  * for the material identified by {@link #globalAssetId}, for the duration of the
  * [{@link #validFrom}, {@link #validTo}] window. A grant is uniquely identified by the
  * combination of {@link #requesterBpn}, {@link #globalAssetId} and {@link #sourceDisruptionId}.
@@ -113,7 +111,7 @@ public abstract class IrsChainOpeningGrant {
 	 * grant-creation request.
 	 */
 	@JsonIgnore
-	public Set<String> getAllowedBpnls() {
+	public Set<String> getAllowedBpnlSet() {
 		return getReportedNotifications().stream()
 			.map(ReportedDemandAndCapacityNotification::getPartner)
 			.filter(Objects::nonNull)
