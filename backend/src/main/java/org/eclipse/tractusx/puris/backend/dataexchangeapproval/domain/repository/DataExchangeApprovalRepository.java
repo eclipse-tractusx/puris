@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,4 +31,6 @@ public interface DataExchangeApprovalRepository<TEntity extends DataExchangeAppr
     Optional<TEntity> findByDataExchangeRequest_Uuid(UUID requestId);
 
     Optional<TEntity> findByApprovalId(String approvalId);
+
+    List<TEntity> findAllByDataExchangeRequest_Notification_Uuid(UUID notificationUuid);
 }

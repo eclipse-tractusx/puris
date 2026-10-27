@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.dataexchangeapproval.logic.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -31,6 +32,10 @@ public class ReportedDataExchangeApprovalService extends DataExchangeApprovalSer
     
     public ReportedDataExchangeApprovalService (ReportedDataExchangeApprovalRepository repository) {
         super(repository);
+    }
+
+    public final List<ReportedDataExchangeApproval> findAllByDataExchangeRequest_RelatedDataExchangeRequest_Uuid(UUID relatedDataExchangeRequestUuid) {
+        return repository.findAllByDataExchangeRequest_RelatedDataExchangeRequest_Uuid(relatedDataExchangeRequestUuid);
     }
 
     public final ReportedDataExchangeApproval create(ReportedDataExchangeApproval reportedDataExchangeApproval) {
