@@ -1,0 +1,53 @@
+meta {
+  name: 06-Get SingleLevelUsageAsPlanned of Semiconductor
+  type: http
+  seq: 6
+  tags: [
+    single-level-usage-as-planned
+  ]
+}
+
+get {
+  url: {{SLUAP_EDR_ENDPOINT}}/{{SEMICONDUCTOR_MATERIAL_NUMBER_CX}}/submodel/$value
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{SLUAP_EDR_AUTH}}
+}
+
+tests {
+  if (bru.getVar("__retryPending")) return;
+  const body = res.getBody();
+  const parentItemsOf = catenaXId => (body.parentItems || []).filter(parent => parent.catenaXId === catenaXId);
+
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Submodel belongs to the Semiconductor", function () {
+      expect(body.catenaXId).to.equal(bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CX"));
+  });
+
+  test("Customer is listed", function () {
+      expect(body.customers).to.include(bru.getEnvVar("CUSTOMER_BPNL"));
+  });
+
+  test("Control unit is listed exactly once as parent, sent by the customer", function () {
+      const parents = parentItemsOf(bru.getEnvVar("CONTROL_UNIT_MATERIAL_NUMBER_CX"));
+      expect(parents).to.have.lengthOf(1);
+      expect(parents[0].businessPartner).to.equal(bru.getEnvVar("CUSTOMER_BPNL"));
+  });
+
+  if (bru.getVar("DTE_CUSTOMER_MATERIAL_RELATION_FOUND")) {
+    test("Quantity and validity period match the customer's material relation", function () {
+        const parent = parentItemsOf(bru.getEnvVar("CONTROL_UNIT_MATERIAL_NUMBER_CX"))[0];
+        const sameTime = (actual, expected) => expect(new Date(actual).getTime()).to.equal(new Date(expected).getTime());
+        expect(parent.quantity.value).to.equal(Number(bru.getVar("DTE_PARENT_QUANTITY")));
+        expect(parent.quantity.unit).to.equal(bru.getVar("DTE_PARENT_UNIT"));
+        sameTime(parent.validityPeriod.validFrom, bru.getVar("DTE_PARENT_VALID_FROM"));
+        sameTime(parent.validityPeriod.validTo, bru.getVar("DTE_PARENT_VALID_TO"));
+    });
+  }
+}
