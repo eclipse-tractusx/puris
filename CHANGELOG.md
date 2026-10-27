@@ -16,6 +16,8 @@ The **need for configuration updates** is **marked bold**
 - Added EDC asset and endpoint for DigitalTwinEventAPI ([#1260](https://github.com/eclipse-tractusx/puris/pull/1260))
 - Added logic for connect to child notifications ([#1267](https://github.com/eclipse-tractusx/puris/pull/1267))
 - Added SingleLevelUsageAsPlanned SAMM and asset implementation ([#1268](https://github.com/eclipse-tractusx/puris/pull/1268))
+- Added bruno tests and unit test for Connect to Child feature ([#1270](https://github.com/eclipse-tractusx/puris/pull/1270))
+- Added bruno tests for SingleLevelUsageAsPlanned ([#1274](https://github.com/eclipse-tractusx/puris/pull/1274))
 
 ### Changed
 
