@@ -34,6 +34,7 @@ The Frontend only handles visualization logic. The remaining logic is handled in
 | Catalog View           | Allows an ADMIN to lookup a catalog of a registered partner.                                                                                                                                                                                                                         |
 | Negotiation View       | Allows an ADMIN to check past negotiations.                                                                                                                                                                                                                                          |
 | Transfer View          | Allows an ADMIN to check past transfers.                                                                                                                                                                                                                                             |
+| IRS Integration View   | Allows an ADMIN to monitor chain opening grants, jobs and queued requests of the IRS adapter, to create IRS jobs and to retry failed requests.                                                                                                                                       |
 | Authentication Service | Encapsulates keycloak authentication and session management to be used by the main app.                                                                                                                                                                                              |
 
 ### PURIS FOSS Backend
@@ -58,6 +59,7 @@ The building block view describes only the responsibilities of the components/ p
 | Batch              | Retrieves all material, patners and their relationships. Updates all relevant partner related data.                                                              |
 | DTR                | The DTR component provides the DTR implementations to manage ShellDescriptors. May first need to get a OAuth 2 token for authentication.                         |
 | Notifications      | Allows to send and receive demand and capacity notifications.                                                                                                    |
+| IRS                | Optional adapter to an external IRS. Manages chain opening grants and jobs, and sends all IRS calls via a persistent retry queue. See [IRS Adapter](08_concepts.md#irs-adapter). |
 
 ## NOTICE
 

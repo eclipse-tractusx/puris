@@ -252,6 +252,93 @@ To use a batch to update the partner related data, you need to configure the inf
 
 Please refer to helm charts [README.md](../../charts/puris/README.md) for further information. Cron definitions follow the common [crontab](https://www.manpagez.com/man/5/crontab/) definition.
 
+## Configure IRS Adapter
+
+The IRS adapter connects PURIS to an external [Item Relationship Service (IRS)](https://github.com/eclipse-tractusx/item-relationship-service).
+It is used to look up anonymized supply chain information across multiple tiers when a demand and capacity notification
+affects a material deep down in the supply chain. Refer to the [Arc42 chapter on the IRS adapter](../architecture/08_concepts.md#irs-adapter)
+for how the adapter works.
+
+> [!info]
+>
+> The IRS is **not** part of PURIS and must be deployed and operated separately. It must support recursive jobs and
+> chain opening grants for the use case `PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE`. The IRS consumes the anonymized PURIS
+> submodels through **your own EDC**, so the [anonymized data exchange](#configure-anonymized-data-exchange) has to be
+> set up as well.
+
+### Backend configuration
+
+Configure the following information below `backend.puris.irsadapter`:
+
+| Helm                                                       | Docker                                             | Default     | Description                                                                                                       |
+| ---------------------------------------------------------- | -------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| backend.puris.irsadapter.enabled                           | PURIS_IRSADAPTER_ENABLED                           | `false`     | Toggles usage of the IRS adapter.                                                                                 |
+| backend.puris.irsadapter.url                               | PURIS_IRSADAPTER_URL                               |             | Base URL of the IRS, including protocol (http/https).                                                             |
+| backend.puris.irsadapter.authkey                           | PURIS_IRSADAPTER_AUTHKEY                           | `x-api-key` | Header key used to authenticate at the IRS API.                                                                   |
+| backend.puris.irsadapter.adminauthsecret                   | PURIS_IRSADAPTER_ADMINAUTHSECRET                   |             | API key with IRS admin permissions. Used to register policies and to manage chain opening grants.                 |
+| backend.puris.irsadapter.authsecret                        | PURIS_IRSADAPTER_AUTHSECRET                        |             | API key with IRS view permissions. Used to create jobs and poll their status. Optional in helm (see below).       |
+| backend.puris.irsadapter.queue.pollintervalseconds         | PURIS_IRSADAPTER_QUEUE_POLL_INTERVAL_SECONDS       | `30`        | How often (seconds) the request queue checks for requests that are due to be sent.                                |
+| backend.puris.irsadapter.queue.maxattempts                 | PURIS_IRSADAPTER_QUEUE_MAX_ATTEMPTS                | `5`         | Maximum number of attempts (including the first) before a request is marked `FAILED`.                             |
+| backend.puris.irsadapter.queue.initialretrydelayseconds    | PURIS_IRSADAPTER_QUEUE_INITIAL_RETRY_DELAY_SECONDS | `30`        | Delay (seconds) before the first retry of a failed request.                                                       |
+| backend.puris.irsadapter.queue.backoffmultiplier           | PURIS_IRSADAPTER_QUEUE_BACKOFF_MULTIPLIER          | `2`         | Multiplier applied to the retry delay after each failed attempt.                                                  |
+| backend.puris.irsadapter.queue.maxretrydelayseconds        | PURIS_IRSADAPTER_QUEUE_MAX_RETRY_DELAY_SECONDS     | `3600`      | Upper bound (seconds) on the delay between two attempts.                                                          |
+| backend.puris.irsadapter.job.polldelayseconds              | PURIS_IRSADAPTER_JOB_POLL_DELAY_SECONDS            | `300`       | Delay (seconds) between two status polls of a running IRS job, starting after the job has been created.           |
+
+When using helm, note the following:
+
+- The adapter is only configured if `enabled` is `true` **and** both `url` and `adminauthsecret` are set. Otherwise no
+  IRS environment variables are passed to the backend and the adapter stays disabled.
+- Both secrets are stored in the backend's existing secret under the keys `puris-irsadapter-adminauthsecret` and
+  `puris-irsadapter-authsecret`. If `authsecret` is left empty, the `adminauthsecret` is used for all requests.
+
+When running the backend with Docker or Spring directly, set both `PURIS_IRSADAPTER_ADMINAUTHSECRET` and
+`PURIS_IRSADAPTER_AUTHSECRET` explicitly, because there is no fallback outside of helm.
+
+All requests to the IRS are sent asynchronously through a persistent queue. A failed request is retried with an
+exponential backoff: the n-th retry waits `initialretrydelayseconds * backoffmultiplier^(n-1)` seconds, capped at
+`maxretrydelayseconds`. With the defaults, retries happen after 30 s, 60 s, 120 s and 240 s; after the 5th failed
+attempt the request is marked `FAILED`. Admins can then retry it manually in the IRS Integration view (see
+[User Guide](../user/User_Guide.md#irs-integration)).
+
+### Frontend configuration
+
+The frontend shows the "IRS Integration" view only if the adapter is enabled. In helm, the frontend reuses
+`backend.puris.irsadapter.enabled`, so no extra configuration is needed. The frontend endpoints can be adjusted if
+needed:
+
+| Helm                                 | Docker                      | Default              |
+| ------------------------------------ | --------------------------- | -------------------- |
+| backend.puris.irsadapter.enabled     | IRS_ADAPTER_ENABLED         | `false`              |
+| frontend.puris.endpointIrsRootGrants    | ENDPOINT_IRS_ROOT_GRANTS    | `irs/root-grants`    |
+| frontend.puris.endpointIrsPartnerGrants | ENDPOINT_IRS_PARTNER_GRANTS | `irs/partner-grants` |
+| frontend.puris.endpointIrsJobs          | ENDPOINT_IRS_JOBS           | `irs/jobs`           |
+| frontend.puris.endpointIrsRequests      | ENDPOINT_IRS_REQUESTS       | `irs/requests`       |
+
+> [!info]
+>
+> When deploying with Docker, make sure `IRS_ADAPTER_ENABLED` (frontend) and `PURIS_IRSADAPTER_ENABLED` (backend)
+> have the same value. If only the frontend flag is set, the IRS view is shown but all its tables fail to load because
+> the backend rejects the requests with `403 Forbidden`.
+
+### What PURIS registers at the IRS
+
+Once enabled, PURIS sends the following to the IRS without further manual steps:
+
+- **Policies**: when the EDC framework policies are registered on startup, PURIS also registers the PURIS framework
+  policy and the DTR framework policy in the IRS policy store, so that the IRS accepts these contracts during
+  negotiation. Currently this is only done for policy profile `2405`, because the IRS does not support `2509` policies yet.
+- **Chain opening grants**: created, updated and deleted automatically when data exchange requests for demand and
+  capacity notifications are approved, or when those notifications change or are resolved.
+- **Jobs**: created automatically once a data exchange request for a reported notification is finally approved. Admins
+  can also create jobs manually in the IRS Integration view.
+
+### How to validate the setup
+
+1. Open the "IRS Integration" view as a `PURIS_ADMIN` user. All four tables should load without an error message.
+2. Check the "Requests" table: the `POLICY_CREATE` requests should reach the status `SUCCEEDED`. If they stay `PENDING`
+   or turn `FAILED`, check the `Last Error` column. Typical causes are a wrong `url`, a wrong `authkey` or a secret
+   without admin permissions.
+
 ## Rate Limiting using nginx
 
 Rate limiting is by default enabled in the puris frontend served by nginx and can be dynamically configured.

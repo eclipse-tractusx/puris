@@ -3,7 +3,7 @@
 This guide explains the overall masks that may be used by different roles.
 
 - A `PURIS_USER` may see and use the material list view, material details view, view this user guide, view the license information and log out.
-- A `PURIS_ADMIN` may _additionally_ use the views "Notifications", "Catalog", "Negotiations" and "Transfers".
+- A `PURIS_ADMIN` may _additionally_ use the views "Notifications", "Catalog", "Negotiations" and "Transfers", and "IRS Integration" if the IRS adapter is enabled.
 
 In the following the views are explained.
 
@@ -545,6 +545,111 @@ You can get detail information the success or failure of requests for the combin
 ![Partner Data Update - Details](img/batch_details.png)
 
 All tables are paginated (you can walkthrough them). Also you can trigger an explicit partner update now via button "*Update Partner Data Now*".
+
+## IRS Integration
+
+> [!info]
+>
+> The view is only available to users with the role `PURIS_ADMIN` and only if the IRS adapter has been enabled by your
+> administrator (see [Admin Guide](../admin/Admin_Guide.md#configure-irs-adapter)).
+>
+
+PURIS can use an external Item Relationship Service (IRS) to collect anonymized supply chain information across multiple
+tiers when a demand and capacity notification affects your materials. Most of this happens automatically while you
+work with notifications and data exchange requests. The "IRS Integration" view, found in the navigation bar, shows what
+PURIS has sent to the IRS and lets you step in when something went wrong.
+
+![IRS Integration View](img/irs_view.png)
+
+The view consists of four tables:
+
+1. Root Grants
+2. Partner Grants
+3. Jobs, with the button "NEW JOB"
+4. Requests, with a "RETRY" button for failed requests
+
+### Root Grants and Partner Grants
+
+A chain opening grant allows a company (Requester BPN) to look into the supply chain of a material behind the listed
+partners (Allowed BPNLs). PURIS creates and updates grants automatically:
+
+- **Root Grants** are created for yourself, when a partner approves your data exchange request for a notification. They
+  cover the parent materials (your products) of the affected material.
+- **Partner Grants** are created for a partner, when you approve their data exchange request. They cover your own
+  material affected by the notification.
+
+Both tables show the following columns:
+
+- Global Asset Id: Catena-X ID of the material the grant is for
+- Source Disruption Id: the disruption (group of notifications) the grant belongs to
+- Requester BPN: the company allowed to query the supply chain
+- Allowed BPNLs: the partners that may be queried
+- Valid From / Valid To: time window in which the grant is valid
+- Sync Status: whether the grant is up to date at the IRS
+  - NOT_SYNCED: the grant has not reached the IRS yet
+  - PENDING: a request to the IRS is queued
+  - SYNCED: the IRS has the current state of the grant
+  - OUT_OF_SYNC: the grant changed in PURIS or the last request failed. Check the "Requests" table.
+  - DELETED: the grant has been removed from the IRS, e.g. because the notification was resolved
+
+### Jobs
+
+A job asks the IRS to collect the supply chain information for one of your products and one disruption. Jobs are
+created automatically once your data exchange request has been approved along the whole supply chain, i.e. your
+partner and all partners they forwarded the request to have approved it. The table shows:
+
+- Job Id: ID assigned by the IRS (empty until the IRS accepted the job)
+- Material Number: your own material number of the product
+- Source Disruption Id: the disruption the job belongs to
+- State: state of the job at the IRS (`INITIAL`, `RUNNING`, `TRANSFERS_FINISHED`, `COMPLETED`, `CANCELED` or `ERROR`).
+  PURIS checks it regularly until the job is finished.
+- Request Status: whether the job could be sent to the IRS (`PENDING`, `SUCCEEDED` or `FAILED`)
+
+#### Creating a job
+
+To start a new job manually, e.g. after a previous job failed, trigger the "NEW JOB" button. This opens the following
+modal.
+
+![New IRS Job Modal](img/irs_job_creation.png)
+
+1. Select the material. Only materials that have a root grant are offered.
+2. Select the notification. Only notifications that belong to a root grant of the selected material are offered.
+   Selecting a notification first narrows down the materials in the same way.
+3. Check the details of the selected root grant shown below the fields (Global Asset Id, Source Disruption Id, validity,
+   Allowed BPNLs and Cause).
+4. Trigger "SAVE".
+
+The job is added to the "Jobs" table with the request status `PENDING` and is sent to the IRS shortly afterwards. If a
+job for the same material and disruption is still pending, an error message "IRS Job already queued" is displayed. If
+no root grants exist, both fields are disabled.
+
+### Requests
+
+All communication with the IRS is queued and sent in the background. If the IRS can't be reached, PURIS retries the
+request automatically several times with increasing delays. The table shows:
+
+- Type: what the request does, e.g. `POLICY_CREATE`, `CHAIN_OPENING_ROOT_GRANT_CREATE`, `JOB_CREATE` or `JOB_GET`
+  (status check of a job)
+- Method and Path: the HTTP call sent to the IRS
+- Body: content of the request (hover the info icon)
+- Status:
+  - PENDING: waiting to be sent or retried
+  - SUCCEEDED: accepted by the IRS
+  - FAILED: all attempts failed
+  - CANCELLED: replaced by a newer request for the same grant or job
+- Attempts: number of attempts made / maximum number of attempts
+- Created At, Last Attempt At, Next Attempt At: timestamps of the request
+- Last Error: error returned by the IRS or the connection (hover the info icon)
+
+#### Retrying a failed request
+
+When a request has the status `FAILED`, a "RETRY" button is shown in its row. Check the "Last Error" first, and fix the
+cause if needed (e.g. ask your administrator to check the IRS connection). Then trigger "RETRY". The request is reset
+to `PENDING` with 0 attempts and is sent again shortly afterwards. For a failed job creation, the job's request status
+is set back to `PENDING` as well.
+
+The retry is rejected if a newer request for the same grant or job is already pending. In that case, the newer request
+already contains the latest state and no action is needed.
 
 ## Catalog
 
