@@ -50,15 +50,13 @@ body:json {
 
 script:post-response {
   const jsonData = res.getBody();
-  const semanticId = "urn:samm:io.catenax.single_level_usage_as_planned:2.0.0#SingleLevelUsageAsPlanned";
 
   const datasets = jsonData['dcat:dataset'];
   const catalog = Array.isArray(datasets) ? datasets : [datasets];
 
-  const catalogEntry = catalog.find(ce =>
-    ce["https://admin-shell.io/aas/3/0/HasSemantics/semanticId"]?.["@id"] === semanticId
-  );
-  if (!catalogEntry) throw new Error("No catalog entry found for semanticId: " + semanticId);
+  const descriptorAssetId = bru.getVar("SLUAP_DESCRIPTOR_ASSET_ID");
+  const catalogEntry = catalog.find(ce => (ce["@id"] || ce.id) === descriptorAssetId);
+  if (!catalogEntry) throw new Error("Asset from the submodel descriptor is not offered: " + descriptorAssetId);
 
   const offers = [].concat(catalogEntry["odrl:hasPolicy"] || []);
   if (offers.length === 0) throw new Error("No odrl:hasPolicy found in catalog entry");
