@@ -1,0 +1,39 @@
+meta {
+  name: 07-Get Customer Material Relation
+  type: http
+  seq: 7
+  tags: [
+    digital-twin-event
+  ]
+}
+
+get {
+  url: {{CUSTOMER_PURIS_BACKEND}}/catena/material-relations
+  body: none
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{CUSTOMER_PURIS_BACKEND_API_KEY}}
+}
+
+script:post-response {
+    const relation = (res.getBody() || []).find(r =>
+        r.parentOwnMaterialNumber === bru.getEnvVar("CONTROL_UNIT_MATERIAL_NUMBER_CUSTOMER") &&
+        r.childOwnMaterialNumber === bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CUSTOMER")
+    );
+    bru.setVar("DTE_CUSTOMER_MATERIAL_RELATION", relation ? JSON.stringify(relation) : null);
+    if (!relation) return;
+    bru.setVar("DTE_PARENT_QUANTITY", relation.quantity);
+    bru.setVar("DTE_PARENT_UNIT", relation.measurementUnit);
+    bru.setVar("DTE_PARENT_VALID_FROM", relation.validFrom);
+    bru.setVar("DTE_PARENT_VALID_TO", relation.validTo);
+    bru.setVar("DTE_PARENT_CREATED_ON", relation.createdOn);
+    bru.setVar("DTE_PARENT_LAST_MODIFIED_ON", relation.lastModifiedOn);
+}
+
+tests {
+  test("response is ok", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
