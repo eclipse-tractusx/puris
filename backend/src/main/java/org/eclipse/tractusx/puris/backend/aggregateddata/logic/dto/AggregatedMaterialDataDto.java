@@ -41,5 +41,11 @@ public class AggregatedMaterialDataDto implements Serializable {
  
     @Valid
     private List<AggregatedMaterialDataNodeDto> childMaterialData = new ArrayList<>();
+
+    private String sourceDisruptionId;
+
+    UUID jobId;
+
+
 }
 

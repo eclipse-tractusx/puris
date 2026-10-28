@@ -43,6 +43,7 @@ import org.eclipse.tractusx.puris.backend.irs.domain.repository.IrsQueuedRequest
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsRequestService.IrsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -89,6 +90,9 @@ public class IrsRequestQueueWorker {
 
 	@Autowired
 	private AggregatedMaterialDataRepository aggregatedMaterialDataRepository;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -266,7 +270,14 @@ public class IrsRequestQueueWorker {
 			log.warn("Could not map IRS job {} response to aggregated material data (queued request {})", irsJob.getUuid(), request.getUuid());
 			return;
 		}
-		aggregatedMaterialDataRepository.save(aggregatedMaterialData);
+		aggregatedMaterialData.setJobId(irsJob.getJobId());
+		aggregatedMaterialData.setSourceDisruptionId(irsJob.getSourceDisruptionId());
+
+		transactionTemplate.executeWithoutResult(status -> {
+			aggregatedMaterialDataRepository.deleteAll( aggregatedMaterialDataRepository.findAllBySourceDisruptionId(irsJob.getSourceDisruptionId()));
+			aggregatedMaterialDataRepository.flush();
+			aggregatedMaterialDataRepository.save(aggregatedMaterialData);
+		});
 		log.info("Saved aggregated material data for IRS job {}", irsJob.getUuid());
 	}
 
