@@ -1,0 +1,97 @@
+meta {
+  name: 01-Query Catalog for SLUAP
+  type: http
+  seq: 1
+  tags: [
+    single-level-usage-as-planned
+  ]
+}
+
+post {
+  url: {{SUPPLIER_EDC}}/{{MANAGEMENT_PATH}}/v3/catalog/request
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+    },
+    "@type": "CatalogRequest",
+    "protocol": "dataspace-protocol-http",
+    "counterPartyAddress": "{{SUPPLIER_EDC_EXT_HOSTNAME}}/{{PROTOCOL_PATH}}",
+    "counterPartyId": "{{SUPPLIER_BPNL}}",
+    "querySpec": {
+      "offset": 0,
+      "limit": 100,
+      "filter": "",
+      "range": {
+        "from": 0,
+        "to": 100
+      },
+      "filterExpression": [
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "https://w3id.org/catenax/ontology/common#version",
+          "operator": "=",
+          "operandRight": "3.0"
+        },
+        {
+          "@type": "CriterionDto",
+          "operandLeft": "'http://purl.org/dc/terms/type'.'@id'",
+          "operator": "=",
+          "operandRight": "https://w3id.org/catenax/taxonomy#Submodel"
+        }
+      ]
+    }
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+
+  const datasets = jsonData['dcat:dataset'];
+  const catalog = Array.isArray(datasets) ? datasets : [datasets];
+
+  const descriptorAssetId = bru.getVar("SLUAP_DESCRIPTOR_ASSET_ID");
+  const catalogEntry = catalog.find(ce => (ce["@id"] || ce.id) === descriptorAssetId);
+  if (!catalogEntry) throw new Error("Asset from the submodel descriptor is not offered: " + descriptorAssetId);
+
+  const offers = [].concat(catalogEntry["odrl:hasPolicy"] || []);
+  if (offers.length === 0) throw new Error("No odrl:hasPolicy found in catalog entry");
+
+  const wantsProfile2509 = bru.getVar("COMMON_POLICY_PROFILE_VERSION") === "profile2509";
+  const offer = offers.find(o => {
+    const leftOperandId = o["odrl:permission"]?.["odrl:constraint"]?.["odrl:and"]?.[0]?.["odrl:leftOperand"]?.["@id"] || "";
+    return leftOperandId.includes("2025/9") === wantsProfile2509;
+  }) || offers[0];
+
+  const offerId = offer["@id"];
+  const assetId = catalogEntry["@id"] || catalogEntry.id;
+  if (!offerId || !assetId) throw new Error("Missing offerId or assetId in catalog entry");
+
+  const builtOffer = {
+    "@context": "http://www.w3.org/ns/odrl.jsonld",
+    "@type": "odrl:Offer",
+    "@id": offerId,
+    "assigner": jsonData["dspace:participantId"],
+    "odrl:permission": {
+      "odrl:target": assetId,
+      "odrl:action": { "odrl:type": "http://www.w3.org/ns/odrl/2/use" },
+      "odrl:constraint": offer["odrl:permission"]?.["odrl:constraint"]
+    },
+    "odrl:prohibition": [],
+    "odrl:obligation": [],
+    "odrl:target": { "@id": assetId }
+  };
+
+  bru.setVar("SLUAP_CATALOG_OFFER", JSON.stringify(builtOffer));
+  bru.setVar("SLUAP_ASSET_ID", assetId);
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
