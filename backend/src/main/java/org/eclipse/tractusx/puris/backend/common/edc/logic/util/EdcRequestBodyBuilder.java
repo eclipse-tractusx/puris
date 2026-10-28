@@ -26,10 +26,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.HttpUrl;
+
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.stereotype.Component;
@@ -44,17 +47,45 @@ import java.util.Map;
 @Component
 @Slf4j
 public class EdcRequestBodyBuilder {
-    private final DtrSecurityConfiguration dtrSecurityConfig;
+    /**
+     * Taxonomy type of the IRS recursive notification API. Partner IRS instances look up the asset in the
+     * catalog by this {@code dct:type} together with {@link #RECURSIVE_IRS_NOTIFICATION_API_VERSION}.
+     */
+    public static final String RECURSIVE_IRS_NOTIFICATION_API_TYPE = JsonLdConstants.CX_TAXO_NAMESPACE + "RecursiveIrsNotificationApi";
+
+    /**
+     * Version ({@code cx-common:version}) of the IRS recursive notification API.
+     */
+    public static final String RECURSIVE_IRS_NOTIFICATION_API_VERSION = "1.0";
+
+    /**
+     * Id of the membership-only access policy definition of the IRS recursive notification asset.
+     */
+    public static final String RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID = "irs_recursive_access_policy";
+
+    /**
+     * Id of the contract policy definition of the IRS recursive notification asset.
+     */
+    public static final String RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID = "irs_contract_policy";
+
+    /**
+     * Id of the contract definition offering the IRS recursive notification asset.
+     */
+    public static final String RECURSIVE_IRS_NOTIFICATION_CONTRACT_DEFINITION_ID = "irs_recursive_contract_definition";
+        private final DtrSecurityConfiguration dtrSecurityConfig;
     private final VariablesService variablesService;
+    private final IrsAdapterConfiguration irsAdapterConfiguration;
     private final ObjectMapper MAPPER;
 
     public EdcRequestBodyBuilder(
             DtrSecurityConfiguration dtrSecurityConfig,
             VariablesService variablesService,
+            IrsAdapterConfiguration irsAdapterConfiguration,
             ObjectMapper MAPPER
     ) {
         this.dtrSecurityConfig = dtrSecurityConfig;
         this.variablesService = variablesService;
+        this.irsAdapterConfiguration = irsAdapterConfiguration;
         this.MAPPER = MAPPER;
     }
 
@@ -210,23 +241,53 @@ public class EdcRequestBodyBuilder {
             ));
         }
 
-        constraints.add(new PolicyConstraint(
-            profileVersion.CX_POLICY_NAMESPACE + "Membership",
-            "eq",
-            "active"
-        ));
+        constraints.add(buildMembershipConstraint(profileVersion));
 
         JsonNode body = buildPolicy(
             getBpnPolicyId(partner),
             constraints,
-            profileVersion.equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)
-                ? profileVersion.CX_POLICY_NAMESPACE + "access"
-                : JsonLdConstants.ODRL_NAMESPACE + "use",
+            getAccessPolicyAction(profileVersion),
             profileVersion
         );
         log.debug("Built bpn and membership access policy:\n{}", body.toPrettyString());
 
         return body;
+    }
+
+    /**
+     * Creates a request body for an access policy whose only requirement is a valid Catena-X membership
+     * credential. Unlike {@link #buildBpnAndMembershipRestrictedPolicy(Partner)}, there is no BPNL restriction,
+     * so every Catena-X member can see offers guarded by this policy in the catalog.
+     *
+     * @param policyId the id of the policy definition
+     * @return the request body as a {@link JsonNode}
+     */
+    public JsonNode buildMembershipPolicy(String policyId) {
+        PolicyProfileVersionEnumeration profileVersion = variablesService.getEdcProfileVersion();
+
+        JsonNode body = buildPolicy(
+            policyId,
+            List.of(buildMembershipConstraint(profileVersion)),
+            getAccessPolicyAction(profileVersion),
+            profileVersion
+        );
+        log.debug("Built membership access policy:\n{}", body.toPrettyString());
+
+        return body;
+    }
+
+    private PolicyConstraint buildMembershipConstraint(PolicyProfileVersionEnumeration profileVersion) {
+        return new PolicyConstraint(
+            profileVersion.CX_POLICY_NAMESPACE + "Membership",
+            "eq",
+            "active"
+        );
+    }
+
+    private String getAccessPolicyAction(PolicyProfileVersionEnumeration profileVersion) {
+        return profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
+            ? profileVersion.CX_POLICY_NAMESPACE + "access"
+            : JsonLdConstants.ODRL_NAMESPACE + "use";
     }
 
     /**
@@ -285,6 +346,19 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    /**
+     * Creates a request body in order to register the contract policy of the IRS recursive notification API
+     *
+     * @return the request body
+     */
+    public JsonNode buildRecursiveIrsNotificationContractPolicy() {
+        return buildFrameworkPolicy(
+            JsonLdConstants.INDUSTRY_CORE_USAGE_PURPOSE,
+            RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID,
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2405
+        );
+    }
+
     public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId + "_" + partner.getPolicyProfileVersion().getValue());
@@ -310,6 +384,26 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("operandLeft", JsonLdConstants.EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
         assetsSelector.put("operandRight", getDtrAssetId());
+        return body;
+    }
+
+    /**
+     * Creates the request body for the contract definition that offers the IRS recursive notification asset
+     * to every Catena-X member under the IRS recursive contract policy.
+     *
+     * @return the request body
+     */
+    public JsonNode buildRecursiveIrsNotificationContractDefinition(String assetId) {
+        var body = getEdcContextObject();
+        body.put("@id", RECURSIVE_IRS_NOTIFICATION_CONTRACT_DEFINITION_ID);
+        body.put("accessPolicyId", RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID);
+        body.put("contractPolicyId", RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID);
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", JsonLdConstants.EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", assetId);
         return body;
     }
 
@@ -490,6 +584,52 @@ public class EdcRequestBodyBuilder {
         propertiesObject.put("cx-common:version", "1.0");
         body.set("dataAddress", createDataAddressObject(endpoint, "true"));
         return body;
+    }
+
+    /**
+     * Creates the request body for registering the asset of the IRS recursive notification API, through which
+     * the IRS instances of partners send recursive requests and responses to the own IRS.
+     * Partner IRS instances find the asset in the catalog by its {@code dct:type} and {@code cx-common:version}.
+     *
+     * @return the request body
+     */
+    public JsonNode buildRecursiveIrsNotificationRegistrationBody(String assetId) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", assetId);
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", RECURSIVE_IRS_NOTIFICATION_API_TYPE);
+        propertiesObject.put("cx-common:version", RECURSIVE_IRS_NOTIFICATION_API_VERSION);
+        body.set("dataAddress", createRecursiveIrsNotificationDataAddress());
+        return body;
+    }
+
+    private ObjectNode createRecursiveIrsNotificationDataAddress() {
+        var dataAddress = MAPPER.createObjectNode();
+        dataAddress.put("@type", "DataAddress");
+        dataAddress.put("proxyPath", "false");
+        dataAddress.put("proxyQueryParams", "false");
+        dataAddress.put("proxyMethod", "true");
+        dataAddress.put("proxyBody", "true");
+        dataAddress.put("type", "HttpData");
+        dataAddress.put("baseUrl", getRecursiveIrsNotificationEndpoint());
+        dataAddress.put("authKey", irsAdapterConfiguration.getIrsAdapterAuthKey());
+        dataAddress.put("authCode", irsAdapterConfiguration.getIrsAdapterAuthSecret());
+        return dataAddress;
+    }
+
+    private String getRecursiveIrsNotificationEndpoint() {
+        String irsUrl = irsAdapterConfiguration.getIrsAdapterUrl();
+        HttpUrl irsBaseUrl = irsUrl == null ? null : HttpUrl.parse(irsUrl);
+        if (irsBaseUrl == null) {
+            throw new IllegalStateException("Invalid IRS base URL configuration: " + irsUrl);
+        }
+        return irsBaseUrl.newBuilder()
+            .addPathSegments(IrsAdapterConfiguration.RECURSIVE_NOTIFICATIONS_PATH)
+            .build()
+            .toString();
     }
 
     public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {

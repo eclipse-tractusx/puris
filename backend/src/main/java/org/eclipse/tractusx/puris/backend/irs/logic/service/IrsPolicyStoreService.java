@@ -75,6 +75,23 @@ public class IrsPolicyStoreService {
     }
 
     /**
+     * Enqueues creation of the IRS framework policy at the IRS, to be sent and retried asynchronously by {@link IrsRequestQueueWorker}.
+     * It matches the contract policy of the IRS recursive notification asset,
+     * so that the IRS accepts it when contracting the assets of partners.
+     * @return the queued request, or {@code null} if the IRS adapter is disabled
+     * @see IrsRequestQueueWorker
+     */
+    public IrsQueuedRequest createIrsFrameworkPolicy() {
+        if (!irsRequestService.isEnabled()) {
+            log.info("IRS adapter is disabled. Skipping creation of framework policy.");
+            return null;
+        }
+
+        String payload = irsRequestBodybuilder.buildIrsFrameworkPolicyCreationRequestBody().toString();
+        return createFrameworkPolicy(payload);
+    }
+
+    /**
      * Enqueues creation of the given framework policy request body at the IRS.
      *
      * @return the queued request

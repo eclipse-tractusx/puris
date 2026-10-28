@@ -44,6 +44,7 @@ public class IrsRequestBodybuilder {
 
     private static final String PURIS_FRAMEWORK_POLICY_ID = "puris-framework-policy";
     private static final String DTR_FRAMEWORK_POLICY_ID = "dtr-framework-policy";
+    private static final String IRS_FRAMEWORK_POLICY_ID = "irs-framework-policy";
 
     private static final long FRAMEWORK_POLICY_VALID_YEARS = 10;
 
@@ -86,6 +87,14 @@ public class IrsRequestBodybuilder {
      */
     public JsonNode buildDtrFrameworkPolicyCreationRequestBody() {
         return buildFrameworkPolicyCreationRequestBody(DTR_FRAMEWORK_POLICY_ID, "cx.core.digitalTwinRegistry:1");
+    }
+
+    /**
+     * Builds the request body for registering the IRS framework policy at the IRS Policy Store.
+     * It matches the contract policy of the IRS recursive notification asset
+     */
+    public JsonNode buildIrsFrameworkPolicyCreationRequestBody() {
+        return buildFrameworkPolicyCreationRequestBody(IRS_FRAMEWORK_POLICY_ID, JsonLdConstants.INDUSTRY_CORE_USAGE_PURPOSE);
     }
 
     /**

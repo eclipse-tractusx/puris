@@ -108,4 +108,31 @@ class IrsPolicyStoreServiceTest {
         verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null,
             IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
     }
+
+    @Test
+    void createIrsFrameworkPolicy_WhenDisabled_ReturnsNullWithoutEnqueueing() {
+        when(irsRequestService.isEnabled()).thenReturn(false);
+
+        IrsQueuedRequest result = irsPolicyStoreService.createIrsFrameworkPolicy();
+
+        assertThat(result).isNull();
+        verify(irsRequestBodybuilder, never()).buildIrsFrameworkPolicyCreationRequestBody();
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void createIrsFrameworkPolicy_WhenEnabled_BuildsBodyAndEnqueues() {
+        ObjectNode body = new ObjectMapper().createObjectNode().put("@id", "irs-framework-policy");
+        IrsQueuedRequest queuedRequest = new IrsQueuedRequest();
+
+        when(irsRequestService.isEnabled()).thenReturn(true);
+        when(irsRequestBodybuilder.buildIrsFrameworkPolicyCreationRequestBody()).thenReturn(body);
+        when(irsRequestQueueService.enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null, IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null)).thenReturn(queuedRequest);
+
+        IrsQueuedRequest result = irsPolicyStoreService.createIrsFrameworkPolicy();
+
+        assertThat(result).isEqualTo(queuedRequest);
+        verify(irsRequestBodybuilder, times(1)).buildIrsFrameworkPolicyCreationRequestBody();
+        verify(irsRequestQueueService, times(1)).enqueue(IrsQueuedRequestMethodEnumeration.POST, IrsAdapterConfiguration.POLICIES_PATH, body.toString(), null, IrsQueuedRequestTypeEnumeration.POLICY_CREATE, null);
+    }
 }

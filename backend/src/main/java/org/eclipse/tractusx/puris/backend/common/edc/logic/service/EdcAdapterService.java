@@ -36,6 +36,7 @@ import org.eclipse.tractusx.puris.backend.common.edc.logic.util.EdcRequestBodyBu
 import org.eclipse.tractusx.puris.backend.common.edc.logic.util.JsonLdUtils;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsPolicyStoreService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -71,6 +72,9 @@ public class EdcAdapterService {
 
     @Autowired
     private IrsPolicyStoreService irsPolicyStoreService;
+
+    @Autowired
+    private IrsAdapterConfiguration irsAdapterConfiguration;
 
     private final Pattern urlPattern = PatternStore.URL_PATTERN;
 
@@ -264,6 +268,13 @@ public class EdcAdapterService {
             AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
+        if (irsAdapterConfiguration.isIrsAdapterEnabled() && irsAdapterConfiguration.isIrsAdapterRegisterAsset()) {
+            log.info("Registration of IRS recursive notification asset and contract successful {}", (assetRegistration = registerRecursiveIrsNotificationAssetAndContract()));
+            result &= assetRegistration;
+        } else {
+            log.info("Registration of IRS recursive notification asset is disabled (IRS adapter enabled: {}, register asset: {}).",
+                irsAdapterConfiguration.isIrsAdapterEnabled(), irsAdapterConfiguration.isIrsAdapterRegisterAsset());
+        }
         log.info("Registration of self-contracts successful {}", (assetRegistration = createPolicyAndContractDefForOwnPartner()));
         result &= assetRegistration;
         return result;
@@ -494,6 +505,114 @@ public class EdcAdapterService {
     private boolean registerDataExchangeRequestAsset(String assetId, String endpoint) {
         var body = edcRequestBodyBuilder.buildDataExchangeRequestRegistrationBody(assetId, endpoint);
         return sendAssetRegistrationRequest(body, assetId);
+    }
+
+    /**
+     * Registers the asset of the IRS recursive notification API together with a membership-only access policy,
+     * the IRS recursive contract policy and the contract definition linking them. This way, the IRS instances of
+     * Already existing registrations (409) count as success, so the registration may be repeated on every start.
+     *
+     * @return true, if all registrations were successful
+     */
+    private boolean registerRecursiveIrsNotificationAssetAndContract() {
+        String assetId = variablesService.getIrsRecursiveNotificationApiAssetId();
+        boolean result = registerRecursiveIrsNotificationAsset(assetId);
+        result &= registerPolicyDefinition(
+            edcRequestBodyBuilder.buildMembershipPolicy(EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID),
+            EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID
+        );
+        result &= createRecursiveIrsNotificationContractPolicy();
+        result &= createRecursiveIrsNotificationContractDefinition(assetId);
+        return result;
+    }
+
+    private boolean registerRecursiveIrsNotificationAsset(String assetId) {
+        JsonNode body;
+        try {
+            body = edcRequestBodyBuilder.buildRecursiveIrsNotificationRegistrationBody(assetId);
+        } catch (Exception e) {
+            log.error("Failed to build the IRS recursive notification asset", e);
+            return false;
+        }
+        if (Objects.equals(irsAdapterConfiguration.getIrsAdapterAuthSecret(), irsAdapterConfiguration.getIrsAdapterAdminAuthSecret())) {
+            log.warn("The IRS recursive notification asset authenticates partner requests with the IRS admin key. "
+                + "Configure a separate non-admin key in puris.irsadapter.authsecret.");
+        }
+        return sendAssetRegistrationRequest(body, assetId);
+    }
+
+    /**
+     * Registers the contract policy of the IRS recursive notification asset. Once the policy definition exists
+     * in the EDC, the same policy is enqueued for the IRS policy store, so that the own IRS accepts it when
+     * contracting the IRS recursive notification assets of partners.
+     *
+     * @return true, if the policy definition was registered (or already existed) and the IRS policy was enqueued
+     */
+    private boolean createRecursiveIrsNotificationContractPolicy() {
+        boolean policyRegistered = registerPolicyDefinition(
+            edcRequestBodyBuilder.buildRecursiveIrsNotificationContractPolicy(),
+            EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID
+        );
+        if (!policyRegistered) {
+            return false;
+        }
+        try {
+            irsPolicyStoreService.createIrsFrameworkPolicy();
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to enqueue the IRS framework policy for the IRS policy store", e);
+            return false;
+        }
+    }
+
+    private boolean createRecursiveIrsNotificationContractDefinition(String assetId) {
+        String contractDefinitionId = EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_CONTRACT_DEFINITION_ID;
+        var body = edcRequestBodyBuilder.buildRecursiveIrsNotificationContractDefinition(assetId);
+        try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
+            if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("Contract definition {} already existed", contractDefinitionId);
+                    return true;
+                }
+                log.warn("Contract definition registration failed for {}", contractDefinitionId);
+                if (response.body() != null) {
+                    log.warn("Response: \n{}", response.body().string());
+                }
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register contract definition {}", contractDefinitionId, e);
+            return false;
+        }
+    }
+
+    /**
+     * Registers the given policy definition. A policy definition with the same id that already exists in the
+     * EDC counts as success.
+     *
+     * @param body     the policy definition request body
+     * @param policyId the id of the policy definition
+     * @return true, if the policy definition was registered or already existed
+     */
+    private boolean registerPolicyDefinition(JsonNode body, String policyId) {
+        try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
+            if (!response.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(policyId)) {
+                    log.info("Policy definition {} already existed", policyId);
+                    return true;
+                }
+                log.warn("Policy definition registration failed for {}", policyId);
+                if (response.body() != null) {
+                    log.warn("Response: \n{}", response.body().string());
+                }
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register policy definition {}", policyId, e);
+            return false;
+        }
     }
 
     private boolean sendAssetRegistrationRequest(JsonNode body, String assetId) {

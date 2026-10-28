@@ -38,10 +38,21 @@ public class IrsAdapterConfiguration {
     public static final String POLICIES_PATH = "irs/policies";
 
     /**
+     * The IRS API path receiving recursive notifications from partner IRS instances via the EDC.
+     */
+    public static final String RECURSIVE_NOTIFICATIONS_PATH = "irs/recursive/notifications";
+
+    /**
      * Toggles usage of IRS adapter.
      */
     @Value("${puris.irsadapter.enabled}")
     private boolean irsAdapterEnabled;
+
+    /**
+     * Toggles the registration of the EDC asset for the IRS recursive notification API
+     */
+    @Value("${puris.irsadapter.registerasset}")
+    private boolean irsAdapterRegisterAsset;
 
     /**
      * Base URL of the external IRS service.
