@@ -18,6 +18,14 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 
+// In docker builds the env values are placeholders (e.g. "$IRS_ADAPTER_ENABLED") that start-nginx.sh replaces at
+// container start. A plain string comparison would be constant-folded by the minifier at build time, so a regex is
+// used to keep the check at runtime. Unreplaced placeholders fall back to the default.
+const parseBoolean = (value: string | undefined, defaultValue: boolean): boolean => {
+    if (value === undefined || /^\$/.test(value.trim())) return defaultValue;
+    return /^true$/i.test(value.trim());
+};
+
 const app = {
     APP_NAME: import.meta.env.VITE_APP_NAME.trim() as string,
     BACKEND_BASE_URL: import.meta.env.VITE_BACKEND_BASE_URL.trim() as string,
@@ -34,6 +42,10 @@ const app = {
     ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS: import.meta.env.VITE_ENDPOINT_UPDATE_REPORTED_MATERIAL_STOCKS.trim() as string,
     ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS: import.meta.env.VITE_ENDPOINT_UPDATE_REPORTED_PRODUCT_STOCKS.trim() as string,
     ENDPOINT_ERP_SCHEDULE_UPDATE: import.meta.env.VITE_ENDPOINT_ERP_SCHEDULE_UPDATE.trim() as string,
+    ENDPOINT_IRS_ROOT_GRANTS: import.meta.env.VITE_ENDPOINT_IRS_ROOT_GRANTS.trim() as string,
+    ENDPOINT_IRS_PARTNER_GRANTS: import.meta.env.VITE_ENDPOINT_IRS_PARTNER_GRANTS.trim() as string,
+    ENDPOINT_IRS_JOBS: import.meta.env.VITE_ENDPOINT_IRS_JOBS.trim() as string,
+    ENDPOINT_IRS_REQUESTS: import.meta.env.VITE_ENDPOINT_IRS_REQUESTS.trim() as string,
     ENDPOINT_PARTNER: import.meta.env.VITE_ENDPOINT_PARTNER.trim() as string,
     ENDPOINT_DEMAND: import.meta.env.VITE_ENDPOINT_DEMAND.trim() as string,
     ENDPOINT_PRODUCTION: import.meta.env.VITE_ENDPOINT_PRODUCTION.trim() as string,
@@ -44,6 +56,7 @@ const app = {
     ENDPOINT_IMPORT_FILES: import.meta.env.VITE_ENDPOINT_IMPORT_FILES.trim() as string,
     ENDPOINT_ALL_MATERIALS: import.meta.env.VITE_ENDPOINT_ALL_MATERIALS.trim() as string,
     GENERATE_MATERIAL_CATENAX_ID: (import.meta.env.VITE_GENERATE_MATERIAL_CATENAX_ID ?? "true").trim() === "true",
+    IRS_ADAPTER_ENABLED: parseBoolean(import.meta.env.VITE_IRS_ADAPTER_ENABLED, false),
     ENDPOINT_ALL_PARTNERS: import.meta.env.VITE_ENDPOINT_ALL_PARTNERS.trim() as string,
     ENDPOINT_MATERIAL_PARTNER_RELATIONS: import.meta.env.VITE_ENDPOINT_MATERIAL_PARTNER_RELATIONS.trim() as string,
     ENDPOINT_PARTNER_DATA_UPDATE_BATCH: import.meta.env.VITE_ENDPOINT_PARTNER_DATA_UPDATE_BATCH.trim() as string,

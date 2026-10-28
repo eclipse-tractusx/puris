@@ -13,11 +13,19 @@ The **need for configuration updates** is **marked bold**
 
 ## Added
 
-- Added EDC asset and endpoint for DigitalTwinEventAPI ([#1260](https://github.com/eclipse-tractusx/puris/pull/1260))
-- Added logic for connect to child notifications ([#1267](https://github.com/eclipse-tractusx/puris/pull/1267))
-- Added SingleLevelUsageAsPlanned SAMM and asset implementation ([#1268](https://github.com/eclipse-tractusx/puris/pull/1268))
-- Added bruno tests and unit test for Connect to Child feature ([#1270](https://github.com/eclipse-tractusx/puris/pull/1270))
-- Added bruno tests for SingleLevelUsageAsPlanned ([#1274](https://github.com/eclipse-tractusx/puris/pull/1274))
+- Added IRS Adapter View
+  - Added Irs jobs controller for getting all jobs and unit tests for the same ([#1250](https://github.com/eclipse-tractusx/puris/pull/1250))
+  - Added controller for irs queue requests ([#1251](https://github.com/eclipse-tractusx/puris/pull/1251))
+  - Added controller for irs root and partner grants ([#1252](https://github.com/eclipse-tractusx/puris/pull/1252))
+  - Added new sidebar item "IRS Integration" with four data tables for root grants, partner grants, jobs and requests ([#1261](https://github.com/eclipse-tractusx/puris/pull/1261))
+  - Added actions inside of the "IRS Integration" for adding new jobs and retrying failed requests ([#1266](https://github.com/eclipse-tractusx/puris/pull/1266))
+  - Added documentation for configuring and using IRS adapter ([#1273](https://github.com/eclipse-tractusx/puris/pull/1273))
+- Added initial DigitalTwinEventAPI Implementation
+  - Added EDC asset and endpoint for DigitalTwinEventAPI ([#1260](https://github.com/eclipse-tractusx/puris/pull/1260))
+  - Added logic for connect to child notifications ([#1267](https://github.com/eclipse-tractusx/puris/pull/1267))
+  - Added SingleLevelUsageAsPlanned SAMM and asset implementation ([#1268](https://github.com/eclipse-tractusx/puris/pull/1268))
+  - Added bruno tests and unit test for Connect to Child feature ([#1270](https://github.com/eclipse-tractusx/puris/pull/1270))
+  - Added bruno tests for SingleLevelUsageAsPlanned ([#1274](https://github.com/eclipse-tractusx/puris/pull/1274))
 
 ### Changed
 
@@ -30,6 +38,8 @@ The **need for configuration updates** is **marked bold**
 - Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
 - Fix and allow multiple valid contracts to exist for an asset negotiation ([#1247](https://github.com/eclipse-tractusx/puris/pull/1247))
 - Allow creating Root Data Exchange Request for notification with forwarded requests ([#1249](https://github.com/eclipse-tractusx/puris/pull/1249))
+- Fix grant sync failing when second approval with the same notification reference arrives ([#1271](https://github.com/eclipse-tractusx/puris/pull/1271))
+- Fix multiple customers now use the same partner material number instead of registering duplicates ([#1272](https://github.com/eclipse-tractusx/puris/pull/1272))
 
 ### Version Bumps
 

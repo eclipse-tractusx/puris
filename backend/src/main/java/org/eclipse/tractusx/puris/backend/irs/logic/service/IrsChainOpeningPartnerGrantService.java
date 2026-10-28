@@ -18,7 +18,9 @@
  */
 package org.eclipse.tractusx.puris.backend.irs.logic.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -138,6 +140,10 @@ public class IrsChainOpeningPartnerGrantService {
 		return queuedRequest;
 	}
 
+	public List<IrsChainOpeningPartnerGrant> findAll() {
+		return irsChainOpeningPartnerGrantRepository.findAll();
+	}
+
 	/**
 	 * Creates or updates a Chain Opening Grant for the partner, for each material affected by the
 	 * notification behind the given approval. Invoked once we've successfully sent this approval to
@@ -151,11 +157,12 @@ public class IrsChainOpeningPartnerGrantService {
 		if (notification.getMaterials() == null) {
 			return;
 		}
+		List<ReportedDataExchangeRequest> triggeringRequests = resolveApprovedRequests(notification, triggeringRequest);
 		for (Material material : notification.getMaterials()) {
 			if (material == null || material.getMaterialNumberCx() == null) {
 				continue;
 			}
-			syncGrant(notification, triggeringRequest, material);
+			syncGrant(notification, triggeringRequests, material);
 		}
 	}
 
@@ -190,19 +197,20 @@ public class IrsChainOpeningPartnerGrantService {
 	 * @param updated  the notification's state after the update
 	 */
 	public void onReportedNotificationUpdated(ReportedDemandAndCapacityNotification updated) {
-		OwnDataExchangeRequest forwardedRequest = ownDataExchangeRequestRepository.findByNotification_Uuid(updated.getUuid()).orElse(null);
-		if (forwardedRequest == null) {
-			return;
-		}
-		ReportedDataExchangeRequest triggeringRequest = forwardedRequest.getRelatedDataExchangeRequest();
-		if (triggeringRequest == null) {
-			return;
-		}
-		OwnDataExchangeApproval sentApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggeringRequest.getUuid());
-		if (sentApproval == null) {
-			return;
-		}
-		createGrantsForApproval(sentApproval);
+		Set<UUID> syncedNotificationUuids = new HashSet<>();
+		for (OwnDataExchangeRequest forwardedRequest : ownDataExchangeRequestRepository.findAllByNotification_Uuid(updated.getUuid())) {
+			ReportedDataExchangeRequest triggeringRequest = forwardedRequest.getRelatedDataExchangeRequest();
+			if (triggeringRequest == null) {
+				continue;
+			}
+			OwnDataExchangeApproval sentApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggeringRequest.getUuid());
+			if (sentApproval == null) {
+				continue;
+			}
+			if (syncedNotificationUuids.add(triggeringRequest.getNotification().getUuid())) {
+				createGrantsForApproval(sentApproval);
+			}
+ 		}
 	}
 
 	/**
@@ -232,22 +240,42 @@ public class IrsChainOpeningPartnerGrantService {
 		if (currentMaterialCxIds.isEmpty()) {
 			return;
 		}
-		ReportedDataExchangeRequest triggeringRequest = reportedDataExchangeRequestRepository.findByNotification_Uuid(updated.getUuid()).orElse(null);
-		if (triggeringRequest == null) {
+		List<ReportedDataExchangeRequest> triggeringRequests = resolveApprovedRequests(updated, null);
+		if (triggeringRequests.isEmpty()) {
+ 			// No approval sent yet for this notification - nothing to create prematurely.
 			return;
-		}
-		OwnDataExchangeApproval sentApproval = ownDataExchangeApprovalService.findByDataExchangeRequest_Uuid(triggeringRequest.getUuid());
-		if (sentApproval == null) {
-			// No approval sent yet for this notification - nothing to create prematurely.
-			return;
-		}
+ 		}
 		for (String cx : currentMaterialCxIds) {
 			Material material = materialService.findByMaterialNumberCx(cx);
 			if (material == null) {
 				continue;
 			}
-			syncGrant(updated, triggeringRequest, material);
+			syncGrant(updated, triggeringRequests, material);
 		}
+	}
+
+	/**
+	 * Resolves the incoming requests for the notification that we have approved.
+	 * A notification can have several incoming requests, and a grant is keyed by
+	 * partner, material and disruption rather than by request. All of the approved requests therefore have to feed it,
+	 * otherwise the grant would be recomputed from whichever request triggered the sync last.
+	 *
+	 * @param notification    the own notification the requests refer to
+	 * @param approvedRequest a request known to be approved, e.g. the one of the approval that was just sent; may be {@code null}
+	 */
+	private List<ReportedDataExchangeRequest> resolveApprovedRequests(OwnDemandAndCapacityNotification notification, ReportedDataExchangeRequest approvedRequest) {
+		List<ReportedDataExchangeRequest> approvedRequests = new ArrayList<>();
+		if (approvedRequest != null) {
+			approvedRequests.add(approvedRequest);
+		}
+		for (OwnDataExchangeApproval approval : ownDataExchangeApprovalService.findAllByDataExchangeRequest_Notification_Uuid(notification.getUuid())) {
+			ReportedDataExchangeRequest request = approval.getDataExchangeRequest();
+			boolean alreadyIncluded = approvedRequests.stream().anyMatch(included -> Objects.equals(included.getUuid(), request.getUuid()));
+			if (!alreadyIncluded) {
+ 				approvedRequests.add(request);
+ 			}
+		}
+		return approvedRequests;
 	}
 
 	private static Set<String> affectedMaterialCxIds(OwnDemandAndCapacityNotification notification) {
@@ -268,7 +296,7 @@ public class IrsChainOpeningPartnerGrantService {
 	 * partner grants have many-to-one fan-in from multiple {@link OwnDataExchangeRequest}s and only
 	 * a recompute-and-diff can also correctly shrink the set.
 	 */
-	private void syncGrant(OwnDemandAndCapacityNotification ownNotification, ReportedDataExchangeRequest triggeringRequest, Material material) {
+	private void syncGrant(OwnDemandAndCapacityNotification ownNotification, List<ReportedDataExchangeRequest> triggeringRequests, Material material) {
 		String requesterBpn = ownNotification.getPartner().getBpnl();
 		String globalAssetId = material.getMaterialNumberCx();
 		String sourceDisruptionId = ownNotification.getSourceDisruptionId().toString();
@@ -294,7 +322,7 @@ public class IrsChainOpeningPartnerGrantService {
 
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 		Set<ReportedDemandAndCapacityNotification> candidateNotifications =
-			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now);
+			resolveCandidateNotifications(triggeringRequests, childMaterialNumbers, now);
 
 		boolean changed = IrsChainOpeningGrantSyncUtils.reconcile(grant, candidateNotifications);
 
@@ -339,10 +367,9 @@ public class IrsChainOpeningPartnerGrantService {
 	 * notification set ({@link #syncGrant}) and to re-verify it at push time ({@link #assertGrantEligible}).
 	 */
 	private Set<ReportedDemandAndCapacityNotification> resolveCandidateNotifications(
-			ReportedDataExchangeRequest triggeringRequest, Set<String> childMaterialNumbers, Date now) {
-		return ownDataExchangeRequestRepository.findAllByRelatedDataExchangeRequest_Uuid(triggeringRequest.getUuid()).stream()
-			.map(forwardedRequest -> reportedDataExchangeApprovalService.findByDataExchangeRequest_Uuid(forwardedRequest.getUuid()))
-			.filter(Objects::nonNull)
+			List<ReportedDataExchangeRequest> approvedRequests, Set<String> childMaterialNumbers, Date now) {
+		return approvedRequests.stream()
+			.flatMap(approvedRequest -> reportedDataExchangeApprovalService.findAllByDataExchangeRequest_RelatedDataExchangeRequest_Uuid(approvedRequest.getUuid()).stream())
 			.map(approval -> approval.getDataExchangeRequest().getNotification())
 			.filter(notification -> DemandAndCapacityNotificationService.isNotificationActiveNow(notification, now))
 			.filter(notification -> notification.getMaterials() != null && notification.getMaterials().stream()
@@ -382,10 +409,8 @@ public class IrsChainOpeningPartnerGrantService {
 					+ "partnerBpnl, validity bounds and affected material.");
 		}
 
-		ReportedDataExchangeRequest triggeringRequest = reportedDataExchangeRequestRepository
-			.findByNotification_Uuid(matchingNotification.getUuid())
-			.orElse(null);
-		if (triggeringRequest == null) {
+		List<ReportedDataExchangeRequest> approvedRequests = reportedDataExchangeRequestRepository.findAllByNotification_Uuid(matchingNotification.getUuid());
+		if (approvedRequests.isEmpty()) {
 			log.error("No incoming request found for notification {} while checking grant eligibility", matchingNotification.getUuid());
 			throw new IllegalArgumentException(
 				"A chain opening grant requires an incoming data exchange request backing its matching own notification.");
@@ -399,8 +424,8 @@ public class IrsChainOpeningPartnerGrantService {
 		Set<String> childMaterialNumbers = materialRelationService.resolveChildOwnMaterialNumbers(material.getOwnMaterialNumber(), now);
 
 		List<ReportedDemandAndCapacityNotification> relatedReportedNotifications =
-			resolveCandidateNotifications(triggeringRequest, childMaterialNumbers, now).stream().toList();
+			resolveCandidateNotifications(approvedRequests, childMaterialNumbers, now).stream().toList();
 
-		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnls(), relatedReportedNotifications, childMaterialNumbers, now);
+		IrsChainOpeningGrantSyncUtils.assertAllowedBpnlsEligible(grant.getAllowedBpnlSet(), relatedReportedNotifications, childMaterialNumbers, now);
 	}
 }
