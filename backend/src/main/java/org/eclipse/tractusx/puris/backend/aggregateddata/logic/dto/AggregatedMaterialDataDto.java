@@ -18,7 +18,6 @@ SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.aggregateddata.logic.dto;
 
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import jakarta.validation.constraints.Pattern;
-
 
 @Getter
 @Setter

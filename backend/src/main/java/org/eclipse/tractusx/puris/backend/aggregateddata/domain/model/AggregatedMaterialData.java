@@ -42,7 +42,6 @@ import lombok.Setter;
 import lombok.ToString;
 import jakarta.validation.constraints.Pattern;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
