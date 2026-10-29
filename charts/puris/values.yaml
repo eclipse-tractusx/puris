@@ -517,6 +517,9 @@ backend:
     dataexchangerequestapi:
       # -- Asset ID for Data Exchange Request API
       apiassetid: dataexchangerequestapi-api-asset
+    irsrecursivenotification:
+      # -- Asset ID for IRS Recursive Notification API
+      apiassetid: irsrecursivenotification-api-asset
     digitaltwineventapi:
       # -- Asset ID for Digital Twin Event API
       apiassetid: digitaltwineventapi-api-asset
@@ -597,6 +600,8 @@ backend:
     irsadapter:
       # -- Toggles usage of the IRS adapter
       enabled: false
+      # -- Registers the EDC asset for the IRS recursive notification API, so that IRS instances of all Catena-X members can send recursive requests to your IRS.
+      registerasset: true
       # -- Base URL of the external IRS service. Must contain protocol (http/https).
       url: https://my-irs-url:8080
       # -- Header key used for IRS API authentication.

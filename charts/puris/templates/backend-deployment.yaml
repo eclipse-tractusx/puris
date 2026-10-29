@@ -185,6 +185,8 @@ spec:
               value: "{{ .Values.backend.puris.notification.apiassetid }}"
             - name: PURIS_DATAEXCHANGEREQUESTAPI_APIASSETID
               value: "{{ .Values.backend.puris.dataexchangerequestapi.apiassetid }}"
+            - name: PURIS_IRSRECURSIVENOTIFICATION_APIASSETID
+              value: "{{ .Values.backend.puris.irsrecursivenotification.apiassetid }}"
             - name: PURIS_DIGITALTWINEVENTAPI_APIASSETID
               value: "{{ .Values.backend.puris.digitaltwineventapi.apiassetid }}"
             - name: PURIS_FRAMEWORKAGREEMENT_CREDENTIAL
@@ -237,6 +239,8 @@ spec:
             {{- if and .irsadapter .irsadapter.enabled .irsadapter.url .irsadapter.adminauthsecret }}
             - name: PURIS_IRSADAPTER_ENABLED
               value: "{{ .irsadapter.enabled }}"
+            - name: PURIS_IRSADAPTER_REGISTERASSET
+              value: "{{ .irsadapter.registerasset }}"
             - name: PURIS_IRSADAPTER_URL
               value: "{{ .irsadapter.url }}"
             - name: PURIS_IRSADAPTER_AUTHKEY

@@ -241,7 +241,7 @@ public class EdcRequestBodyBuilder {
         PolicyProfileVersionEnumeration profileVersion = variablesService.getEdcProfileVersion();
 
         JsonNode body = buildPolicy(
-            "irs_recursive_access_policy",
+            "membership_only_access_policy",
             List.of(buildMembershipConstraint(profileVersion)),
             getAccessPolicyAction(profileVersion),
             profileVersion
@@ -334,7 +334,7 @@ public class EdcRequestBodyBuilder {
         );
     }
 
-    public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
+    public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId + "_" + partner.getPolicyProfileVersion().getValue());
         body.put("accessPolicyId", getBpnPolicyId(partner));
@@ -371,7 +371,7 @@ public class EdcRequestBodyBuilder {
     public JsonNode buildRecursiveIrsNotificationContractDefinition() {
         var body = getEdcContextObject();
         body.put("@id", "irs_recursive_contract_definition");
-        body.put("accessPolicyId", "irs_recursive_access_policy");
+        body.put("accessPolicyId", "membership_only_access_policy");
         body.put("contractPolicyId", "irs_contract_policy");
         var assetsSelector = MAPPER.createObjectNode();
         body.set("assetsSelector", assetsSelector);
@@ -593,7 +593,6 @@ public class EdcRequestBodyBuilder {
         body.set("dataAddress", createDataAddressObject(
             getRecursiveIrsNotificationEndpoint(),
             "true",
-            "false",
             irsAdapterConfiguration.getIrsAdapterAuthKey(),
             irsAdapterConfiguration.getIrsAdapterAuthSecret()
         ));
@@ -613,31 +612,30 @@ public class EdcRequestBodyBuilder {
     }
 
     /**
-     * Creates the data address of an asset served by this application: additional path segments are forwarded
-     * and requests are authenticated with this application's API key.
+     * Creates the data address of an asset served by this application, authenticated with this application's
+     * API key.
      *
      * @param endpoint           the base url of the asset
      * @param proxyMethodAndBody whether the http method and body are forwarded ("true" or "false")
      * @return the data address
      */
     public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {
-        return createDataAddressObject(endpoint, proxyMethodAndBody, "true", "x-api-key", variablesService.getApiKey());
+        return createDataAddressObject(endpoint, proxyMethodAndBody, "x-api-key", variablesService.getApiKey());
     }
 
     /**
-     * Creates the data address of an asset.
+     * Creates the data address of an asset. Additional path segments are forwarded, query parameters are not.
      *
      * @param endpoint           the base url of the asset
      * @param proxyMethodAndBody whether the http method and body are forwarded ("true" or "false")
-     * @param proxyPath          whether additional path segments are forwarded ("true" or "false")
      * @param authKey            the name of the header used for authentication at the endpoint
      * @param authCode           the value of the header used for authentication at the endpoint
      * @return the data address
      */
-    public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody, String proxyPath, String authKey, String authCode) {
+    public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody, String authKey, String authCode) {
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
-        dataAddress.put("proxyPath", proxyPath);
+        dataAddress.put("proxyPath", "true");
         dataAddress.put("proxyQueryParams", "false");
         dataAddress.put("proxyMethod", proxyMethodAndBody);
         dataAddress.put("proxyBody", proxyMethodAndBody);

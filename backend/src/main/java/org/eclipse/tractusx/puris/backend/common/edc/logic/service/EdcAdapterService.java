@@ -368,7 +368,7 @@ public class EdcAdapterService {
     }
 
     private boolean createContractDefinitionForPartner(String assetId, Partner partner) {
-        var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
+        var body = edcRequestBodyBuilder.buildContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
                 if (response.code() == 409) {
@@ -571,10 +571,6 @@ public class EdcAdapterService {
             log.error("Failed to build the IRS recursive notification asset", e);
             return false;
         }
-        if (Objects.equals(irsAdapterConfiguration.getIrsAdapterAuthSecret(), irsAdapterConfiguration.getIrsAdapterAdminAuthSecret())) {
-            log.warn("The IRS recursive notification asset authenticates partner requests with the IRS admin key. "
-                + "Configure a separate non-admin key in puris.irsadapter.authsecret.");
-        }
         return sendAssetRegistrationRequest(body, variablesService.getIrsRecursiveNotificationApiAssetId());
     }
 
@@ -585,7 +581,7 @@ public class EdcAdapterService {
      *
      * @return true, if the policy definition was registered (or already existed) and the IRS policy was enqueued
      */
-        private boolean createRecursiveIrsNotificationContractPolicy() {
+    private boolean createRecursiveIrsNotificationContractPolicy() {
         JsonNode body = edcRequestBodyBuilder.buildRecursiveIrsNotificationContractPolicy();
         String policyId = body.get("@id").asText();
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
@@ -608,7 +604,7 @@ public class EdcAdapterService {
         }
     }
 
-        private boolean createRecursiveIrsNotificationContractDefinition() {
+    private boolean createRecursiveIrsNotificationContractDefinition() {
         var body = edcRequestBodyBuilder.buildRecursiveIrsNotificationContractDefinition();
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
