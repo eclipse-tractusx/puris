@@ -1,0 +1,14 @@
+meta {
+  name: 04-Setup self contract definitions (24.05)
+  seq: 4
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{OWN_EDC_API_KEY}}
+  placement: header
+}

@@ -1,0 +1,38 @@
+meta {
+  name: 04-Create IRS Recursive Contract Definition
+  type: http
+  seq: 4
+  tags: [
+    setup-anonymized-data
+  ]
+}
+
+post {
+  url: {{OWN_EDC}}/{{MANAGEMENT_PATH}}/v3/contractdefinitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "@id": "Manual_irs_recursive_contractdefinition_for_{{OWN_BPNL}}",
+      "@type": "ContractDefinition",
+      "accessPolicyId": "Manual_DTR_Membership_Access_Policy",
+      "contractPolicyId": "Manual_irs_recursive_contract_policy",
+      "assetsSelector" : {
+          "@type" : "CriterionDto",
+          "operandLeft": "https://w3id.org/edc/v0.0.1/ns/id",
+          "operator": "=",
+          "operandRight": "manual_irs-recursive-notification-asset"
+      }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

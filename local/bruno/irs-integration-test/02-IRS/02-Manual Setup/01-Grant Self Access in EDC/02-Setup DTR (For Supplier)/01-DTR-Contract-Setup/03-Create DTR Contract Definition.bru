@@ -1,0 +1,35 @@
+meta {
+  name: 03-Create DTR Contract Definition
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{OWN_EDC}}/{{MANAGEMENT_PATH}}/v3/contractdefinitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "@id": "{{OWN_BPNL}}_contractdefinition_for_dtr",
+      "@type": "ContractDefinition",
+      "accessPolicyId": "{{OWN_BPNL}}_access_policy",
+      "contractPolicyId": "{{OWN_BPNL}}_contract_policy",
+      "assetsSelector" : {
+          "@type" : "CriterionDto",
+          "operandLeft": "https://w3id.org/edc/v0.0.1/ns/id",
+          "operator": "=",
+          "operandRight": "DigitalTwinRegistryId@{{OWN_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

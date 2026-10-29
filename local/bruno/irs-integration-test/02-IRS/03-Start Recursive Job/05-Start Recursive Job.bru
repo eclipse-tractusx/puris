@@ -1,0 +1,40 @@
+meta {
+  name: 05-Start Recursive Job
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{OWN_IRS_URL}}/irs/recursive/jobs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "openingId": "{{OPENING_ID}}",
+    "useCase": "{{USE_CASE}}",
+    "globalAssetId": "{{PRODUCT_CX_MATERIAL_NUMBER}}",
+    "bomLifecycle": "{{BOM_LIFECYCLE}}",
+    "collectRootSubmodels": true,
+    "requesterBpn": "{{OWN_BPNL}}",
+    "ttl": "PT30M"
+  }
+}
+
+tests {
+  test("Status code is 201", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Save job id", function () {
+    var body = res.getBody();
+    expect(body.jobId).to.be.ok;
+    bru.setVar("JOB_ID", body.jobId);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

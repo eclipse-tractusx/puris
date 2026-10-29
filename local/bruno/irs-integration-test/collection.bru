@@ -1,0 +1,62 @@
+vars:pre-request {
+  ASSET_ID: ASSET_1
+  ACCESS_POLICY_ID: ACCESS_POLICY_1
+  CONTRACT_POLICY_ID: FW_POL_1
+  CONTRACT_DEFINITION_ID: CONTRACT_DEF_1
+  EDC_NAMESPACE: https://w3id.org/edc/v0.0.1/ns/
+  CONTRACT_OFFER_ID: 
+  CATALOG_OFFER: 
+  CATALOG_OFFER_ID: 
+  NEGOTIATION_ID: 
+  CONTRACT_AGREEMENT_ID: 
+  TRANSFER_ID: 
+  TRANSFER_PROCESS_ID: 
+  EDR_AUTH: 
+  BPNL_GROUP: SUPPLIER-1
+
+
+  OPENING_ID: opening-test-001
+  USE_CASE: PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE
+  BOM_LIFECYCLE: asPlanned
+  ALLOWED_BPNL_2: BPNL000000000002
+}
+
+script:pre-request {
+  bru.setEnvVar("CUSTOMER_POLICY_PROFILE_VERSION", "profile2509");
+  bru.setEnvVar("SUPPLIER_POLICY_PROFILE_VERSION", "profile2509");
+  const customerProfileVersion = bru.getEnvVar("CUSTOMER_POLICY_PROFILE_VERSION");
+  const supplierProfileVersion = bru.getEnvVar("SUPPLIER_POLICY_PROFILE_VERSION");
+
+  const policyProfileVersionMapping = {
+    "profile2405": {
+      namespace: "https://w3id.org/catenax/policy/",
+      operator: "eq",
+      action: "odrl:use",
+      businessPartnerNumberRightOperand: "tx:BusinessPartnerNumber"
+    },
+    "profile2509": {
+      namespace: "https://w3id.org/catenax/2025/9/policy/",
+      operator: "isAnyOf",
+      action: "cx-policy:access",
+      businessPartnerNumberRightOperand: "cx-policy:BusinessPartnerNumber"
+    }
+
+  };
+  
+  // in case of mixed versions, use the older version for compatibility
+  const commonVersion = (customerProfileVersion === supplierProfileVersion) ? customerProfileVersion : "profile2405";
+
+  bru.setVar("CUSTOMER_POLICY_NAMESPACE", policyProfileVersionMapping[customerProfileVersion].namespace)
+  bru.setVar("CUSTOMER_POLICY_OPERATOR", policyProfileVersionMapping[customerProfileVersion].operator)
+  bru.setVar("CUSTOMER_POLICY_ACTION", policyProfileVersionMapping[customerProfileVersion].action)
+  bru.setVar("SUPPLIER_POLICY_NAMESPACE", policyProfileVersionMapping[supplierProfileVersion].namespace)
+  bru.setVar("SUPPLIER_POLICY_OPERATOR", policyProfileVersionMapping[supplierProfileVersion].operator)
+  bru.setVar("SUPPLIER_POLICY_ACTION", policyProfileVersionMapping[supplierProfileVersion].action)
+  bru.setVar("SUPPLIER_BPN_RIGHTOPERAND", policyProfileVersionMapping[supplierProfileVersion].businessPartnerNumberRightOperand)
+  bru.setVar("COMMON_POLICY_PROFILE_VERSION", commonVersion)
+  bru.setVar("COMMON_POLICY_NAMESPACE", policyProfileVersionMapping[commonVersion].namespace)
+  bru.setVar("COMMON_POLICY_OPERATOR", policyProfileVersionMapping[commonVersion].operator)
+}
+vars:pre-request {
+  EDC_NAMESPACE: https://w3id.org/edc/v0.0.1/ns/
+}

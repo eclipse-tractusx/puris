@@ -1,0 +1,43 @@
+meta {
+  name: 02-Create IRS Recursive Access Policy
+  type: http
+  seq: 2
+  tags: [
+    setup-anonymized-data
+  ]
+}
+
+post {
+  url: {{OWN_EDC}}/{{MANAGEMENT_PATH}}/v3/policydefinitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context" : [ "http://www.w3.org/ns/odrl.jsonld", {
+      "edc" : "https://w3id.org/edc/v0.0.1/ns/",
+      "cx-policy" : "{{CUSTOMER_POLICY_NAMESPACE}}"
+    } ],
+    "@type" : "PolicyDefinitionRequestDto",
+    "@id" : "Manual_DTR_Membership_Access_Policy",
+    "edc:policy" : {
+      "@type" : "Set",
+      "permission" : [ {
+        "action" : "{{CUSTOMER_POLICY_ACTION}}",
+        "constraint" : {
+          "@type" : "LogicalConstraint",
+            "leftOperand" : "cx-policy:Membership",
+            "operator" : "eq",
+            "rightOperand" : "active"
+        }
+      } ]
+    }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

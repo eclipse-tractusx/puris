@@ -1,0 +1,14 @@
+meta {
+  name: 02-IRS
+  seq: 3
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{OWN_IRS_ADMIN_API_KEY}}
+  placement: header
+}

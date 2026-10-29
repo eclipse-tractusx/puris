@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "IRS - INT Integration Seeding",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

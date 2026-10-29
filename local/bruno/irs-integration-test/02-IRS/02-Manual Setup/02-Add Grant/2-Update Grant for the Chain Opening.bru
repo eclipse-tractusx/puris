@@ -1,0 +1,36 @@
+meta {
+  name: 2-Update Grant for the Chain Opening
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{OWN_IRS_URL}}/irs/recursive/chain-openings/grants
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "openingId": "opening-test-001",
+      "useCase": "PURIS_ITEM_STOCK_ANONYMIZED_RECURSIVE",
+      "allowedBpnlSet": [
+        "BPNL00000000015G",
+        "BPNL00000000043D",
+        "BPNL00000000061Z",
+        "BPNL00000000024R",
+        "BPNL00000000052O",
+        "BPNL00000000071A",
+        "BPNL000000000342"
+      ],
+      "requesterBpn": "BPNL000000000065",
+      "validFrom": "2026-04-28T00:00:00Z",
+      "validTo": "2026-12-31T23:59:59Z",
+      "globalAssetId": "{{PRODUCT_CX_MATERIAL_NUMBER}}"
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

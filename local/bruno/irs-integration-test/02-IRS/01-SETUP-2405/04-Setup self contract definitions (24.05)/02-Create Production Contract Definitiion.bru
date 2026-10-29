@@ -1,0 +1,38 @@
+meta {
+  name: 02-Create Production Contract Definitiion
+  type: http
+  seq: 2
+  tags: [
+    setup-anonymized-data
+  ]
+}
+
+post {
+  url: {{OWN_EDC}}/{{MANAGEMENT_PATH}}/v3/contractdefinitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "@id": "Manual_AnonymizedProductionContractDefinition_for_{{OWN_BPNL}}",
+      "@type": "ContractDefinition",
+      "accessPolicyId": "{{OWN_BPNL}}_policy",
+      "contractPolicyId": "Contract_Policy_for_Profile_2405",
+      "assetsSelector" : {
+          "@type" : "CriterionDto",
+          "operandLeft": "{{EDC_NAMESPACE}}id",
+          "operator": "=",
+          "operandRight": "productionanonymizedsubmodel-api-asset@{{OWN_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,31 @@
+meta {
+  name: 5-Create Material Partner Relation
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{OWN_PURIS_BACKEND}}/catena/materialpartnerrelations
+  body: json
+  auth: none
+}
+
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+    "partnerBpnl": "{{SUPPLIER_BPNL}}",
+    "ownMaterialNumber": "{{MATERIAL_OWN_MATERIAL_NUMBER}}",
+    "partnerMaterialNumber": "{{MATERIAL_SUPPLIER_MATERIAL_NUMBER}}",
+    "partnerSuppliesMaterial": true,
+    "partnerBuysMaterial": false
+  }
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+}

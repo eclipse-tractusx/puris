@@ -1,0 +1,22 @@
+meta {
+  name: 06-Get Recursive Job
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{OWN_IRS_URL}}/irs/recursive/jobs/{{JOB_ID}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("Status code is 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

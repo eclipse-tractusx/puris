@@ -1,0 +1,99 @@
+meta {
+  name: 01-Delete All Policies
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{OWN_IRS_URL}}/irs/policies/paged?size=1000
+  body: none
+  auth: inherit
+}
+
+params:query {
+  size: 1000
+}
+
+body:json {
+  {
+    "businessPartnerNumber": "BPNL00000000043D",
+    "payload": {
+      "@context": {
+        "odrl": "http://www.w3.org/ns/odrl/2/",
+        "edc": "https://w3id.org/tractusx/policy/v1.0.0",
+        "cx-policy": "https://w3id.org/catenax/policy/"
+      },
+      "@id": "PURIS-Ceres-IRS-Default",
+      "@type": "PolicyDefinitionRequestDto",
+      "policy": {
+        "@type": "Policy",
+        "odrl:permission": [{
+          "odrl:action": "use",
+          "odrl:constraint": {
+            "odrl:and": [
+              {
+                "odrl:leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
+                "odrl:operator": {
+                  "@id": "odrl:eq"
+                },
+                "odrl:rightOperand": "DataExchangeGovernance:1.0"
+              },
+              {
+                "odrl:leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
+                "odrl:operator": {
+                  "@id": "odrl:eq"
+                },
+                "odrl:rightOperand": "cx.core.industrycore:1"
+              }
+            ]
+          }
+        }
+        ]
+      }
+    },
+    "validUntil": "2099-12-12T23:59:59.999Z"
+  }
+}
+
+script:post-response {
+  const data = res.getBody();
+  
+  if (data && Array.isArray(data.content)) {
+    // Extract all unique policyIds from the paged content result
+    const policyIds = data.content
+      .map(item => {
+        if (item.payload && item.payload.policy) {
+          return item.payload.policy.policyId;
+        }
+        return null;
+      })
+      .filter(id => id !== null);
+  
+    if (policyIds.length === 0) {
+      console.log("No existing policies found to delete.");
+    } else {
+      console.log(`Found ${policyIds.length} policies. Starting deletion loop...`);
+      
+      const OWN_IRS_URL = bru.getEnvVar("OWN_IRS_URL");
+      const OWN_IRS_ADMIN_API_KEY = bru.getEnvVar("OWN_IRS_ADMIN_API_KEY")
+      
+      // Iterate and fire delete calls to /irs/policies/{policyId}
+      policyIds.forEach((id) => {
+        axios({
+          method: 'delete',
+          url: `${OWN_IRS_URL}/irs/policies/${id}`,
+          headers: {
+            'X-API-KEY': OWN_IRS_ADMIN_API_KEY
+          }
+        })
+        .then(() => console.log(`Successfully deleted policy: ${id}`))
+        .catch((err) => console.error(`Failed to delete policy ${id}:`, err.message));
+      });
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

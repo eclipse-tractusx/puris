@@ -1,0 +1,38 @@
+meta {
+  name: 03-Create Stock Contract Definitiion
+  type: http
+  seq: 3
+  tags: [
+    setup-anonymized-data
+  ]
+}
+
+post {
+  url: {{OWN_EDC}}/{{MANAGEMENT_PATH}}/v3/contractdefinitions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "@context": {
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
+      },
+      "@id": "Manual_AnonymizedItemStockContractDefinition_for_{{OWN_BPNL}}",
+      "@type": "ContractDefinition",
+      "accessPolicyId": "{{OWN_BPNL}}_policy",
+      "contractPolicyId": "Contract_Policy_for_Profile_2405",
+      "assetsSelector" : {
+          "@type" : "CriterionDto",
+          "operandLeft": "{{EDC_NAMESPACE}}id",
+          "operator": "=",
+          "operandRight": "itemstockanonymizedsubmodel-api-asset@{{OWN_BPNL}}"
+      }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

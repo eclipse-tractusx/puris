@@ -1,0 +1,36 @@
+meta {
+  name: 7 - Create Material Relation
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{OWN_PURIS_BACKEND}}/catena/material-relations
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+body:json {
+  {
+      "parentOwnMaterialNumber": "{{PRODUCT_OWN_MATERIAL_NUMBER}}",
+      "childOwnMaterialNumber": "{{MATERIAL_OWN_MATERIAL_NUMBER}}",
+      "quantity": "{{PRODUCT_MATERIAL_BOM_QUANTITY}}",
+      "measurementUnit": "{{PRODUCT_MATERIAL_BOM_MEASUREMENT_UNIT}}"
+  }
+}
+
+script:post-response {
+  const uuid = res.getBody().uuid;
+  bru.setVar("MATERIAL_RELATION_ID", uuid)
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(201);
+  })
+}

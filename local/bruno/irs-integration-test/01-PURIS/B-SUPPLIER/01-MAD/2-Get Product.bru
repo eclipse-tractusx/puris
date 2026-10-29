@@ -1,0 +1,42 @@
+meta {
+  name: 2-Get Product
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{OWN_PURIS_BACKEND}}/catena/materials?ownMaterialNumber={{B64_MNR_OWN}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ownMaterialNumber: {{B64_MNR_OWN}}
+}
+
+headers {
+  X-Api-Key: {{OWN_PURIS_BACKEND_API_KEY}}
+}
+
+script:pre-request {
+  var plain = bru.getEnvVar("PRODUCT_OWN_MATERIAL_NUMBER")
+  var encoded = Buffer.from(plain).toString("base64")
+  bru.setVar("B64_MNR_OWN", encoded)
+}
+
+tests {
+  test("response is ok", function() {
+      expect(res.getStatus()).to.equal(200);
+  })
+  
+  test("Verify response contains one object", function () {
+      expect(res.getBody()).to.be.an("object");
+  });
+  
+  test("Verify ownMaterialNumber values", function () {
+      const responseJson = res.getBody();
+      expect(responseJson).to.have.property("ownMaterialNumber");
+      expect(responseJson.ownMaterialNumber).to.be.oneOf([bru.getEnvVar("PRODUCT_OWN_MATERIAL_NUMBER")]);
+  });
+  
+}

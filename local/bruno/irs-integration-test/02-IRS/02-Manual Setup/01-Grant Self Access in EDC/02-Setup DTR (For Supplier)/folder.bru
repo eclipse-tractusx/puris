@@ -1,0 +1,14 @@
+meta {
+  name: 02-Setup DTR (For Supplier)
+  seq: 2
+}
+
+auth {
+  mode: apikey
+}
+
+auth:apikey {
+  key: X-API-KEY
+  value: {{OWN_EDC_API_KEY}}
+  placement: header
+}

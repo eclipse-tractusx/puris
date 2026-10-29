@@ -1,0 +1,48 @@
+meta {
+  name: 01-Create IRS Recursive Asset
+  type: http
+  seq: 1
+  tags: [
+    setup-anonymized-data
+  ]
+}
+
+post {
+  url: {{OWN_EDC}}/{{MANAGEMENT_PATH}}/v3/assets
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "@context": {
+      "@vocab": "https://w3id.org/edc/v0.0.1/ns/",
+      "dct": "http://purl.org/dc/terms/",
+      "cx-common": "https://w3id.org/catenax/ontology/common#"
+    },
+    "@id": "manual_irs-recursive-notification-asset",
+    "@type": "Asset",
+    "properties": {
+      "dct:type": {
+        "@id": "https://w3id.org/catenax/taxonomy#RecursiveIrsNotificationApi"
+      },
+      // Didn´t add notificationType
+      "description": "IRS recursive notification endpoint",
+      "cx-common:version": "1.0"
+    },
+    "dataAddress": {
+      "type": "HttpData",
+      "baseUrl": "{{OWN_IRS_URL}}/irs/recursive/notifications",
+      "proxyMethod": "true",
+      "proxyBody": "true",
+      "authKey": "X-API-KEY",
+      "authCode": "{{OWN_IRS_ADMIN_API_KEY}}"
+    }
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

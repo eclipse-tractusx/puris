@@ -1,0 +1,61 @@
+meta {
+  name: 1-Accept (New) DTR Policy
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{OWN_IRS_URL}}/irs/policies
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "payload": {
+      "@context": {
+        "odrl": "http://www.w3.org/ns/odrl/2",
+        "edc": "https://w3id.org/edc/v0.0.1/ns/",
+        "cx-policy": "https://w3id.org/catenax/policy/"
+      },
+      "@type": "PolicyDefinitionRequestDto",
+      "@id": "global_dtr_contract_policy",
+      "policy": {
+        "@type": "Set",
+        "profile": "cx-policy:profile2405",
+        "odrl:permission": [
+          {
+            "odrl:action": "use",
+            "odrl:constraint": {
+              "@type": "LogicalConstraint",
+              "odrl:and": [
+                {
+                  "@type": "LogicalConstraint",
+                  "odrl:leftOperand": "https://w3id.org/catenax/policy/FrameworkAgreement",
+                  "odrl:operator": {
+                    "@id": "odrl:eq"
+                  },
+                  "odrl:rightOperand": "DataExchangeGovernance:1.0"
+                },
+                {
+                  "@type": "LogicalConstraint",
+                  "odrl:leftOperand": "https://w3id.org/catenax/policy/UsagePurpose",
+                  "odrl:operator": {
+                    "@id": "odrl:eq"
+                  },
+                  "odrl:rightOperand": "cx.core.digitalTwinRegistry:1"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "validUntil": "2099-12-12T23:59:59.999Z"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

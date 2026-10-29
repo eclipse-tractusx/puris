@@ -1,0 +1,36 @@
+meta {
+  name: 2-Search for Connector by BPN
+  type: http
+  seq: 2
+  tags: [
+    seed-discoveries
+  ]
+}
+
+post {
+  url: https://portal-backend.int.catena-x.net/api/administration/Connectors/discovery
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{BPN_DISCOVERY_BEARER_TOKEN}}
+}
+
+body:json {
+  [
+    "{{OWN_BPNL}}",
+    "BPNL00000000015G",
+    "BPNL00000000043D",
+    "BPNL00000000061Z",
+    "BPNL00000000024R",
+    "BPNL00000000052O",
+    "BPNL00000000071A",
+    "BPNL000000000342"
+  ]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
