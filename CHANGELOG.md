@@ -26,6 +26,7 @@ The **need for configuration updates** is **marked bold**
   - Added SingleLevelUsageAsPlanned SAMM and asset implementation ([#1268](https://github.com/eclipse-tractusx/puris/pull/1268))
   - Added bruno tests and unit test for Connect to Child feature ([#1270](https://github.com/eclipse-tractusx/puris/pull/1270))
   - Added bruno tests for SingleLevelUsageAsPlanned ([#1274](https://github.com/eclipse-tractusx/puris/pull/1274))
+  - Added Automatic IRS Contract Offering ([#1279](https://github.com/eclipse-tractusx/puris/pull/1279))
 
 ### Changed
 

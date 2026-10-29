@@ -185,6 +185,13 @@ public class VariablesService {
      */
     private String digitalTwinEventApiAssetId;
 
+    @Value("${puris.irsrecursivenotification.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the IRS recursive notification API
+     * during asset creation.
+     */
+    private String irsRecursiveNotificationApiAssetId;
+
     /**
      * The url under which this application's anonymized delivery information request endpoint can
      * be reached by external machines.
@@ -456,6 +463,10 @@ public class VariablesService {
 
     public String getDataExchangeRequestApiAssetId() {
         return dataExchangeRequestApi + "@" + ownBpnl;
+    }
+
+    public String getIrsRecursiveNotificationApiAssetId() {
+        return irsRecursiveNotificationApiAssetId + "@" + ownBpnl;
     }
 
     public String getDigitalTwinEventApiAssetId() {

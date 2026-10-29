@@ -26,10 +26,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.HttpUrl;
+
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
 import org.eclipse.tractusx.puris.backend.common.security.DtrSecurityConfiguration;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.PolicyProfileVersionEnumeration;
 import org.springframework.stereotype.Component;
@@ -44,17 +47,21 @@ import java.util.Map;
 @Component
 @Slf4j
 public class EdcRequestBodyBuilder {
+
     private final DtrSecurityConfiguration dtrSecurityConfig;
     private final VariablesService variablesService;
+    private final IrsAdapterConfiguration irsAdapterConfiguration;
     private final ObjectMapper MAPPER;
 
     public EdcRequestBodyBuilder(
             DtrSecurityConfiguration dtrSecurityConfig,
             VariablesService variablesService,
+            IrsAdapterConfiguration irsAdapterConfiguration,
             ObjectMapper MAPPER
     ) {
         this.dtrSecurityConfig = dtrSecurityConfig;
         this.variablesService = variablesService;
+        this.irsAdapterConfiguration = irsAdapterConfiguration;
         this.MAPPER = MAPPER;
     }
 
@@ -210,23 +217,52 @@ public class EdcRequestBodyBuilder {
             ));
         }
 
-        constraints.add(new PolicyConstraint(
-            profileVersion.CX_POLICY_NAMESPACE + "Membership",
-            "eq",
-            "active"
-        ));
+        constraints.add(buildMembershipConstraint(profileVersion));
 
         JsonNode body = buildPolicy(
             getBpnPolicyId(partner),
             constraints,
-            profileVersion.equals(PolicyProfileVersionEnumeration.POLICY_PROFILE_2509)
-                ? profileVersion.CX_POLICY_NAMESPACE + "access"
-                : JsonLdConstants.ODRL_NAMESPACE + "use",
+            getAccessPolicyAction(profileVersion),
             profileVersion
         );
         log.debug("Built bpn and membership access policy:\n{}", body.toPrettyString());
 
         return body;
+    }
+
+    /**
+     * Creates a request body for an access policy whose only requirement is a valid Catena-X membership
+     * credential. Unlike {@link #buildBpnAndMembershipRestrictedPolicy(Partner)}, there is no BPNL restriction,
+     * so every Catena-X member can see offers guarded by this policy in the catalog.
+     *
+     * @return the request body as a {@link JsonNode}
+     */
+    public JsonNode buildMembershipPolicy() {
+        PolicyProfileVersionEnumeration profileVersion = variablesService.getEdcProfileVersion();
+
+        JsonNode body = buildPolicy(
+            "membership_only_access_policy",
+            List.of(buildMembershipConstraint(profileVersion)),
+            getAccessPolicyAction(profileVersion),
+            profileVersion
+        );
+        log.debug("Built membership access policy:\n{}", body.toPrettyString());
+
+        return body;
+    }
+
+    private PolicyConstraint buildMembershipConstraint(PolicyProfileVersionEnumeration profileVersion) {
+        return new PolicyConstraint(
+            profileVersion.CX_POLICY_NAMESPACE + "Membership",
+            "eq",
+            "active"
+        );
+    }
+
+    private String getAccessPolicyAction(PolicyProfileVersionEnumeration profileVersion) {
+        return profileVersion == PolicyProfileVersionEnumeration.POLICY_PROFILE_2509
+            ? profileVersion.CX_POLICY_NAMESPACE + "access"
+            : JsonLdConstants.ODRL_NAMESPACE + "use";
     }
 
     /**
@@ -285,6 +321,19 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    /**
+     * Creates a request body in order to register the contract policy of the IRS recursive notification API
+     *
+     * @return the request body
+     */
+    public JsonNode buildRecursiveIrsNotificationContractPolicy() {
+        return buildFrameworkPolicy(
+            JsonLdConstants.INDUSTRY_CORE_USAGE_PURPOSE,
+            "irs_contract_policy",
+            PolicyProfileVersionEnumeration.POLICY_PROFILE_2405
+        );
+    }
+
     public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId + "_" + partner.getPolicyProfileVersion().getValue());
@@ -310,6 +359,26 @@ public class EdcRequestBodyBuilder {
         assetsSelector.put("operandLeft", JsonLdConstants.EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
         assetsSelector.put("operandRight", getDtrAssetId());
+        return body;
+    }
+
+    /**
+     * Creates the request body for the contract definition that offers the IRS recursive notification asset
+     * to every Catena-X member under the IRS recursive contract policy.
+     *
+     * @return the request body
+     */
+    public JsonNode buildRecursiveIrsNotificationContractDefinition() {
+        var body = getEdcContextObject();
+        body.put("@id", "irs_recursive_contract_definition");
+        body.put("accessPolicyId", "membership_only_access_policy");
+        body.put("contractPolicyId", "irs_contract_policy");
+        var assetsSelector = MAPPER.createObjectNode();
+        body.set("assetsSelector", assetsSelector);
+        assetsSelector.put("@type", "CriterionDto");
+        assetsSelector.put("operandLeft", JsonLdConstants.EDC_NAMESPACE + "id");
+        assetsSelector.put("operator", "=");
+        assetsSelector.put("operandRight", variablesService.getIrsRecursiveNotificationApiAssetId());
         return body;
     }
 
@@ -505,7 +574,65 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    /**
+     * Creates the request body for registering the asset of the IRS recursive notification API, through which
+     * the IRS instances of partners send recursive requests and responses to the own IRS.
+     * Partner IRS instances find the asset in the catalog by its {@code dct:type} and {@code cx-common:version}.
+     *
+     * @return the request body
+     */
+    public JsonNode buildRecursiveIrsNotificationRegistrationBody() {
+        var body = getAssetRegistrationContext();
+        body.put("@id", variablesService.getIrsRecursiveNotificationApiAssetId());
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:RecursiveIrsNotificationApi");
+        propertiesObject.put("cx-common:version", "1.0");
+        body.set("dataAddress", createDataAddressObject(
+            getRecursiveIrsNotificationEndpoint(),
+            "true",
+            irsAdapterConfiguration.getIrsAdapterAuthKey(),
+            irsAdapterConfiguration.getIrsAdapterAuthSecret()
+        ));
+        return body;
+    }
+
+    private String getRecursiveIrsNotificationEndpoint() {
+        String irsUrl = irsAdapterConfiguration.getIrsAdapterUrl();
+        HttpUrl irsBaseUrl = irsUrl == null ? null : HttpUrl.parse(irsUrl);
+        if (irsBaseUrl == null) {
+            throw new IllegalStateException("Invalid IRS base URL configuration: " + irsUrl);
+        }
+        return irsBaseUrl.newBuilder()
+            .addPathSegments(IrsAdapterConfiguration.RECURSIVE_NOTIFICATIONS_PATH)
+            .build()
+            .toString();
+    }
+
+    /**
+     * Creates the data address of an asset served by this application, authenticated with this application's
+     * API key.
+     *
+     * @param endpoint           the base url of the asset
+     * @param proxyMethodAndBody whether the http method and body are forwarded ("true" or "false")
+     * @return the data address
+     */
     public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {
+        return createDataAddressObject(endpoint, proxyMethodAndBody, "x-api-key", variablesService.getApiKey());
+    }
+
+    /**
+     * Creates the data address of an asset. Additional path segments are forwarded, query parameters are not.
+     *
+     * @param endpoint           the base url of the asset
+     * @param proxyMethodAndBody whether the http method and body are forwarded ("true" or "false")
+     * @param authKey            the name of the header used for authentication at the endpoint
+     * @param authCode           the value of the header used for authentication at the endpoint
+     * @return the data address
+     */
+    public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody, String authKey, String authCode) {
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
         dataAddress.put("proxyPath", "true");
@@ -514,8 +641,8 @@ public class EdcRequestBodyBuilder {
         dataAddress.put("proxyBody", proxyMethodAndBody);
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", endpoint);
-        dataAddress.put("authKey", "x-api-key");
-        dataAddress.put("authCode", variablesService.getApiKey());
+        dataAddress.put("authKey", authKey);
+        dataAddress.put("authCode", authCode);
         return dataAddress;
     }
 

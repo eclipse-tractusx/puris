@@ -123,4 +123,21 @@ class IrsRequestBodybuilderTest {
         assertThat(payload.get("@id").asText()).isEqualTo("dtr-framework-policy");
         assertThat(andArray.get(1).get("odrl:rightOperand").asText()).isEqualTo("cx.core.digitalTwinRegistry:1");
     }
+
+    // --- buildIrsFrameworkPolicyCreationRequestBody ---
+
+    @Test
+    void buildIrsFrameworkPolicyCreationRequestBody_UsesIrsPolicyIdAndIndustryCorePurpose() {
+        JsonNode payload = irsRequestBodybuilder.buildIrsFrameworkPolicyCreationRequestBody().get("payload");
+        JsonNode policy = payload.get("policy");
+        JsonNode andArray = policy.get("odrl:permission").get(0).get("odrl:constraint").get("odrl:and");
+
+        assertThat(payload.get("@id").asText()).isEqualTo("irs-framework-policy");
+        assertThat(policy.get("profile").asText()).isEqualTo("cx-policy:profile2405");
+        assertThat(andArray).hasSize(2);
+        assertThat(andArray.get(0).get("odrl:leftOperand").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE + "FrameworkAgreement");
+        assertThat(andArray.get(0).get("odrl:rightOperand").asText()).isEqualTo(FRAMEWORK_AGREEMENT_WITH_VERSION);
+        assertThat(andArray.get(1).get("odrl:leftOperand").asText()).isEqualTo(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405.CX_POLICY_NAMESPACE + "UsagePurpose");
+        assertThat(andArray.get(1).get("odrl:rightOperand").asText()).isEqualTo("cx.core.industrycore:1");
+    }
 }

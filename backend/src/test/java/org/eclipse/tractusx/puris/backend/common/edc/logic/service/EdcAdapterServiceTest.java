@@ -28,7 +28,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.MediaType;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
+import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsPolicyStoreService;
+import org.springframework.test.util.ReflectionTestUtils;
+import java.util.ArrayList;
+import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.DspProtocolVersionEnum;
 import org.eclipse.tractusx.puris.backend.common.edc.domain.model.JsonLdConstants;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService.DspaceVersionParams;
@@ -79,6 +90,12 @@ public class EdcAdapterServiceTest {
     @Mock
     private VariablesService variableService;
 
+    @Mock
+    private IrsAdapterConfiguration irsAdapterConfiguration;
+
+    @Mock
+    private IrsPolicyStoreService irsPolicyStoreService;
+
     private final JsonLdUtils jsonLdUtils = new JsonLdUtils();
 
     @BeforeEach
@@ -86,6 +103,7 @@ public class EdcAdapterServiceTest {
         edcRequestBodyBuilder = new EdcRequestBodyBuilder(
             new DtrSecurityConfiguration(),
             variablesService,
+            irsAdapterConfiguration,
             objectMapper
         );
 
@@ -96,6 +114,8 @@ public class EdcAdapterServiceTest {
             edcContractMappingService,
             jsonLdUtils
         );
+        ReflectionTestUtils.setField(edcAdapterService, "irsPolicyStoreService", irsPolicyStoreService);
+        ReflectionTestUtils.setField(edcAdapterService, "irsAdapterConfiguration", irsAdapterConfiguration);
 
         edcAdapterService = org.mockito.Mockito.spy(edcAdapterService);
     }
@@ -519,6 +539,124 @@ public class EdcAdapterServiceTest {
         assertEquals(expectedDspaceVerstionParams, firstCall);
         assertEquals(expectedDspaceVerstionParams, secondCall);
         verify(edcAdapterService, times(1)).sendPostRequest(any(), any());
+    }
+
+    @Test
+    public void irsAdapterDisabled_registerAssetsInitially_registersNothingForTheIrs() throws IOException {
+        // given
+        List<EdcRequest> requests = stubEdcManagementApi(200, Map.of());
+        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(false);
+
+        // when
+        boolean result = edcAdapterService.registerAssetsInitially();
+
+        // then
+        assertTrue(result);
+        assertThat(registeredIds(requests)).doesNotContain(IRS_RECURSIVE_REGISTRATION_IDS);
+        assertThat(requests).noneMatch(EdcAdapterServiceTest::isIrsRecursiveNotificationAsset);
+        verify(irsPolicyStoreService, never()).createIrsFrameworkPolicy();
+    }
+
+    @Test
+    public void irsAssetRegistrationDisabled_registerAssetsInitially_registersNothingForTheIrs() throws IOException {
+        // given
+        List<EdcRequest> requests = stubEdcManagementApi(200, Map.of());
+        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(true);
+        when(irsAdapterConfiguration.isIrsAdapterRegisterAsset()).thenReturn(false);
+
+        // when
+        boolean result = edcAdapterService.registerAssetsInitially();
+
+        // then
+        assertTrue(result);
+        assertThat(registeredIds(requests)).doesNotContain(IRS_RECURSIVE_REGISTRATION_IDS);
+        assertThat(requests).noneMatch(EdcAdapterServiceTest::isIrsRecursiveNotificationAsset);
+        verify(irsPolicyStoreService, never()).createIrsFrameworkPolicy();
+    }
+
+    @Test
+    public void irsAdapterEnabled_registerAssetsInitially_registersAssetPoliciesAndContractDefinition() throws IOException {
+        // given
+        List<EdcRequest> requests = stubEdcManagementApi(200, Map.of());
+        givenIrsAdapterEnabledWithAssetRegistration();
+
+        // when
+        boolean result = edcAdapterService.registerAssetsInitially();
+
+        // then
+        assertTrue(result);
+                   assertThat(requests).filteredOn(EdcAdapterServiceTest::isIrsRecursiveNotificationAsset)
+               .extracting(request -> request.body().path("@id").asText())
+               .containsExactly(IRS_ASSET_ID);
+        assertThat(registeredIds(requests, "v3/policydefinitions")).contains("membership_only_access_policy", "irs_contract_policy");
+        assertThat(registeredIds(requests, "v3/contractdefinitions"))
+            .contains("irs_recursive_contract_definition");
+        verify(irsPolicyStoreService, times(1)).createIrsFrameworkPolicy();
+    }
+
+    private static final String IRS_ASSET_ID = "irsrecursivenotification-api-asset@BPNL1234567890ZZ";
+
+    private static final String[] IRS_RECURSIVE_REGISTRATION_IDS = { "membership_only_access_policy", "irs_contract_policy", "irs_recursive_contract_definition" };
+
+    private record EdcRequest(String path, JsonNode body) {
+    }
+
+    /**
+     * Stubs the EDC management api for {@link EdcAdapterService#registerAssetsInitially()} and records all POST
+     * requests. A request is answered with the status code configured for the {@code @id} of its body, or with
+     * the default status code.
+     *
+     * @param defaultStatusCode the status code to answer with by default
+     * @param statusCodeById    status codes to answer with for specific {@code @id}s
+     * @return the recorded requests
+     */
+    private List<EdcRequest> stubEdcManagementApi(int defaultStatusCode, Map<String, Integer> statusCodeById) throws IOException {
+        when(variablesService.getEdcProfileVersion()).thenReturn(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405);
+        List<EdcRequest> requests = new ArrayList<>();
+        doAnswer(invocation -> {
+            JsonNode body = invocation.getArgument(0);
+            List<String> pathSegments = invocation.getArgument(1);
+            requests.add(new EdcRequest(String.join("/", pathSegments), body));
+            return response(statusCodeById.getOrDefault(body.path("@id").asText(), defaultStatusCode));
+        }).when(edcAdapterService).sendPostRequest(any(), any());
+        return requests;
+    }
+
+    private void givenIrsAdapterEnabledWithAssetRegistration() {
+        when(variablesService.getIrsRecursiveNotificationApiAssetId()).thenReturn(IRS_ASSET_ID);
+        when(irsAdapterConfiguration.isIrsAdapterEnabled()).thenReturn(true);
+        when(irsAdapterConfiguration.isIrsAdapterRegisterAsset()).thenReturn(true);
+        when(irsAdapterConfiguration.getIrsAdapterUrl()).thenReturn("https://irs.example.com");
+        when(irsAdapterConfiguration.getIrsAdapterAuthKey()).thenReturn("x-api-key");
+        when(irsAdapterConfiguration.getIrsAdapterAuthSecret()).thenReturn("irs-regular-secret");
+    }
+
+    private static List<String> registeredIds(List<EdcRequest> requests) {
+        return requests.stream()
+            .map(request -> request.body().path("@id").asText())
+            .toList();
+    }
+
+    private static List<String> registeredIds(List<EdcRequest> requests, String path) {
+        return requests.stream()
+            .filter(request -> request.path().equals(path))
+            .map(request -> request.body().path("@id").asText())
+            .toList();
+    }
+
+    private static boolean isIrsRecursiveNotificationAsset(EdcRequest request) {
+        return request.path().equals("v3/assets")
+            && "cx-taxo:RecursiveIrsNotificationApi".equals(request.body().path("properties").path("dct:type").path("@id").asText());
+    }
+
+    private static Response response(int code) {
+        return new Response.Builder()
+            .request(new Request.Builder().url("http://edc.example.com/management").build())
+            .protocol(Protocol.HTTP_1_1)
+            .code(code)
+            .message("HTTP " + code)
+            .body(ResponseBody.create("{}", MediaType.parse("application/json")))
+            .build();
     }
 
     private final static String unexpectedProhibition = "{\n" +
