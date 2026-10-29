@@ -80,6 +80,11 @@ while getopts "acbeilph" opt;do
   esac
 done
 
+if [ $int_seed -eq 1 ]; then
+  echo "Installing Bruno CLI from package-lock.json (npm ci)..."
+  npm ci --no-fund || { echo "npm ci failed. Is Node.js (>= 22.13) with npm installed? \nExiting..."; exit 1; }
+fi
+
 if [ $cleanup -eq 1 ]; then
   echo "Cleaning up previous installations and generating new keys..."
   sh cleanup.sh
