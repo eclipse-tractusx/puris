@@ -47,32 +47,8 @@ import java.util.Map;
 @Component
 @Slf4j
 public class EdcRequestBodyBuilder {
-    /**
-     * Taxonomy type of the IRS recursive notification API. Partner IRS instances look up the asset in the
-     * catalog by this {@code dct:type} together with {@link #RECURSIVE_IRS_NOTIFICATION_API_VERSION}.
-     */
-    public static final String RECURSIVE_IRS_NOTIFICATION_API_TYPE = JsonLdConstants.CX_TAXO_NAMESPACE + "RecursiveIrsNotificationApi";
 
-    /**
-     * Version ({@code cx-common:version}) of the IRS recursive notification API.
-     */
-    public static final String RECURSIVE_IRS_NOTIFICATION_API_VERSION = "1.0";
-
-    /**
-     * Id of the membership-only access policy definition of the IRS recursive notification asset.
-     */
-    public static final String RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID = "irs_recursive_access_policy";
-
-    /**
-     * Id of the contract policy definition of the IRS recursive notification asset.
-     */
-    public static final String RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID = "irs_contract_policy";
-
-    /**
-     * Id of the contract definition offering the IRS recursive notification asset.
-     */
-    public static final String RECURSIVE_IRS_NOTIFICATION_CONTRACT_DEFINITION_ID = "irs_recursive_contract_definition";
-        private final DtrSecurityConfiguration dtrSecurityConfig;
+    private final DtrSecurityConfiguration dtrSecurityConfig;
     private final VariablesService variablesService;
     private final IrsAdapterConfiguration irsAdapterConfiguration;
     private final ObjectMapper MAPPER;
@@ -259,14 +235,13 @@ public class EdcRequestBodyBuilder {
      * credential. Unlike {@link #buildBpnAndMembershipRestrictedPolicy(Partner)}, there is no BPNL restriction,
      * so every Catena-X member can see offers guarded by this policy in the catalog.
      *
-     * @param policyId the id of the policy definition
      * @return the request body as a {@link JsonNode}
      */
-    public JsonNode buildMembershipPolicy(String policyId) {
+    public JsonNode buildMembershipPolicy() {
         PolicyProfileVersionEnumeration profileVersion = variablesService.getEdcProfileVersion();
 
         JsonNode body = buildPolicy(
-            policyId,
+            "irs_recursive_access_policy",
             List.of(buildMembershipConstraint(profileVersion)),
             getAccessPolicyAction(profileVersion),
             profileVersion
@@ -354,7 +329,7 @@ public class EdcRequestBodyBuilder {
     public JsonNode buildRecursiveIrsNotificationContractPolicy() {
         return buildFrameworkPolicy(
             JsonLdConstants.INDUSTRY_CORE_USAGE_PURPOSE,
-            RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID,
+            "irs_contract_policy",
             PolicyProfileVersionEnumeration.POLICY_PROFILE_2405
         );
     }
@@ -393,17 +368,17 @@ public class EdcRequestBodyBuilder {
      *
      * @return the request body
      */
-    public JsonNode buildRecursiveIrsNotificationContractDefinition(String assetId) {
+    public JsonNode buildRecursiveIrsNotificationContractDefinition() {
         var body = getEdcContextObject();
-        body.put("@id", RECURSIVE_IRS_NOTIFICATION_CONTRACT_DEFINITION_ID);
-        body.put("accessPolicyId", RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID);
-        body.put("contractPolicyId", RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID);
+        body.put("@id", "irs_recursive_contract_definition");
+        body.put("accessPolicyId", "irs_recursive_access_policy");
+        body.put("contractPolicyId", "irs_contract_policy");
         var assetsSelector = MAPPER.createObjectNode();
         body.set("assetsSelector", assetsSelector);
         assetsSelector.put("@type", "CriterionDto");
         assetsSelector.put("operandLeft", JsonLdConstants.EDC_NAMESPACE + "id");
         assetsSelector.put("operator", "=");
-        assetsSelector.put("operandRight", assetId);
+        assetsSelector.put("operandRight", variablesService.getIrsRecursiveNotificationApiAssetId());
         return body;
     }
 
@@ -593,31 +568,23 @@ public class EdcRequestBodyBuilder {
      *
      * @return the request body
      */
-    public JsonNode buildRecursiveIrsNotificationRegistrationBody(String assetId) {
+    public JsonNode buildRecursiveIrsNotificationRegistrationBody() {
         var body = getAssetRegistrationContext();
-        body.put("@id", assetId);
+        body.put("@id", variablesService.getIrsRecursiveNotificationApiAssetId());
         var propertiesObject = MAPPER.createObjectNode();
         body.set("properties", propertiesObject);
         var dctTypeObject = MAPPER.createObjectNode();
         propertiesObject.set("dct:type", dctTypeObject);
-        dctTypeObject.put("@id", RECURSIVE_IRS_NOTIFICATION_API_TYPE);
-        propertiesObject.put("cx-common:version", RECURSIVE_IRS_NOTIFICATION_API_VERSION);
-        body.set("dataAddress", createRecursiveIrsNotificationDataAddress());
+        dctTypeObject.put("@id", "cx-taxo:RecursiveIrsNotificationApi");
+        propertiesObject.put("cx-common:version", "1.0");
+        body.set("dataAddress", createDataAddressObject(
+            getRecursiveIrsNotificationEndpoint(),
+            "true",
+            "false",
+            irsAdapterConfiguration.getIrsAdapterAuthKey(),
+            irsAdapterConfiguration.getIrsAdapterAuthSecret()
+        ));
         return body;
-    }
-
-    private ObjectNode createRecursiveIrsNotificationDataAddress() {
-        var dataAddress = MAPPER.createObjectNode();
-        dataAddress.put("@type", "DataAddress");
-        dataAddress.put("proxyPath", "false");
-        dataAddress.put("proxyQueryParams", "false");
-        dataAddress.put("proxyMethod", "true");
-        dataAddress.put("proxyBody", "true");
-        dataAddress.put("type", "HttpData");
-        dataAddress.put("baseUrl", getRecursiveIrsNotificationEndpoint());
-        dataAddress.put("authKey", irsAdapterConfiguration.getIrsAdapterAuthKey());
-        dataAddress.put("authCode", irsAdapterConfiguration.getIrsAdapterAuthSecret());
-        return dataAddress;
     }
 
     private String getRecursiveIrsNotificationEndpoint() {
@@ -632,17 +599,39 @@ public class EdcRequestBodyBuilder {
             .toString();
     }
 
+    /**
+     * Creates the data address of an asset served by this application: additional path segments are forwarded
+     * and requests are authenticated with this application's API key.
+     *
+     * @param endpoint           the base url of the asset
+     * @param proxyMethodAndBody whether the http method and body are forwarded ("true" or "false")
+     * @return the data address
+     */
     public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody) {
+        return createDataAddressObject(endpoint, proxyMethodAndBody, "true", "x-api-key", variablesService.getApiKey());
+    }
+
+    /**
+     * Creates the data address of an asset.
+     *
+     * @param endpoint           the base url of the asset
+     * @param proxyMethodAndBody whether the http method and body are forwarded ("true" or "false")
+     * @param proxyPath          whether additional path segments are forwarded ("true" or "false")
+     * @param authKey            the name of the header used for authentication at the endpoint
+     * @param authCode           the value of the header used for authentication at the endpoint
+     * @return the data address
+     */
+    public JsonNode createDataAddressObject(String endpoint, String proxyMethodAndBody, String proxyPath, String authKey, String authCode) {
         var dataAddress = MAPPER.createObjectNode();
         dataAddress.put("@type", "DataAddress");
-        dataAddress.put("proxyPath", "true");
+        dataAddress.put("proxyPath", proxyPath);
         dataAddress.put("proxyQueryParams", "false");
         dataAddress.put("proxyMethod", proxyMethodAndBody);
         dataAddress.put("proxyBody", proxyMethodAndBody);
         dataAddress.put("type", "HttpData");
         dataAddress.put("baseUrl", endpoint);
-        dataAddress.put("authKey", "x-api-key");
-        dataAddress.put("authCode", variablesService.getApiKey());
+        dataAddress.put("authKey", authKey);
+        dataAddress.put("authCode", authCode);
         return dataAddress;
     }
 

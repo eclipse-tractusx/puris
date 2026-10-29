@@ -421,6 +421,28 @@ public class EdcAdapterService {
         }
     }
 
+    private boolean registerMembershipOnlyPolicyDefinition() {
+        JsonNode body = edcRequestBodyBuilder.buildMembershipPolicy();
+        String policyId = body.get("@id").asText();
+        try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
+            if (!response.isSuccessful()) {
+                if (response.code() == 409 || isPolicyExisting(policyId)) {
+                    log.info("Policy definition {} already existed", policyId);
+                    return true;
+                }
+                log.warn("Policy definition registration failed for {}", policyId);
+                if (response.body() != null) {
+                    log.warn("Response: \n{}", response.body().string());
+                }
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register policy definition {}", policyId, e);
+            return false;
+        }
+    }
+
     /**
      * Registers the framework agreement policy definition
      *
@@ -515,21 +537,17 @@ public class EdcAdapterService {
      * @return true, if all registrations were successful
      */
     private boolean registerRecursiveIrsNotificationAssetAndContract() {
-        String assetId = variablesService.getIrsRecursiveNotificationApiAssetId();
-        boolean result = registerRecursiveIrsNotificationAsset(assetId);
-        result &= registerPolicyDefinition(
-            edcRequestBodyBuilder.buildMembershipPolicy(EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID),
-            EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_ACCESS_POLICY_ID
-        );
+        boolean result = registerRecursiveIrsNotificationAsset();
+        result &= registerMembershipOnlyPolicyDefinition();
         result &= createRecursiveIrsNotificationContractPolicy();
-        result &= createRecursiveIrsNotificationContractDefinition(assetId);
+        result &= createRecursiveIrsNotificationContractDefinition();
         return result;
     }
 
-    private boolean registerRecursiveIrsNotificationAsset(String assetId) {
+    private boolean registerRecursiveIrsNotificationAsset() {
         JsonNode body;
         try {
-            body = edcRequestBodyBuilder.buildRecursiveIrsNotificationRegistrationBody(assetId);
+            body = edcRequestBodyBuilder.buildRecursiveIrsNotificationRegistrationBody();
         } catch (Exception e) {
             log.error("Failed to build the IRS recursive notification asset", e);
             return false;
@@ -538,7 +556,7 @@ public class EdcAdapterService {
             log.warn("The IRS recursive notification asset authenticates partner requests with the IRS admin key. "
                 + "Configure a separate non-admin key in puris.irsadapter.authsecret.");
         }
-        return sendAssetRegistrationRequest(body, assetId);
+        return sendAssetRegistrationRequest(body, variablesService.getIrsRecursiveNotificationApiAssetId());
     }
 
     /**
@@ -548,61 +566,38 @@ public class EdcAdapterService {
      *
      * @return true, if the policy definition was registered (or already existed) and the IRS policy was enqueued
      */
-    private boolean createRecursiveIrsNotificationContractPolicy() {
-        boolean policyRegistered = registerPolicyDefinition(
-            edcRequestBodyBuilder.buildRecursiveIrsNotificationContractPolicy(),
-            EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_CONTRACT_POLICY_ID
-        );
-        if (!policyRegistered) {
-            return false;
-        }
-        try {
-            irsPolicyStoreService.createIrsFrameworkPolicy();
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to enqueue the IRS framework policy for the IRS policy store", e);
-            return false;
-        }
-    }
-
-    private boolean createRecursiveIrsNotificationContractDefinition(String assetId) {
-        String contractDefinitionId = EdcRequestBodyBuilder.RECURSIVE_IRS_NOTIFICATION_CONTRACT_DEFINITION_ID;
-        var body = edcRequestBodyBuilder.buildRecursiveIrsNotificationContractDefinition(assetId);
-        try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
-            if (!response.isSuccessful()) {
-                if (response.code() == 409) {
-                    log.info("Contract definition {} already existed", contractDefinitionId);
-                    return true;
-                }
-                log.warn("Contract definition registration failed for {}", contractDefinitionId);
-                if (response.body() != null) {
-                    log.warn("Response: \n{}", response.body().string());
-                }
-                return false;
-            }
-            return true;
-        } catch (Exception e) {
-            log.error("Failed to register contract definition {}", contractDefinitionId, e);
-            return false;
-        }
-    }
-
-    /**
-     * Registers the given policy definition. A policy definition with the same id that already exists in the
-     * EDC counts as success.
-     *
-     * @param body     the policy definition request body
-     * @param policyId the id of the policy definition
-     * @return true, if the policy definition was registered or already existed
-     */
-    private boolean registerPolicyDefinition(JsonNode body, String policyId) {
+        private boolean createRecursiveIrsNotificationContractPolicy() {
+        JsonNode body = edcRequestBodyBuilder.buildRecursiveIrsNotificationContractPolicy();
+        String policyId = body.get("@id").asText();
         try (var response = sendPostRequest(body, List.of("v3", "policydefinitions"))) {
             if (!response.isSuccessful()) {
                 if (response.code() == 409 || isPolicyExisting(policyId)) {
-                    log.info("Policy definition {} already existed", policyId);
+                    log.info("IRS recursive notification contract policy definition {} already existed", policyId);
+                } else {
+                    log.warn("IRS recursive notification contract policy registration failed for {}", policyId);
+                    if (response.body() != null) {
+                        log.warn("Response: \n{}", response.body().string());
+                    }
+                    return false;
+                }
+            }
+            irsPolicyStoreService.createIrsFrameworkPolicy();
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to register IRS recursive notification contract policy {}", policyId, e);
+            return false;
+        }
+    }
+
+        private boolean createRecursiveIrsNotificationContractDefinition() {
+        var body = edcRequestBodyBuilder.buildRecursiveIrsNotificationContractDefinition();
+        try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
+            if (!response.isSuccessful()) {
+                if (response.code() == 409) {
+                    log.info("IRS recursive notification contract definition already existed");
                     return true;
                 }
-                log.warn("Policy definition registration failed for {}", policyId);
+                log.warn("IRS recursive notification contract definition registration failed");
                 if (response.body() != null) {
                     log.warn("Response: \n{}", response.body().string());
                 }
@@ -610,7 +605,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Failed to register policy definition {}", policyId, e);
+            log.error("Failed to register IRS recursive notification contract definition", e);
             return false;
         }
     }
