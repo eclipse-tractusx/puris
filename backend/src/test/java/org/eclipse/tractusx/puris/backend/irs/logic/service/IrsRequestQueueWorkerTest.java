@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
@@ -45,6 +46,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
+import org.eclipse.tractusx.puris.backend.aggregateddata.logic.adapter.AggregatedMaterialDataNodeMapper;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.eclipse.tractusx.puris.backend.aggregateddata.domain.repository.AggregatedMaterialDataRepository;
+import java.util.function.Consumer;
+import org.springframework.transaction.TransactionStatus;
+import static org.mockito.Mockito.mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -55,6 +63,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,6 +93,15 @@ class IrsRequestQueueWorkerTest {
     @Mock
     private IrsRequestQueueService irsRequestQueueService;
 
+    @Mock 
+    private AggregatedMaterialDataNodeMapper aggregatedMaterialDataNodeMapper;
+
+    @Mock 
+    private TransactionTemplate transactionTemplate;
+
+    @Mock 
+    private AggregatedMaterialDataRepository aggregatedMaterialDataRepository;
+
     @InjectMocks
     private IrsRequestQueueWorker worker;
 
@@ -92,6 +110,12 @@ class IrsRequestQueueWorkerTest {
         lenient().when(irsAdapterConfiguration.getQueueInitialRetryDelaySeconds()).thenReturn(30L);
         lenient().when(irsAdapterConfiguration.getQueueBackoffMultiplier()).thenReturn(2.0);
         lenient().when(irsAdapterConfiguration.getQueueMaxRetryDelaySeconds()).thenReturn(3600L);
+
+        lenient().doAnswer(invocation -> {
+            Consumer<TransactionStatus> callback = invocation.getArgument(0);
+            callback.accept(mock(TransactionStatus.class));
+            return null;
+        }).when(transactionTemplate).executeWithoutResult(any());
     }
 
     private IrsQueuedRequest dueRequest(int attemptCount, int maxAttempts) {
@@ -346,6 +370,33 @@ class IrsRequestQueueWorkerTest {
         UUID jobUuid = UUID.randomUUID();
         IrsJob irsJob = new IrsJob();
         irsJob.setUuid(jobUuid);
+
+        IrsQueuedRequest request = dueJobGetRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(200)
+            .responseBody("{\"job\":{\"state\":\"COMPLETED\"}}")
+            .successful(true)
+            .build();
+        when(irsRequestService.execute(request)).thenReturn(response);
+        worker.processDueRequests();
+
+        assertThat(irsJob.getState()).isEqualTo(IrsJobStateEnumeration.COMPLETED);
+        verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test 
+    void processDueRequest_WhenCompleted_SavesAggregatedMaterialData(){
+        UUID jobUuid = UUID.randomUUID();
+        UUID irsJobId = UUID.randomUUID();
+        String sourceDisruptionId = UUID.randomUUID().toString();
+
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        irsJob.setJobId(irsJobId);
+        irsJob.setSourceDisruptionId(sourceDisruptionId);
+
         IrsQueuedRequest request = dueJobGetRequest(jobUuid);
         stubDue(request);
         when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
@@ -356,10 +407,60 @@ class IrsRequestQueueWorkerTest {
             .build();
         when(irsRequestService.execute(request)).thenReturn(response);
 
+        AggregatedMaterialData aggregatedMaterialData = new AggregatedMaterialData();
+        Material material = new Material();
+        material.setOwnMaterialNumber("material-123");
+        aggregatedMaterialData.setMaterial(material);
+        when(aggregatedMaterialDataNodeMapper.jsonToAggregatedMaterialData(any())).thenReturn(aggregatedMaterialData);
+
         worker.processDueRequests();
 
-        assertThat(irsJob.getState()).isEqualTo(IrsJobStateEnumeration.COMPLETED);
+        assertThat(aggregatedMaterialData.getJobId()).isEqualTo(irsJobId);
+        assertThat(aggregatedMaterialData.getSourceDisruptionId()).isEqualTo(sourceDisruptionId);
+        verify(aggregatedMaterialDataRepository).save(aggregatedMaterialData);
+
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+        verify(aggregatedMaterialDataRepository, never()).delete(any());
+    }
+
+    @Test 
+    void processDueRequest_WhenCompleted_DeletesOldAggregatedMaterialData(){
+        UUID jobUuid = UUID.randomUUID();
+        UUID irsJobId = UUID.randomUUID();
+        String sourceDisruptionId = UUID.randomUUID().toString();
+
+        IrsJob irsJob = new IrsJob();
+        irsJob.setUuid(jobUuid);
+        irsJob.setJobId(irsJobId);
+        irsJob.setSourceDisruptionId(sourceDisruptionId);
+
+        IrsQueuedRequest request = dueJobGetRequest(jobUuid);
+        stubDue(request);
+        when(irsJobRepository.findById(jobUuid)).thenReturn(Optional.of(irsJob));
+        IrsRequestService.IrsResponse response = IrsRequestService.IrsResponse.builder()
+            .statusCode(200)
+            .responseBody("{\"job\":{\"state\":\"COMPLETED\"}}")
+            .successful(true)
+            .build();
+        when(irsRequestService.execute(request)).thenReturn(response);
+
+        AggregatedMaterialData newData = new AggregatedMaterialData();
+        Material material = new Material();
+        material.setOwnMaterialNumber("material-123");
+        newData.setMaterial(material);
+        when(aggregatedMaterialDataNodeMapper.jsonToAggregatedMaterialData(any())).thenReturn(newData);
+
+        AggregatedMaterialData oldData = new AggregatedMaterialData();
+        when(aggregatedMaterialDataRepository.findBySourceDisruptionIdAndMaterial_ownMaterialNumber(sourceDisruptionId, newData.getMaterial().getOwnMaterialNumber())).thenReturn(oldData);
+
+        worker.processDueRequests();
+
+        verify(aggregatedMaterialDataRepository).delete(oldData);
+        verify(aggregatedMaterialDataRepository).flush();
+        verify(aggregatedMaterialDataRepository).save(newData);
+
+        assertThat(newData.getJobId()).isEqualTo(irsJobId);
+        assertThat(newData.getSourceDisruptionId()).isEqualTo(sourceDisruptionId);
     }
 
     @Test
@@ -381,6 +482,8 @@ class IrsRequestQueueWorkerTest {
 
         assertThat(irsJob.getState()).isEqualTo(IrsJobStateEnumeration.ERROR);
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+
+        verifyNoInteractions(aggregatedMaterialDataRepository);
     }
 
     @Test
@@ -422,5 +525,6 @@ class IrsRequestQueueWorkerTest {
 
         assertThat(irsJob.getState()).isNull();
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+        verifyNoInteractions(aggregatedMaterialDataRepository);
     }
 }

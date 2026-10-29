@@ -23,11 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
+
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import jakarta.validation.constraints.Pattern;
 
 @Getter
 @Setter
@@ -41,5 +44,11 @@ public class AggregatedMaterialDataDto implements Serializable {
  
     @Valid
     private List<AggregatedMaterialDataNodeDto> childMaterialData = new ArrayList<>();
+
+   @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
+    private String sourceDisruptionId;
+
+    private UUID jobId;
+
 }
 

@@ -112,3 +112,43 @@ databaseChangeLog:
                       name: partner_bpnl
                       type: VARCHAR(255)
                 tableName: single_level_usage_as_planned_contract_mapping
+  - changeSet:
+      id: "4"
+      author: sofijadjukic8020
+      changes:
+        - delete:
+            tableName: reported_anonymized_delivery
+
+        - delete:
+            tableName: reported_anonymized_stock
+
+        - delete:
+            tableName: reported_anonymized_production
+
+        - delete:
+            tableName: aggregated_material_data_node
+
+        - delete:
+            tableName: aggregated_material_data
+
+        - addColumn:
+            tableName: aggregated_material_data
+            columns:
+              - column:
+                  name: source_disruption_id
+                  type: VARCHAR(255)
+              - column:
+                  name: job_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: aggregated_material_data
+            columnNames: job_id
+            constraintName: uc_aggregated_material_data_job_id
+
+        - addUniqueConstraint:
+            tableName: aggregated_material_data
+            columnNames: source_disruption_id, material_own_material_number
+            constraintName: uc_aggregated_material_data_source_disruption_material
