@@ -34,6 +34,7 @@ The **need for configuration updates** is **marked bold**
 - Removed DashboardView and StockView because they are not used anymore ([#1217](https://github.com/eclipse-tractusx/puris/pull/1217))
 - Update misleading global asset id in materials table and add EDC URL do partners table and global asset ID to MPR table ([#1248](https://github.com/eclipse-tractusx/puris/pull/1248))
 - Updated aggregated data handling to replace previous results for the same source disruption ([#1280](https://github.com/eclipse-tractusx/puris/pull/1280)).
+- Updated Bruno CLI and dependencies ([#1282](https://github.com/eclipse-tractusx/puris/pull/1282)).
 
 ### Fixes
 
