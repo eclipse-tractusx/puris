@@ -40,6 +40,7 @@ The **need for configuration updates** is **marked bold**
 - Allow creating Root Data Exchange Request for notification with forwarded requests ([#1249](https://github.com/eclipse-tractusx/puris/pull/1249))
 - Fix grant sync failing when second approval with the same notification reference arrives ([#1271](https://github.com/eclipse-tractusx/puris/pull/1271))
 - Fix multiple customers now use the same partner material number instead of registering duplicates ([#1272](https://github.com/eclipse-tractusx/puris/pull/1272))
+- Fixed incorrect OpenAPI Position schemas for ItemStock and Delivery submodels ([#1262](https://github.com/eclipse-tractusx/puris/pull/1262))
 
 ### Version Bumps
 
@@ -131,6 +132,7 @@ The **need for configuration updates** is **marked bold**.
 - Updated table row height and selection behavior ([#1135](https://github.com/eclipse-tractusx/puris/pull/1135))
 
 ### Fixes
+
 
 - Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
 - Fix the new part type information controller that was causing an issue with the DTR tests ([#1204](https://github.com/eclipse-tractusx/puris/pull/1204))
