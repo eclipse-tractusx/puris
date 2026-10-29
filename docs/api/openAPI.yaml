@@ -48,8 +48,16 @@ components:
             $ref: '#/components/schemas/AggregatedMaterialDataNodeDto'
           maxItems: 50
           type: array
+        jobId:
+          format: uuid
+          maxItems: 50
+          type: string
         ownMaterialNumber:
           maxItems: 50
+          type: string
+        sourceDisruptionId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
           type: string
         uuid:
           format: uuid

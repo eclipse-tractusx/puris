@@ -28,7 +28,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AggregatedMaterialDataRepository extends JpaRepository<AggregatedMaterialData, UUID> {
     List<AggregatedMaterialData> findAllByMaterial_OwnMaterialNumber(String ownMaterialNumber);
-    List<AggregatedMaterialData> findAllBySourceDisruptionId(String sourceDisruptionId);
+    AggregatedMaterialData findBySourceDisruptionIdAndMaterial_ownMaterialNumber(String sourceDisruptionId, String ownMaterialNumber);
     List<AggregatedMaterialData> findAllByJobId(UUID jobId);
 
 }

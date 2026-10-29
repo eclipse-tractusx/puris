@@ -950,36 +950,3 @@ databaseChangeLog:
             tableName: aggregated_material_data_node
             columnName: measurement_unit
             columnDataType: SMALLINT
-
-  - changeSet:
-      id: "17"
-      author: SofijaDjukic
-      changes:
-        - delete:          
-            tableName: reported_anonymized_delivery 
-
-        - delete:          
-            tableName: reported_anonymized_stock 
-
-        - delete:          
-            tableName: reported_anonymized_production  
-
-        - delete:          
-            tableName: aggregated_material_data_node
-
-        - delete:          
-            tableName: aggregated_material_data
-
-        - addColumn:
-            tableName: aggregated_material_data
-            columns:
-              - column:
-                  name: source_disruption_id
-                  type: VARCHAR(255)
-              - column:
-                  name: job_id
-                  type: UUID
-        - addUniqueConstraint:
-            tableName: aggregated_material_data
-            columnNames: source_disruption_id
-            constraintName: uc_aggregated_material_data_source_disruption_id

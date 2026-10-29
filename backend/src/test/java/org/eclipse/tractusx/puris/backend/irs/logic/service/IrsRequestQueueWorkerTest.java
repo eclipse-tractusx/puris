@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.irs.IrsAdapterConfiguration;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningPartnerGrant;
 import org.eclipse.tractusx.puris.backend.irs.domain.model.IrsChainOpeningRootGrant;
@@ -45,7 +46,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.eclipse.tractusx.puris.backend.aggregateddata.domain.model.AggregatedMaterialData;
 import org.eclipse.tractusx.puris.backend.aggregateddata.logic.adapter.AggregatedMaterialDataNodeMapper;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -408,9 +408,10 @@ class IrsRequestQueueWorkerTest {
         when(irsRequestService.execute(request)).thenReturn(response);
 
         AggregatedMaterialData aggregatedMaterialData = new AggregatedMaterialData();
+        Material material = new Material();
+        material.setOwnMaterialNumber("material-123");
+        aggregatedMaterialData.setMaterial(material);
         when(aggregatedMaterialDataNodeMapper.jsonToAggregatedMaterialData(any())).thenReturn(aggregatedMaterialData);
-
-        when(aggregatedMaterialDataRepository.findAllBySourceDisruptionId(sourceDisruptionId)).thenReturn(List.of());
 
         worker.processDueRequests();
 
@@ -419,6 +420,7 @@ class IrsRequestQueueWorkerTest {
         verify(aggregatedMaterialDataRepository).save(aggregatedMaterialData);
 
         verify(irsRequestQueueService, never()).enqueue(any(), any(), any(), any(), any(), any(), any());
+        verify(aggregatedMaterialDataRepository, never()).delete(any());
     }
 
     @Test 
@@ -443,15 +445,17 @@ class IrsRequestQueueWorkerTest {
         when(irsRequestService.execute(request)).thenReturn(response);
 
         AggregatedMaterialData newData = new AggregatedMaterialData();
+        Material material = new Material();
+        material.setOwnMaterialNumber("material-123");
+        newData.setMaterial(material);
         when(aggregatedMaterialDataNodeMapper.jsonToAggregatedMaterialData(any())).thenReturn(newData);
 
         AggregatedMaterialData oldData = new AggregatedMaterialData();
-        when(aggregatedMaterialDataRepository.findAllBySourceDisruptionId(sourceDisruptionId)).thenReturn(List.of(oldData));
-
+        when(aggregatedMaterialDataRepository.findBySourceDisruptionIdAndMaterial_ownMaterialNumber(sourceDisruptionId, newData.getMaterial().getOwnMaterialNumber())).thenReturn(oldData);
 
         worker.processDueRequests();
 
-        verify(aggregatedMaterialDataRepository).deleteAll(List.of(oldData));
+        verify(aggregatedMaterialDataRepository).delete(oldData);
         verify(aggregatedMaterialDataRepository).flush();
         verify(aggregatedMaterialDataRepository).save(newData);
 

@@ -274,8 +274,12 @@ public class IrsRequestQueueWorker {
 		aggregatedMaterialData.setSourceDisruptionId(irsJob.getSourceDisruptionId());
 
 		transactionTemplate.executeWithoutResult(status -> {
-			aggregatedMaterialDataRepository.deleteAll( aggregatedMaterialDataRepository.findAllBySourceDisruptionId(irsJob.getSourceDisruptionId()));
-			aggregatedMaterialDataRepository.flush();
+			var existing = aggregatedMaterialDataRepository.findBySourceDisruptionIdAndMaterial_ownMaterialNumber(irsJob.getSourceDisruptionId(), aggregatedMaterialData.getMaterial().getOwnMaterialNumber());
+			if (existing != null) {
+				aggregatedMaterialDataRepository.delete(existing);
+				aggregatedMaterialDataRepository.flush();
+
+			}
 			aggregatedMaterialDataRepository.save(aggregatedMaterialData);
 		});
 		log.info("Saved aggregated material data for IRS job {}", irsJob.getUuid());

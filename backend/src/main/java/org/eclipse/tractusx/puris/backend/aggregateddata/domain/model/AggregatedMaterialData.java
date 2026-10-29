@@ -29,7 +29,6 @@ import org.hibernate.annotations.SQLRestriction;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -70,6 +69,6 @@ public class AggregatedMaterialData {
     @Pattern(regexp = PatternStore.URN_OR_UUID_STRING)
     private String sourceDisruptionId;
 
-    @Nullable
-    UUID jobId;
+    @NotNull
+    private UUID jobId;
 }
