@@ -27,11 +27,13 @@ import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.util.PatternStore;
 import org.eclipse.tractusx.puris.backend.common.util.VariablesService;
+import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service.ConnectToChildService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.repository.MaterialPartnerRelationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -61,6 +63,10 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
 
     @Autowired
     private ExecutorService executorService;
+
+    @Lazy
+    @Autowired
+    private ConnectToChildService connectToChildService;
 
 
     /**
@@ -193,6 +199,7 @@ public class MaterialPartnerRelationServiceImpl implements MaterialPartnerRelati
                         materialPartnerRelation.getPartner().getBpnl() + " and Material "
                         + materialPartnerRelation.getMaterial().getOwnMaterialNumber() +
                         " -> " + partnerCXId);
+                    executorService.submit(() -> connectToChildService.sendConnectToChild(materialPartnerRelation));
                 } else {
                     log.warn("PartTypeInformation fetch from " + materialPartnerRelation.getPartner().getBpnl() +
                         " for " + materialPartnerRelation.getMaterial().getOwnMaterialNumber() + " failed. Retries left: " + retries);

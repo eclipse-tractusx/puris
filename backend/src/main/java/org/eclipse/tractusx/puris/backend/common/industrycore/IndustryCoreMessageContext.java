@@ -22,7 +22,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum IndustryCoreMessageContext {
     DEMAND_AND_CAPACITY_NOTIFICATION_CONTEXT("CX-DemandAndCapacityNotificationAPI-Receive:2.0.0", "demandAndCapacityNotification"),
     DATA_EXCHANGE_REQUEST_CONTEXT("CX-DataExchangeRequestAPI-RequestReceive:1.0.0", null),
-    DATA_EXCHANGE_APPROVAL_CONTEXT("CX-DataExchangeRequestAPI-ApprovalReceive:1.0.0", null);
+    DATA_EXCHANGE_APPROVAL_CONTEXT("CX-DataExchangeRequestAPI-ApprovalReceive:1.0.0", null),
+    DIGITAL_TWIN_EVENT_CONNECT_TO_PARENT_CONTEXT("IndustryCore-DigitalTwinEvent-ConnectToParent:3.0.0", null),
+    DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT("IndustryCore-DigitalTwinEvent-ConnectToChild:3.0.0", null),
+    DIGITAL_TWIN_EVENT_SUBMODEL_UPDATE_CONTEXT("IndustryCore-DigitalTwinEvent-SubmodelUpdate:3.0.0", null),
+    DIGITAL_TWIN_EVENT_FEEDBACK_CONTEXT("IndustryCore-DigitalTwinEvent-Feedback:3.0.0", null);
 
     private final String value;
     private final String contentKey;

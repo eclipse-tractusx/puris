@@ -285,7 +285,7 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
-    public JsonNode buildSubmodelContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
+    public JsonNode buildContractDefinitionWithBpnRestrictedPolicy(String assetId, Partner partner) {
         var body = getEdcContextObject();
         body.put("@id", partner.getBpnl() + "_contractdefinition_for_" + assetId + "_" + partner.getPolicyProfileVersion().getValue());
         body.put("accessPolicyId", getBpnPolicyId(partner));
@@ -488,6 +488,19 @@ public class EdcRequestBodyBuilder {
         propertiesObject.set("dct:type", dctTypeObject);
         dctTypeObject.put("@id", "cx-taxo:DataExchangeRequestApi");
         propertiesObject.put("cx-common:version", "1.0");
+        body.set("dataAddress", createDataAddressObject(endpoint, "true"));
+        return body;
+    }
+
+    public JsonNode buildDigitalTwinEventApiRegistrationBody(String assetId, String endpoint) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", assetId);
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:DigitalTwinEventAPI");
+        propertiesObject.put("cx-common:version", "3.0");
         body.set("dataAddress", createDataAddressObject(endpoint, "true"));
         return body;
     }

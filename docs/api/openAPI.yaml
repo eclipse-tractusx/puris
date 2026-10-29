@@ -1472,6 +1472,35 @@ components:
         page:
           $ref: '#/components/schemas/PageMetadata'
       type: object
+    ParentData:
+      additionalProperties: false
+      properties:
+        businessPartner:
+          maxItems: 50
+          pattern: ^BPNL[0-9a-zA-Z]{12}$
+          type: string
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        createdOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        lastModifiedOn:
+          format: date-time
+          maxItems: 50
+          type: string
+        quantity:
+          $ref: '#/components/schemas/ItemQuantityEntity'
+        validityPeriod:
+          $ref: '#/components/schemas/ValidityPeriodEntity'
+      required:
+      - businessPartner
+      - catenaXId
+      - createdOn
+      - quantity
+      type: object
     PartSitesInformationAsPlanned:
       additionalProperties: false
       properties:
@@ -2366,6 +2395,31 @@ components:
           uniqueItems: true
       required:
       - catenaXId
+      type: object
+    SingleLevelUsageAsPlanned:
+      additionalProperties: false
+      properties:
+        catenaXId:
+          maxItems: 50
+          pattern: (^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)|(^urn:uuid:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)
+          type: string
+        customers:
+          items:
+            maxItems: 50
+            pattern: ^BPNL[0-9a-zA-Z]{12}$
+            type: string
+          maxItems: 50
+          type: array
+        parentItems:
+          items:
+            $ref: '#/components/schemas/ParentData'
+          maxItems: 50
+          type: array
+          uniqueItems: true
+      required:
+      - catenaXId
+      - customers
+      - parentItems
       type: object
     Site:
       additionalProperties: false
@@ -3693,6 +3747,65 @@ paths:
       summary: Deletes a demand by its UUID
       tags:
       - demand-controller
+  /digital-twin-events:
+    post:
+      operationId: postDigitalTwinEvent
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      requestBody:
+        content:
+          application/json:
+            example:
+              content:
+                digitalTwinType: PartType
+                information: Usage as Planned information for parts supplied by the
+                  receiver.
+                listOfItems:
+                - catenaXId: urn:uuid:5d8e2f1a-6b3c-4d7e-8f9a-1b2c3d4e5f6a
+                  parentItems:
+                  - businessPartner: BPNL4444444444XX
+                    catenaXId: urn:uuid:9a3f1b2c-7d4e-4f5a-8b6c-0e1d2f3a4b5c
+                    createdOn: '2025-01-15T10:30:00.000Z'
+                    lastModifiedOn: '2025-01-15T10:30:00.000Z'
+                    quantity:
+                      unit: unit:piece
+                      value: 2.0
+                    validityPeriod:
+                      validFrom: '2025-01-01T00:00:00.000Z'
+              header:
+                context: IndustryCore-DigitalTwinEvent-ConnectToChild:3.0.0
+                messageId: urn:uuid:3e7c5d2a-1b4f-4a8e-9d6c-2f0e1a3b5c7d
+                receiverBpn: BPNL1234567890ZZ
+                senderBpn: BPNL4444444444XX
+                sentDateTime: '2025-01-15T10:30:00.000Z'
+                version: 3.0.0
+            schema:
+              $ref: '#/components/schemas/JsonNode'
+              additionalProperties: false
+        required: true
+      responses:
+        '200':
+          description: 'OK: The Digital Twin event has been processed'
+        '400':
+          description: 'Bad Request: invalid edc-bpn header, message header or context'
+        '401':
+          description: Unauthorized. Missing API key.
+        '403':
+          description: Forbidden - Insufficient permissions or invalid API key
+        '404':
+          description: 'Not Found: the sender is not a known partner'
+        '501':
+          description: Handling of the operation is not implemented yet
+      summary: Receives Digital Twin Events 3.0. This endpoint is meant to be accessed
+        by partners via EDC only.
+      tags:
+      - digital-twin-event-controller
   /edc/assets:
     get:
       description: Gets a specific EDC asset by its asset id.
@@ -3954,6 +4067,7 @@ paths:
           additionalProperties: false
           enum:
           - DTR
+          - DIGITAL_TWIN_EVENT
           - ITEM_STOCK_SUBMODEL
           - PRODUCTION_SUBMODEL
           - DEMAND_SUBMODEL
@@ -3967,6 +4081,7 @@ paths:
           - DELIVERY_ANONYMIZED_SUBMODEL
           - PRODUCTION_ANONYMIZED_SUBMODEL
           - SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL
+          - SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL
           maxItems: 50
           type: string
       - in: query
@@ -5553,6 +5668,53 @@ paths:
           description: 'Unsupported representation requested. '
       tags:
       - single-level-bom-as-planned-request-api-controller
+  /single-level-usage-as-planned/request/{materialNumberCx}/submodel/{representation}:
+    get:
+      description: 'Endpoint that delivers SingleLevelUsageAsPlanned of own products.
+        This endpoint is meant for self-access only via EDC. '
+      operationId: getSingleLevelUsageAsPlannedMapping
+      parameters:
+      - in: header
+        name: edc-bpn
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: The CatenaX material number (UUID) of the material in question
+        in: path
+        name: materialNumberCx
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      - description: Must be set to '$value'
+        in: path
+        name: representation
+        required: true
+        schema:
+          additionalProperties: false
+          maxItems: 50
+          type: string
+      responses:
+        '200':
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SingleLevelUsageAsPlanned'
+                additionalProperties: false
+          description: Ok
+        '400':
+          description: 'Invalid request parameters. '
+        '403':
+          description: 'Access forbidden - self-access only. '
+        '404':
+          description: 'Product not found for given parameters. '
+        '501':
+          description: 'Unsupported representation requested. '
+      tags:
+      - single-level-usage-as-planned-request-api-controller
   /stockView/customer:
     get:
       description: Returns a list of all Partners that are ordering the given material
