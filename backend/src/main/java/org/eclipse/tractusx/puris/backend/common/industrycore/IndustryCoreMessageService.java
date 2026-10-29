@@ -17,7 +17,7 @@ under the License.
 SPDX-License-Identifier: Apache-2.0
 */
 package org.eclipse.tractusx.puris.backend.common.industrycore;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -65,7 +65,7 @@ public class IndustryCoreMessageService {
         var header = objectMapper.createObjectNode();
         header.put("messageId", UUID.randomUUID().toString());
         header.put("context", context.getValue());
-        header.put("sentDateTime", new Date().toString());
+        header.put("sentDateTime", Instant.now().toString());
         header.put("senderBpn", ownBpnl);
         header.put("receiverBpn", receiver.getBpnl());
         header.put("version", MESSAGE_HEADER_VERSION);

@@ -561,6 +561,19 @@ public class EdcRequestBodyBuilder {
         return body;
     }
 
+    public JsonNode buildDigitalTwinEventApiRegistrationBody(String assetId, String endpoint) {
+        var body = getAssetRegistrationContext();
+        body.put("@id", assetId);
+        var propertiesObject = MAPPER.createObjectNode();
+        body.set("properties", propertiesObject);
+        var dctTypeObject = MAPPER.createObjectNode();
+        propertiesObject.set("dct:type", dctTypeObject);
+        dctTypeObject.put("@id", "cx-taxo:DigitalTwinEventAPI");
+        propertiesObject.put("cx-common:version", "3.0");
+        body.set("dataAddress", createDataAddressObject(endpoint, "true"));
+        return body;
+    }
+
     /**
      * Creates the request body for registering the asset of the IRS recursive notification API, through which
      * the IRS instances of partners send recursive requests and responses to the own IRS.

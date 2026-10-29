@@ -133,4 +133,11 @@ public class PatternStore {
      */
     public final static Pattern RELATIVE_PATH_PATTERN = Pattern.compile(RELATIVE_PATH_STRING);
 
+    /**
+     * Contains a Pattern that matches the four valid contexts of a Digital Twin Event message.
+     * "IndustryCore-DigitalTwinEvent-&lt;Operation&gt;:3.0.0", where the operation is one of
+     * ConnectToParent, ConnectToChild, SubmodelUpdate or Feedback.
+     */
+    public final static Pattern DIGITAL_TWIN_EVENT_CONTEXT_PATTERN = Pattern.compile("^IndustryCore-DigitalTwinEvent-(ConnectToParent|ConnectToChild|SubmodelUpdate|Feedback):3\\.0\\.0$");
+
 }

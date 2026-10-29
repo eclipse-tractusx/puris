@@ -45,6 +45,26 @@ script:post-response {
   } else {
     throw new Error("SingleLevelBomAsPlanned submodel not found in DTR - must be registered before running this test");
   }
+
+  const sluapDescriptor = jsonData.submodelDescriptors.find(smd =>
+    smd.semanticId?.keys?.some(kv => kv.value === "urn:samm:io.catenax.single_level_usage_as_planned:2.0.0#SingleLevelUsageAsPlanned")
+  );
+  const sluapProtocolInformation = sluapDescriptor?.endpoints?.[0]?.protocolInformation;
+  bru.setVar("SLUAP_SUBMODEL_ENDPOINT", sluapProtocolInformation?.href || null);
+  bru.setVar("SLUAP_DESCRIPTOR_ASSET_ID", sluapProtocolInformation?.subprotocolBody?.match(/(?:^|;)id=([^;]+)/)?.[1] || null);
+}
+
+tests {
+  const expectedHref = bru.getEnvVar("SUPPLIER_DP_EDC_EXT_HOSTNAME") + "/api/public/" + bru.getEnvVar("SEMICONDUCTOR_MATERIAL_NUMBER_CX") + "/submodel";
+
+  test("SingleLevelBomAsPlanned is offered with the correct href", function () {
+      expect(bru.getVar("SUBMODEL_ENDPOINT")).to.equal(expectedHref);
+  });
+
+  test("SingleLevelUsageAsPlanned is offered with the correct href", function () {
+      expect(bru.getVar("SLUAP_DESCRIPTOR_ASSET_ID")).to.be.a("string");
+      expect(bru.getVar("SLUAP_SUBMODEL_ENDPOINT")).to.equal(expectedHref);
+  });
 }
 
 settings {
