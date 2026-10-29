@@ -16,6 +16,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@usebruno/cli": "^2.10.1"
+    "@usebruno/cli": "^4.3.0"
+  },
+  "overrides": {
+    "@azure/msal-node": "^7.1.0",
+    "@faker-js/faker": "^10.4.1",
+    "axios": "^1.20.0",
+    "csv-parse": "^7.0.2",
+    "form-data": "^4.0.6",
+    "js-yaml": "^4.3.2",
+    "uuid": "^11.1.1",
+    "yaml": "^2.8.3"
   }
 }
