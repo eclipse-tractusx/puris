@@ -508,12 +508,18 @@ backend:
     singlelevelbomasplannedsubmodel:
       # -- Asset ID for SingleLevelBomAsPlannedSubmodel API
       apiassetid: singlelevelbomasplannedsubmodel-api-asset
+    singlelevelusageasplannedsubmodel:
+      # -- Asset ID for SingleLevelUsageAsPlannedSubmodel API
+      apiassetid: singlelevelusageasplannedsubmodel-api-asset
     notification:
       # -- Asset ID for Notification API
       apiassetid: notification-api-asset
     dataexchangerequestapi:
       # -- Asset ID for Data Exchange Request API
       apiassetid: dataexchangerequestapi-api-asset
+    digitaltwineventapi:
+      # -- Asset ID for Digital Twin Event API
+      apiassetid: digitaltwineventapi-api-asset
     frameworkagreement:
       # -- The name of the framework agreement. Starting with Uppercase and using CamelCase.
       credential: DataExchangeGovernance

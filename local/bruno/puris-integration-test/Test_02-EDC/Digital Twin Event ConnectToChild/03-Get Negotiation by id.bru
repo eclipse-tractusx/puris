@@ -1,0 +1,35 @@
+meta {
+  name: 03-Get Negotiation by id DTE
+  type: http
+  seq: 3
+  tags: [
+    digital-twin-event
+  ]
+}
+
+script:pre-request {
+  bru.setVar("retryUntilField", "state");
+  bru.setVar("retryUntilValue", "FINALIZED");
+}
+
+get {
+  url: {{CUSTOMER_EDC}}/{{MANAGEMENT_PATH}}/v3/contractnegotiations/{{DTE_NEGOTIATION_ID}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const jsonData = res.getBody();
+  bru.setVar("DTE_CONTRACT_AGREEMENT_ID", jsonData.contractAgreementId);
+}
+
+tests {
+  if (bru.getVar("__retryPending")) return;
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Negotiation is finalized", function () {
+      expect(res.getBody().state).to.equal("FINALIZED");
+  });
+}

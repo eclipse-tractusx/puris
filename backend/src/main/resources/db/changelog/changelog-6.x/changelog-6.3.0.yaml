@@ -1,0 +1,114 @@
+#
+# Copyright (c) 2026 Volkswagen AG
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+databaseChangeLog:
+  - changeSet:
+        id: "1"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+              tableName: external_material_relation
+              columns:
+                - column:
+                    name: uuid
+                    type: UUID
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: external_material_relation_pkey
+                - column:
+                    name: material_own_material_number
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
+                    name: partner_uuid
+                    type: UUID
+                    constraints:
+                      nullable: false
+                - column:
+                    name: parent_global_asset_id
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                - column:
+                    name: valid_from
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                - column:
+                    name: valid_to
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                - column:
+                    name: created_on
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                - column:
+                    name: last_modified_on
+                    type: TIMESTAMP WITHOUT TIME ZONE
+                - column:
+                    name: quantity
+                    type: FLOAT8
+                    constraints:
+                      nullable: false
+                - column:
+                    name: measurement_unit
+                    type: SMALLINT
+                    constraints:
+                        nullable: false
+          - addUniqueConstraint:
+              tableName: external_material_relation
+              columnNames: material_own_material_number, partner_uuid, parent_global_asset_id
+              constraintName: uc_external_material_relation_key
+          - addForeignKeyConstraint:
+              baseColumnNames: material_own_material_number
+              baseTableName: external_material_relation
+              constraintName: fk_external_material_relation_to_material
+              referencedColumnNames: own_material_number
+              referencedTableName: material
+          - addForeignKeyConstraint:
+              baseColumnNames: partner_uuid
+              baseTableName: external_material_relation
+              constraintName: fk_external_material_relation_to_partner
+              referencedColumnNames: uuid
+              referencedTableName: partner
+  - changeSet:
+        id: "2"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+              tableName: digital_twin_event_contract_mapping
+              columns:
+                - column:
+                    name: partner_bpnl
+                    type: VARCHAR(255)
+                    constraints:
+                      nullable: false
+                      primaryKey: true
+                      primaryKeyName: digital_twin_event_contract_mapping_pkey
+  - changeSet:
+        id: "3"
+        author: OlgaIvkovic
+        changes:
+          - createTable:
+                columns:
+                  - column:
+                      constraints:
+                        nullable: false
+                        primaryKey: true
+                        primaryKeyName: single_level_usage_as_planned_contract_mapping_pkey
+                      name: partner_bpnl
+                      type: VARCHAR(255)
+                tableName: single_level_usage_as_planned_contract_mapping

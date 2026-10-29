@@ -20,10 +20,12 @@ package org.eclipse.tractusx.puris.backend.masterdata.controller;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 
+import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service.ConnectToChildService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.dto.MaterialRelationDto;
@@ -55,6 +57,12 @@ public class MaterialRelationController {
     
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private ConnectToChildService connectToChildService;
+
+    @Autowired
+    private ExecutorService executorService;
     
     private final ModelMapper modelMapper = new ModelMapper();
     
@@ -98,6 +106,7 @@ public class MaterialRelationController {
         try {
             MaterialRelation entity = modelMapper.map(materialRelationDto, MaterialRelation.class);
             MaterialRelation createdRelation = materialRelationService.create(entity);
+            executorService.submit(() -> connectToChildService.sendConnectToChild(createdRelation, parentMaterial));
             MaterialRelationDto responseDto = modelMapper.map(createdRelation, MaterialRelationDto.class);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         } catch (KeyAlreadyExistsException e) {

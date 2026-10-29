@@ -169,6 +169,21 @@ public class VariablesService {
      * during asset creation.
      */
     private String dataExchangeRequestApi;
+    
+    /**
+     * The url under which this application's Digital Twin Event API endpoint can
+     * be reached by external machines.
+     */
+    public String getDigitalTwinEventApiEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "digital-twin-events";
+    }
+
+    @Value("${puris.digitaltwineventapi.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the Digital Twin Event API request API
+     * during asset creation.
+     */
+    private String digitalTwinEventApiAssetId;
 
     /**
      * The url under which this application's anonymized delivery information request endpoint can
@@ -214,6 +229,21 @@ public class VariablesService {
      * during asset creation.
      */
     private String singleLevelBomAsPlannedSubmodelAssetId;
+
+    /**
+     * The url under which this application's single level usage as planned request endpoint can
+     * be reached by external machines.
+     */
+    public String getSingleLevelUsageAsPlannedSubmodelEndpoint() {
+        return getPurisBaseUrl() + getContextPath() + "single-level-usage-as-planned/request";
+    }
+
+    @Value("${puris.singlelevelusageasplannedsubmodel.apiassetid}")
+    /**
+     * The assetId that shall be assigned to the request API
+     * during asset creation.
+     */
+    private String singleLevelUsageAsPlannedSubmodelAssetId;
 
     @Value("${puris.frameworkagreement.credential}")
     /**
@@ -416,12 +446,20 @@ public class VariablesService {
         return singleLevelBomAsPlannedSubmodelAssetId + "@" + ownBpnl;
     }
 
+    public String getSingleLevelUsageAsPlannedSubmodelApiAssetId() {
+        return singleLevelUsageAsPlannedSubmodelAssetId + "@" + ownBpnl;
+    }
+
     public String getNotificationApiAssetId() {
         return notificationAssetId + "@" + ownBpnl;
     }
 
     public String getDataExchangeRequestApiAssetId() {
         return dataExchangeRequestApi + "@" + ownBpnl;
+    }
+
+    public String getDigitalTwinEventApiAssetId() {
+        return digitalTwinEventApiAssetId + "@" + ownBpnl;
     }
 
     public String getPartTypeLegacySubmodelApiAssetId() {

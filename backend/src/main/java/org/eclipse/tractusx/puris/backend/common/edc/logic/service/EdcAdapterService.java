@@ -223,7 +223,12 @@ public class EdcAdapterService {
             variablesService.getDaysOfSupplySubmodelEndpoint(),
             AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID
         )));
-        log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
+        log.info("Registration of DataExchangeRequest 1.0.0 asset successful {}", (assetRegistration = registerDigitalTwinEventApiAsset(
+            variablesService.getDigitalTwinEventApiAssetId(),
+            variablesService.getDigitalTwinEventApiEndpoint()
+        )));
+        result &= assetRegistration;
+        log.info("Registration of DigitalTwinEvent API 3.0.0 asset successful {}", (assetRegistration = registerDataExchangeRequestAsset(
             variablesService.getDataExchangeRequestApiAssetId(),
             variablesService.getDataExchangeRequestEndpoint()
         )));
@@ -250,6 +255,12 @@ public class EdcAdapterService {
             variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(),
             variablesService.getSingleLevelBomAsPlannedSubmodelEndpoint(),
             AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
+        )));
+        result &= assetRegistration;
+        log.info("Registration of Single Level Usage As Planned 2.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
+            variablesService.getSingleLevelUsageAsPlannedSubmodelApiAssetId(),
+            variablesService.getSingleLevelUsageAsPlannedSubmodelEndpoint(),
+            AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID
         )));
         result &= assetRegistration;
         log.info("Registration of PartTypeInformationLegacy 1.0.0 submodel successful {}", (assetRegistration = registerSubmodelAsset(
@@ -282,15 +293,16 @@ public class EdcAdapterService {
             // To consider: Asset migration -> Create a MembershipPolicyDefitionForPartner only
             result &= createDtrContractDefinitionForPartner(partner);
         }
-        result &= createSubmodelContractDefinitionForPartner(AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, variablesService.getItemStockSubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getProductionSubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDemandSubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.DELIVERY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getDeliverySubmodelApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.NOTIFICATION.URN_SEMANTIC_ID, variablesService.getNotificationApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.DATA_EXCHANGE_REQUEST.URN_SEMANTIC_ID, variablesService.getDataExchangeRequestApiAssetId(), partner);
-        result &= createSubmodelContractDefinitionForPartner(AssetType.DAYS_OF_SUPPLY.URN_SEMANTIC_ID, variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
-        createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeSubmodelApiAssetId(), partner);
-        return createSubmodelContractDefinitionForPartner(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, variablesService.getPartTypeLegacySubmodelApiAssetId(), partner) && result;
+        result &= createContractDefinitionForPartner(variablesService.getItemStockSubmodelApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getProductionSubmodelApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getDemandSubmodelApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getDeliverySubmodelApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getNotificationApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getDataExchangeRequestApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getDaysOfSupplySubmodelApiAssetId(), partner);
+        result &= createContractDefinitionForPartner(variablesService.getDigitalTwinEventApiAssetId(), partner);
+        createContractDefinitionForPartner(variablesService.getPartTypeSubmodelApiAssetId(), partner);
+        return createContractDefinitionForPartner(variablesService.getPartTypeLegacySubmodelApiAssetId(), partner) && result;
     }
 
     /**
@@ -319,38 +331,40 @@ public class EdcAdapterService {
         for (PolicyProfileVersionEnumeration profileVersion : EnumSet.of(PolicyProfileVersionEnumeration.POLICY_PROFILE_2405, variablesService.getEdcProfileVersion())) {
             ownPartner.setPolicyProfileVersion(profileVersion);
 
-            result &= createSelfContractDefinition(AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL, "SingleLevelBomAsPlanned",
+            result &= createSelfContractDefinition("SingleLevelBomAsPlanned",
                 variablesService.getSingleLevelBomAsPlannedSubmodelApiAssetId(), ownPartner);
-            result &= createSelfContractDefinition(AssetType.ITEM_STOCK_ANONYMIZED_SUBMODEL, "ItemStockAnonymized",
+            result &= createSelfContractDefinition("SingleLevelUsageAsPlanned",
+                variablesService.getSingleLevelUsageAsPlannedSubmodelApiAssetId(), ownPartner);
+            result &= createSelfContractDefinition("ItemStockAnonymized",
                 variablesService.getItemStockAnonymizedSubmodelApiAssetId(), ownPartner);
-            result &= createSelfContractDefinition(AssetType.DELIVERY_ANONYMIZED_SUBMODEL, "DeliveryInformationAnonymized",
+            result &= createSelfContractDefinition("DeliveryInformationAnonymized",
                 variablesService.getDeliveryAnonymizedSubmodelApiAssetId(), ownPartner);
-            result &= createSelfContractDefinition(AssetType.PRODUCTION_ANONYMIZED_SUBMODEL, "PlannedProductionOutputAnonymized",
+            result &= createSelfContractDefinition("PlannedProductionOutputAnonymized",
                 variablesService.getProductionAnonymizedSubmodelApiAssetId(), ownPartner);
-            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_SUBMODEL, "PartTypeInformation",
+            result &= createSelfContractDefinition("PartTypeInformation",
                 variablesService.getPartTypeSubmodelApiAssetId(), ownPartner);
-            result &= createSelfContractDefinition(AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL, "PartTypeInformationLegacy",
+            result &= createSelfContractDefinition("PartTypeInformationLegacy",
                 variablesService.getPartTypeLegacySubmodelApiAssetId(), ownPartner);
         }
 
         return result;
     }
 
-    private boolean createSelfContractDefinition(AssetType assetType, String logName, String assetId, Partner ownPartner) {
-        boolean contractReg = createSubmodelContractDefinitionForPartner(assetType.URN_SEMANTIC_ID, assetId, ownPartner);
+    private boolean createSelfContractDefinition(String logName, String assetId, Partner ownPartner) {
+        boolean contractReg = createContractDefinitionForPartner(assetId, ownPartner);
         log.info("Self-contract for {} (profile {}) {}", logName, ownPartner.getPolicyProfileVersion().getValue(), contractReg ? "successful" : "failed");
         return contractReg;
     }
 
-    private boolean createSubmodelContractDefinitionForPartner(String semanticId, String assetId, Partner partner) {
-        var body = edcRequestBodyBuilder.buildSubmodelContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
+    private boolean createContractDefinitionForPartner(String assetId, Partner partner) {
+        var body = edcRequestBodyBuilder.buildContractDefinitionWithBpnRestrictedPolicy(assetId, partner);
         try (var response = sendPostRequest(body, List.of("v3", "contractdefinitions"))) {
             if (!response.isSuccessful()) {
                 if (response.code() == 409) {
-                    log.info("Contract definition already exists for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+                    log.info("Contract definition already exists for partner {} and asset {}", partner.getBpnl(), assetId);
                     return true;
                 }
-                log.warn("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+                log.warn("Contract definition registration failed for partner {} and asset {}", partner.getBpnl(), assetId);
                 if (response.body() != null) {
                     log.warn("Response: \n" + response.body().string());
                 }
@@ -358,7 +372,7 @@ public class EdcAdapterService {
             }
             return true;
         } catch (Exception e) {
-            log.error("Contract definition registration failed for partner " + partner.getBpnl() + " and {} Submodel", semanticId);
+            log.error("Contract definition registration failed for partner {} and asset {}", partner.getBpnl(), assetId, e);
             return false;
         }
     }
@@ -493,6 +507,11 @@ public class EdcAdapterService {
 
     private boolean registerDataExchangeRequestAsset(String assetId, String endpoint) {
         var body = edcRequestBodyBuilder.buildDataExchangeRequestRegistrationBody(assetId, endpoint);
+        return sendAssetRegistrationRequest(body, assetId);
+    }
+
+    private boolean registerDigitalTwinEventApiAsset(String assetId, String endpoint) {
+        var body = edcRequestBodyBuilder.buildDigitalTwinEventApiRegistrationBody(assetId, endpoint);
         return sendAssetRegistrationRequest(body, assetId);
     }
 
@@ -842,6 +861,7 @@ public class EdcAdapterService {
         String assetId = switch (type) {
             case NOTIFICATION -> variablesService.getNotificationApiAssetId();
             case DATA_EXCHANGE_REQUEST -> variablesService.getDataExchangeRequestApiAssetId();
+            case DIGITAL_TWIN_EVENT -> variablesService.getDigitalTwinEventApiAssetId();
             default -> throw new IllegalArgumentException("Unsupported type " + type);
         };
 
@@ -854,6 +874,7 @@ public class EdcAdapterService {
                 boolean negotiated = switch (type) {
                     case NOTIFICATION -> negotiateContractForNotification(partner, type);
                     case DATA_EXCHANGE_REQUEST -> negotiateContractForDataExchangeRequest(partner, type);
+                    case DIGITAL_TWIN_EVENT -> negotiateContractForDigitalTwinEvent(partner, type);
                     default -> throw new IllegalArgumentException("Unsupported type " + type);
                 };
 
@@ -894,6 +915,7 @@ public class EdcAdapterService {
                     switch (type) {
                         case NOTIFICATION -> log.error("Failed to post Notification to Partner.");
                         case DATA_EXCHANGE_REQUEST -> log.error("Failed to post Data Exchange Request to Partner.");
+                        case DIGITAL_TWIN_EVENT -> log.error("Failed to post Digital Twin Event to Partner.");  
                         default -> throw new IllegalArgumentException("Unsupported type " + type);
                     }
                 }
@@ -921,6 +943,7 @@ public class EdcAdapterService {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
+            case DIGITAL_TWIN_EVENT -> throw new IllegalArgumentException("DigitalTwinEvent not supported");
             case ITEM_STOCK_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
@@ -932,6 +955,7 @@ public class EdcAdapterService {
             case DELIVERY_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DELIVERY_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_ANONYMIZED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_ANONYMIZED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
         };
@@ -1042,6 +1066,10 @@ public class EdcAdapterService {
 
     public JsonNode doDataExchangeApprovalPostRequest(Partner partner, JsonNode body) {
         return postAssetToPartner(partner, AssetType.DATA_EXCHANGE_REQUEST, body, 2);
+    }
+
+    public JsonNode doDigitalTwinEventPostRequest(Partner partner, JsonNode body) {
+        return postAssetToPartner(partner, AssetType.DIGITAL_TWIN_EVENT, body, 2);
     }
 
     private boolean negotiateForPartnerDtr(Partner partner) {
@@ -1371,6 +1399,7 @@ public class EdcAdapterService {
         Partner partner = mpr.getPartner();
         SubmodelData submodelData = switch (type) {
             case DTR -> throw new IllegalArgumentException("DTR not supported");
+            case DIGITAL_TWIN_EVENT -> throw new IllegalArgumentException("DigitalTwinEvent not supported");
             case ITEM_STOCK_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.ITEM_STOCK_SUBMODEL.URN_SEMANTIC_ID, direction);
             case PRODUCTION_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.PRODUCTION_SUBMODEL.URN_SEMANTIC_ID, direction);
             case DEMAND_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.DEMAND_SUBMODEL.URN_SEMANTIC_ID, direction);
@@ -1384,6 +1413,7 @@ public class EdcAdapterService {
             case PART_TYPE_INFORMATION_LEGACY_SUBMODEL ->  fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_LEGACY_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case PART_TYPE_INFORMATION_SUBMODEL -> fetchSubmodelData(mpr, AssetType.PART_TYPE_INFORMATION_SUBMODEL.URN_SEMANTIC_ID, mpr.getPartnerMaterialNumber(), mpr.getPartner().getBpnl());
             case SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_BOM_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
+            case SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL -> fetchSubmodelDataByDirection(mpr, AssetType.SINGLE_LEVEL_USAGE_AS_PLANNED_SUBMODEL.URN_SEMANTIC_ID, direction);
         };
         Map<String, String> equalFilters = new HashMap<>();
         // use only assetId and version (previously semanticId, submodel type, no assetId) to follow all conventions:
@@ -1414,6 +1444,16 @@ public class EdcAdapterService {
             JsonLdConstants.CX_TAXO_NAMESPACE + "DataExchangeRequestApi"
         );
         return negotiateContract(partner, variablesService.getDataExchangeRequestApiAssetId(), type, partner.getEdcUrl(), equalFilters);
+    }
+
+    public boolean negotiateContractForDigitalTwinEvent(Partner partner, AssetType type) {
+        Map<String, String> equalFilters = new HashMap<>();
+        equalFilters.put(JsonLdConstants.CX_COMMON_NAMESPACE + "version", "3.0");
+        equalFilters.put(
+            "'" + JsonLdConstants.DCT_NAMESPACE + "type'.'@id'",
+            JsonLdConstants.CX_TAXO_NAMESPACE + "DigitalTwinEventAPI"
+        );
+        return negotiateContract(partner, variablesService.getDigitalTwinEventApiAssetId(), type, partner.getEdcUrl(), equalFilters);
     }
 
     public boolean negotiateContract(Partner partner, String assetId, AssetType type, String dspUrl, Map<String, String> equalFilters) {
