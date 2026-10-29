@@ -588,7 +588,7 @@ public class EdcAdapterServiceTest {
                    assertThat(requests).filteredOn(EdcAdapterServiceTest::isIrsRecursiveNotificationAsset)
                .extracting(request -> request.body().path("@id").asText())
                .containsExactly(IRS_ASSET_ID);
-        assertThat(registeredIds(requests, "v3/policydefinitions")).contains("irs_recursive_access_policy", "irs_contract_policy");
+        assertThat(registeredIds(requests, "v3/policydefinitions")).contains("membership_only_access_policy", "irs_contract_policy");
         assertThat(registeredIds(requests, "v3/contractdefinitions"))
             .contains("irs_recursive_contract_definition");
         verify(irsPolicyStoreService, times(1)).createIrsFrameworkPolicy();
@@ -596,7 +596,7 @@ public class EdcAdapterServiceTest {
 
     private static final String IRS_ASSET_ID = "irsrecursivenotification-api-asset@BPNL1234567890ZZ";
 
-    private static final String[] IRS_RECURSIVE_REGISTRATION_IDS = { "irs_recursive_access_policy", "irs_contract_policy", "irs_recursive_contract_definition" };
+    private static final String[] IRS_RECURSIVE_REGISTRATION_IDS = { "membership_only_access_policy", "irs_contract_policy", "irs_recursive_contract_definition" };
 
     private record EdcRequest(String path, JsonNode body) {
     }
