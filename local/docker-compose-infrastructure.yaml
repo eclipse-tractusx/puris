@@ -101,19 +101,6 @@ services:
     networks:
       - miw-net
 
-#  replaced by ssi-dim-wallet-stub
-#  if you need dcp v08
-#  1. update the edc settings to force use dcp 0.8
-#  2. outcomment wallet stub based service
-#  3. incomment this old wallet 
-#  wallet:
-#    build: ./iam-mock
-#    container_name: wallet
-#    ports:
-#      - "127.0.0.1:8888:80"
-#    networks:
-#      - miw-net
-
   wallet:
     image: tractusx/ssi-dim-wallet-stub:0.0.8
     container_name: wallet

@@ -33,7 +33,7 @@ package "Customer" {
 package "CX" {
 
   [Postgresql DB MIW] as pg_miw
-  [Managed Identity Wallet\nMock IAM] as miw
+  [Managed Identity Wallet\n(ssi-dim-wallet-stub)] as miw
   [BPNL Did Resolution Service] as bdrs
 
   keycloak - pg_miw
