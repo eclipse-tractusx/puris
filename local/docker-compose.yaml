@@ -182,8 +182,6 @@ services:
     environment:
       edc.iam.trusted-issuer.portal.id: did:web:wallet:BPNL000000000000
       # Default: DSP 1.0 with ssi-dim-wallet-stub
-      # Backup: DSP 0.8 with mock-util-iam
-      # edc.dcp.v08.forced: true
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://edc-customer-control-plane:8180/api/check/health"]
       interval: 6s
@@ -374,8 +372,6 @@ services:
     environment:
       edc.iam.trusted-issuer.portal.id: did:web:wallet:BPNL000000000000
       # Default: DSP 1.0 with ssi-dim-wallet-stub
-      # Backup: DSP 0.8 with mock-util-iam
-      # edc.dcp.v08.forced: true
     networks:
       - miw-net
     extra_hosts:

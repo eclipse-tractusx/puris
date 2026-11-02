@@ -7,12 +7,7 @@ graphic.
 
 ![Local Deployment of two PURIS clients with MVD](img/07-deployment.svg)
 
-The local deployment includes a mock of the dim service acting as a Central Wallet following IATP flow. Please refer to
-[Mock IAM documentation](../../local/iam-mock/README.md) for further information.
-
 It uses two `Keycloak` (IDP) instances. One Keycloak handles the authentication for the `DTR` and `EDC`. It has three realms (Customer, Supplier, MIW). The other Keycloak instance handles the authentication for the PURIS frontend and backend applications.
-
-_Note: MIW is currently commented out and the mock iam is used instead._
 
 It uses one DBMS (`Postgres DB MIW`) for the MIW and one for the rest (`Postgresql DB` for both `DTR`, `EDC`,
 `PURIS Backend`) with each a separate Database.

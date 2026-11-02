@@ -5,7 +5,7 @@
 > This setup is not secure. It also uses minimum identity:
 >
 > - keycloak has default users `puris_admin` and `puris_user` with password equal to name and is used for both roles
-> - the wallet is mocked by either [ssi-dim-wallet-stub](https://github.com/eclipse-tractusx/ssi-dim-wallet-stub/) (DCP >= 1.0) or local [mock-iam](./iam-mock/README.md) (DCP = 0.8)
+> - the wallet is mocked by [ssi-dim-wallet-stub](https://github.com/eclipse-tractusx/ssi-dim-wallet-stub/) (DCP >= 1.0)
 >
 
 This guide helps you to run PURIS for local demonstration and testing purposes. You can either choose to use

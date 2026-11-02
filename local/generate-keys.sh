@@ -49,7 +49,6 @@ EDC_API_PW=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 
 # create folders, if not existing
 mkdir -p ./vault/secrets
-mkdir -p ./iam-mock/keys
 
 CUSTOMER_KC_DTR_EDC_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
 CUSTOMER_KC_DTR_PURIS_CLIENT_SECRET=`openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32`
@@ -167,14 +166,6 @@ printf "${SUPPLIER_KC_MIW_CLIENT_SECRET}" > $SUPPLIER_MIW_CLIENT_SECRET
 
 SUPPLIER_CERT_SHA="$(openssl x509 -in "$SUPPLIER_CERT" -noout -sha256 -fingerprint | tr '[:upper:]' '[:lower:]' | tr -d : | sed 's/.*=//')"
 
-echo "Creating key pair for mock iam"
-openssl ecparam -name prime256v1 -genkey -out ./iam-mock/keys/private_key.pem
-openssl ec -in ./iam-mock/keys/private_key.pem -pubout -out ./iam-mock/keys/public_key.pem
-
-echo "Copy private keys for supplier and customer edr refresh signing in mock iam"
-cp $SUPPLIER_KEY ./iam-mock/keys/supplier.key
-cp $CUSTOMER_KEY ./iam-mock/keys/customer.key
-
 echo "Generate seed-bdrs.sh"
 cat << EOF > seed-bdrs.sh
 #!/bin/bash
@@ -226,4 +217,3 @@ EOF
 
 # let everyone access the files so that the non-root user in vault container can put them
 chmod -R 755 ./vault/secrets
-chmod -R 755 ./iam-mock/keys
