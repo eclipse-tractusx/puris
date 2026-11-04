@@ -1,0 +1,83 @@
+#######################################################################
+# Copyright (c) 2026 Volkswagen AG
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#######################################################################
+
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.1.0#>.
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.1.0#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <urn:samm:io.catenax.data_exchange_request:1.0.0#>.
+@prefix ext-uuid: <urn:samm:io.catenax.shared.uuid:2.0.0#>.
+
+:DataExchangeRequest a samm:Aspect;
+    samm:preferredName "Request for Data Exchange"@en;
+    samm:description "This aspect represents a request of a customer to its supplier for permission to exchange anonymized supply chain data in an n-tier supply chain. A data exchange request is always based on an ongoing disruption that has been communicated via a demand and capacity notification. The supplier may approve the request by responding with a data exchange approval; disapproval is implicitly given by not responding."@en;
+    samm:properties (:requestId :sourceDisruptionId :criticality :desiredStartDateTime :desiredEndDateTime :requestedTypes :text :timestamp);
+    samm:operations ();
+    samm:events ().
+:requestId a samm:Property;
+    samm:preferredName "Request ID"@en;
+    samm:description "Unique identifier of the data exchange request."@en;
+    samm:characteristic ext-uuid:UuidV4Trait;
+    samm:exampleValue "urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362".
+:sourceDisruptionId a samm:Property;
+    samm:preferredName "Source Disruption ID"@en;
+    samm:description "Identifier of the disruption the data exchange request refers to. It corresponds to the sourceDisruptionId of the demand and capacity notifications describing this disruption and remains the same when the request is forwarded along the supply chain."@en;
+    samm:characteristic ext-uuid:UuidV4Trait;
+    samm:exampleValue "urn:uuid:c69cb3e4-16ad-43c3-82b9-0deac75ecf9e".
+:criticality a samm:Property;
+    samm:preferredName "Criticality"@en;
+    samm:description "Criticality of the data exchange request from the requester's perspective."@en;
+    samm:characteristic :CriticalityEnumeration;
+    samm:exampleValue "high".
+:CriticalityEnumeration a samm-c:Enumeration;
+    samm:preferredName "Criticality Enumeration"@en;
+    samm:description "Use \"high\" if the disruption requires immediate data exchange.\nUse \"medium\" if the data exchange is needed timely but not immediately.\nUse \"low\" if the data exchange is not time-critical."@en;
+    samm:dataType xsd:string;
+    samm-c:values ("high" "medium" "low").
+:desiredStartDateTime a samm:Property;
+    samm:preferredName "Desired Start Date"@en;
+    samm:description "Date and time from which the requester wishes to exchange data. Must be before the desired end date. Date and time are set according to a timezone."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-12-14T08:00:00+01:00"^^xsd:dateTime.
+:desiredEndDateTime a samm:Property;
+    samm:preferredName "Desired End Date"@en;
+    samm:description "Date and time until which the requester wishes to exchange data. Must be after the desired start date. After this point in time the request is considered expired. Date and time are set according to a timezone."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-12-17T08:00:00+01:00"^^xsd:dateTime.
+:requestedTypes a samm:Property;
+    samm:preferredName "Requested Types"@en;
+    samm:description "Types of data exchange the requester asks permission for."@en;
+    samm:characteristic :RequestedTypeEnumerationList.
+:RequestedTypeEnumerationList a samm-c:List;
+    samm:preferredName "Requested Type List"@en;
+    samm:description "List of requested types of data exchange."@en;
+    samm-c:elementCharacteristic :RequestedTypeEnumeration.
+:RequestedTypeEnumeration a samm-c:Enumeration;
+    samm:preferredName "Requested Type Enumeration"@en;
+    samm:description "Type of data exchange.\nUse \"n-tier\" to request permission to exchange anonymized data with partners beyond the direct business relationship in an n-tier supply chain."@en;
+    samm:dataType xsd:string;
+    samm-c:values ("n-tier").
+:text a samm:Property;
+    samm:preferredName "Message"@en;
+    samm:description "Free text message of the requester explaining the reason and context of the data exchange request."@en;
+    samm:characteristic samm-c:Text.
+:timestamp a samm:Property;
+    samm:preferredName "Request Timestamp"@en;
+    samm:description "Date and time at which the data exchange request has been created or last updated by the requester. Date and time are set according to a timezone."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-12-13T16:00:00+01:00"^^xsd:dateTime.
