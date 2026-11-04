@@ -1,0 +1,64 @@
+#######################################################################
+# Copyright (c) 2026 Volkswagen AG
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License, Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#######################################################################
+
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.1.0#>.
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.1.0#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <urn:samm:io.catenax.data_exchange_approval:1.0.0#>.
+@prefix ext-uuid: <urn:samm:io.catenax.shared.uuid:2.0.0#>.
+
+:DataExchangeApproval a samm:Aspect;
+    samm:preferredName "Approval for Data Exchange"@en;
+    samm:description "This aspect represents the approval of a supplier in response to a data exchange request of its customer. With the approval the supplier grants permission to exchange anonymized supply chain data of the approved types in an n-tier supply chain. If the supplier forwards the request to its own suppliers, the approval is not finalized until the forwarded requests have been answered."@en;
+    samm:properties (:approvalId :isFinalized :timestamp :dataExchangeRequestId :approvedTypes);
+    samm:operations ();
+    samm:events ().
+:approvalId a samm:Property;
+    samm:preferredName "Approval ID"@en;
+    samm:description "Unique identifier of the data exchange approval."@en;
+    samm:characteristic ext-uuid:UuidV4Trait;
+    samm:exampleValue "urn:uuid:4f7b2c1e-8a3d-4e6f-9b2a-1c5d7e9f0a3b".
+:isFinalized a samm:Property;
+    samm:preferredName "Is Finalized"@en;
+    samm:description "Indicates whether the approval is final (true) or whether one or more requests forwarded to further partners in the supply chain are still pending approval (false)."@en;
+    samm:characteristic samm-c:Boolean;
+    samm:exampleValue "false"^^xsd:boolean.
+:timestamp a samm:Property;
+    samm:preferredName "Approval Timestamp"@en;
+    samm:description "Date and time at which the data exchange approval has been created or last updated by the approving partner. Date and time are set according to a timezone."@en;
+    samm:characteristic samm-c:Timestamp;
+    samm:exampleValue "2023-12-14T09:00:00+01:00"^^xsd:dateTime.
+:dataExchangeRequestId a samm:Property;
+    samm:preferredName "Data Exchange Request ID"@en;
+    samm:description "Identifier of the data exchange request this approval responds to. Corresponds to the requestId of the data exchange request."@en;
+    samm:characteristic ext-uuid:UuidV4Trait;
+    samm:exampleValue "urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362".
+:approvedTypes a samm:Property;
+    samm:preferredName "Approved Types"@en;
+    samm:description "Types of data exchange the approving partner grants permission for. Must be a subset of the requested types of the referenced data exchange request."@en;
+    samm:characteristic :RequestedTypeEnumerationList.
+:RequestedTypeEnumerationList a samm-c:List;
+    samm:preferredName "Approved Type List"@en;
+    samm:description "List of approved types of data exchange."@en;
+    samm-c:elementCharacteristic :RequestedTypeEnumeration.
+:RequestedTypeEnumeration a samm-c:Enumeration;
+    samm:preferredName "Requested Type Enumeration"@en;
+    samm:description "Type of data exchange.\nUse \"n-tier\" to request permission to exchange anonymized data with partners beyond the direct business relationship in an n-tier supply chain."@en;
+    samm:dataType xsd:string;
+    samm-c:values ("n-tier").

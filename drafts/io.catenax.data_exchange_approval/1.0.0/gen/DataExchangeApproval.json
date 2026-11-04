@@ -1,0 +1,7 @@
+{
+    "approvalId": "urn:uuid:4f7b2c1e-8a3d-4e6f-9b2a-1c5d7e9f0a3b",
+    "isFinalized": false,
+    "timestamp": "2023-12-14T09:00:00+01:00",
+    "dataExchangeRequestId": "urn:uuid:d9452f24-3bf3-4134-b3eb-68858f1b2362",
+    "approvedTypes": ["n-tier"]
+}
