@@ -152,7 +152,7 @@ public class ItemStockAnonymizedSammMapperTest {
 
         AllocatedStockAnonymized allocatedStockAnoynmized = materialItemStockAnonymizedSamm.getAllocatedStocksAnonymized().stream().toList().get(0);
         assertEquals(ItemUnitEnumeration.UNIT_PIECE, allocatedStockAnoynmized.getQuantityOnAllocatedStock().getUnit());
-        assertTrue(allocatedStockAnoynmized.getStockLocationBPNSAnonymized().startsWith("enc:"));
+        assertTrue(allocatedStockAnoynmized.getStockLocationBpnsAnonymized().startsWith("enc:"));
         assertEquals(materialItemStock.isBlocked(), allocatedStockAnoynmized.getIsBlocked());
         assertEquals(materialItemStock.getQuantity(), allocatedStockAnoynmized.getQuantityOnAllocatedStock().getValue());
 
