@@ -27,7 +27,7 @@ The **need for configuration updates** is **marked bold**
   - Added bruno tests and unit test for Connect to Child feature ([#1270](https://github.com/eclipse-tractusx/puris/pull/1270))
   - Added bruno tests for SingleLevelUsageAsPlanned ([#1274](https://github.com/eclipse-tractusx/puris/pull/1274))
   - Added Automatic IRS Contract Offering ([#1279](https://github.com/eclipse-tractusx/puris/pull/1279))
-  - Added draft SAMM models DataExchangeRequest and DataExchangeApproval for requesting and approving n-tier exchange of anonymized supply chain data ([#]())
+  - Added draft SAMM models DataExchangeRequest and DataExchangeApproval for requesting and approving n-tier exchange of anonymized supply chain data ([#1285](https://github.com/eclipse-tractusx/puris/pull/1285))
 
 ### Changed
 
