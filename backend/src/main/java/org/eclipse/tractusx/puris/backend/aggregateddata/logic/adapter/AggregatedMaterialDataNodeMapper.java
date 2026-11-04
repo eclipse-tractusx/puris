@@ -172,7 +172,7 @@ public class AggregatedMaterialDataNodeMapper {
             stocks.add(ReportedAnonymizedStock.builder()
                 .quantity(allocatedStock.getQuantityOnAllocatedStock().getValue())
                 .measurementUnit(allocatedStock.getQuantityOnAllocatedStock().getUnit())
-                .stockLocationBpnsAnonymized(allocatedStock.getStockLocationBPNSAnonymized())
+                .stockLocationBpnsAnonymized(allocatedStock.getStockLocationBpnsAnonymized())
                 .isBlocked(allocatedStock.getIsBlocked())
                 .lastUpdatedOnDateTime(allocatedStock.getLastUpdatedOnDateTime())
                 .aggregatedMaterialDataNode(target)

@@ -220,14 +220,14 @@ components:
           type: string
         quantityOnAllocatedStock:
           $ref: '#/components/schemas/ItemQuantityEntity'
-        stockLocationBPNSAnonymized:
+        stockLocationBpnsAnonymized:
           maxItems: 50
           type: string
       required:
       - isBlocked
       - lastUpdatedOnDateTime
       - quantityOnAllocatedStock
-      - stockLocationBPNSAnonymized
+      - stockLocationBpnsAnonymized
       type: object
     ChildData:
       additionalProperties: false
@@ -1095,7 +1095,7 @@ components:
     ItemStockAnonymizedSamm:
       additionalProperties: false
       properties:
-        allocatedStocksAnonymized:
+        allocatedStocks:
           items:
             $ref: '#/components/schemas/AllocatedStockAnonymized'
           maxItems: 50
@@ -1112,7 +1112,7 @@ components:
           pattern: ^[^\n\x0B\f\r\x85\u2028\u2029]+$
           type: string
       required:
-      - allocatedStocksAnonymized
+      - allocatedStocks
       - direction
       type: object
     ItemStockSamm:
