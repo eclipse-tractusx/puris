@@ -43,6 +43,7 @@ import { LabelledAutoComplete } from '@components/ui/LabelledAutoComplete';
 import { GridItem } from '@components/ui/GridItem';
 import { ConfirmUpdateDialog, ConfirmUpdateHandle } from './UpdateModal';
 import { UUID } from 'crypto';
+import { DATE_INPUT_FORMAT } from '@util/date-format';
 
 type DemandCategoryModalProps = {
     open: boolean;
@@ -192,7 +193,8 @@ export const DemandCategoryCreationModal = ({
                                 label=""
                                 hiddenLabel
                                 placeholder="Pick a Day"
-                                locale="de"
+                                locale="en"
+                                inputFormat={DATE_INPUT_FORMAT}
                                 error={formError && !temporaryDemand?.day}
                                 readOnly={false}
                                 defaultValue={temporaryDemand?.day}

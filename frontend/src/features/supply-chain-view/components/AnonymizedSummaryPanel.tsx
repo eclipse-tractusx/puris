@@ -24,6 +24,7 @@ import { useCalendarWeeks } from '@contexts/calendarWeekContext';
 import { Expandable } from '@features/material-details/models/expandable';
 import { CalendarWeek, incrementDate } from '@util/date-helpers';
 import { AnonymizedSummary } from '../util/anonymized-summary';
+import { formatDate } from '@util/date-format';
 
 type AnonymizedSummaryPanelProps = {
     summary: AnonymizedSummary;
@@ -68,9 +69,9 @@ type AnonymizedCalendarWeekSummaryProps = {
 
 function AnonymizedCalendarWeekSummary({ cw, summary, isExpanded }: AnonymizedCalendarWeekSummaryProps) {
     const weekDates = useMemo(() => Array.from(new Array(7).keys()).map((day) => incrementDate(cw.startDate, day)), [cw.startDate]);
-    const productionTotal = weekDates.reduce((sum, date) => sum + (summary.dailySummaries[date.toLocaleDateString()]?.productionTotal ?? 0), 0);
-    const deliveryTotal = weekDates.reduce((sum, date) => sum + (summary.dailySummaries[date.toLocaleDateString()]?.deliveryTotal ?? 0), 0);
-    const stockTotal = summary.dailySummaries[incrementDate(weekDates[6], 1).toLocaleDateString()]?.stockTotal ?? 0;
+    const productionTotal = weekDates.reduce((sum, date) => sum + (summary.dailySummaries[formatDate(date)]?.productionTotal ?? 0), 0);
+    const deliveryTotal = weekDates.reduce((sum, date) => sum + (summary.dailySummaries[formatDate(date)]?.deliveryTotal ?? 0), 0);
+    const stockTotal = summary.dailySummaries[formatDate(incrementDate(weekDates[6], 1))]?.stockTotal ?? 0;
 
     return (
         <Stack
@@ -81,11 +82,11 @@ function AnonymizedCalendarWeekSummary({ cw, summary, isExpanded }: AnonymizedCa
             <Grid container columns={8} flex={1} height="100%">
                 {isExpanded &&
                     weekDates.map((date) => {
-                        const dailyProduction = summary.dailySummaries[date.toLocaleDateString()]?.productionTotal ?? 0;
-                        const dailyDelivery = summary.dailySummaries[date.toLocaleDateString()]?.deliveryTotal ?? 0;
-                        const dailyStock = summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal ?? 0;
+                        const dailyProduction = summary.dailySummaries[formatDate(date)]?.productionTotal ?? 0;
+                        const dailyDelivery = summary.dailySummaries[formatDate(date)]?.deliveryTotal ?? 0;
+                        const dailyStock = summary.dailySummaries[formatDate(incrementDate(date, 1))]?.stockTotal ?? 0;
                         return (
-                            <Grid key={date.toLocaleDateString()} item xs={1} height="100%">
+                            <Grid key={formatDate(date)} item xs={1} height="100%">
                                 <Stack height="100%" data-testid={`anonymized-cw-${cw.week}-day-${date.getDay()}`}>
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center" padding=".75rem 0">
                                         <Typography variant="body2">{dailyProduction}</Typography>

@@ -269,7 +269,6 @@ export const DeliveryCreationModal = ({
                             <DateTime
                                 label="Departure Time*"
                                 placeholder="Pick Departure Date"
-                                locale="de"
                                 error={
                                     formError &&
                                     (!temporaryDelivery.dateOfDeparture ||
@@ -287,7 +286,6 @@ export const DeliveryCreationModal = ({
                             <DateTime
                                 label="Arrival Time*"
                                 placeholder="Pick Arrival Date"
-                                locale="de"
                                 error={
                                     formError &&
                                     (!temporaryDelivery?.dateOfArrival ||
