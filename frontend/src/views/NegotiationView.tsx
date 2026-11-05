@@ -24,6 +24,7 @@ import { Box } from '@mui/material';
 import { ConfidentialBanner } from '@components/ConfidentialBanner';
 import { useTitle } from '@contexts/titleProvider';
 import { useEffect } from 'react';
+import { formatDateTime } from '@util/date-format';
 
 export const NegotiationView = () => {
     const { negotiations } = useNegotiations();
@@ -48,7 +49,7 @@ export const NegotiationView = () => {
                         headerName: 'Timestamp',
                         field: 'createdAt',
                         flex: 1,
-                        valueFormatter: (params) => new Date(params.value).toLocaleString(),
+                        valueFormatter: (params) => formatDateTime(params.value),
                     },
                 ]}
                 rows={negotiations ?? []}

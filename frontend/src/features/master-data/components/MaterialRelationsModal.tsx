@@ -199,7 +199,6 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                             <DateTime
                                 label="Valid From"
                                 placeholder="Pick a start Date"
-                                locale="de"
                                 error={
                                     formError &&
                                     (
@@ -217,7 +216,6 @@ export const MaterialRelationModal = ({ open, allMaterials, mrs, onClose, onSave
                             <DateTime
                                 label="Valid To"
                                 placeholder="Pick an end Date"
-                                locale="de"
                                 error={
                                     formError &&
                                     (

@@ -30,6 +30,7 @@ import { Delivery } from '@models/types/data/delivery';
 import { Stock } from '@models/types/data/stock';
 import { Supply } from '@models/types/data/supply';
 import { InfoButton } from '@components/ui/InfoButton';
+import { formatDate } from '@util/date-format';
 
 type CalendarWeekSummaryProps<TType extends SummaryType> = {
     supplies: Supply[];
@@ -67,7 +68,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                 {isExpanded ? (
                     <>
                         {weekDates.map((date) => (
-                            <Grid key={date.toLocaleDateString()} item xs={1} height="100%">
+                            <Grid key={formatDate(date)} item xs={1} height="100%">
                                 <Stack height="100%" data-testid={`cw-${cw.week}-day-${date.getDay()}`}>
                                     {showHeader && (
                                         <Stack
@@ -78,8 +79,8 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                             spacing={0.25}
                                             sx={{ backgroundColor: '#f5f5f5' }}
                                         >
-                                            <Typography variant="body2"> {date.toLocaleDateString('en-GB', { weekday: 'long' })} </Typography>
-                                            <Typography variant="body2" color="#777"> {date.toLocaleDateString()} </Typography>
+                                            <Typography variant="body2"> {formatDate(date, { weekday: 'long' })} </Typography>
+                                            <Typography variant="body2" color="#777"> {formatDate(date)} </Typography>
                                         </Stack>
                                     )}
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center">
@@ -91,20 +92,20 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                     ? openDialog(
                                                           'demand',
                                                           { day: date },
-                                                          summary.dailySummaries[date.toLocaleDateString()]?.primaryValues as Demand[],
+                                                          summary.dailySummaries[formatDate(date)]?.primaryValues as Demand[],
                                                           'view',
                                                           DirectionType.Inbound
                                                       )
                                                     : openDialog(
                                                           'production',
                                                           { estimatedTimeOfCompletion: date },
-                                                          summary.dailySummaries[date.toLocaleDateString()]?.primaryValues as Production[],
+                                                          summary.dailySummaries[formatDate(date)]?.primaryValues as Production[],
                                                           'view',
                                                           DirectionType.Outbound
                                                       )
                                             }
                                         >
-                                            <Typography variant="body2"> {summary.dailySummaries[date.toLocaleDateString()]?.primaryValueTotal} </Typography>
+                                            <Typography variant="body2"> {summary.dailySummaries[formatDate(date)]?.primaryValueTotal} </Typography>
                                         </Button>
                                     </Box>
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center">
@@ -115,17 +116,17 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                 openDialog(
                                                     'delivery',
                                                     summary.type === 'demand' ? { dateOfArrival: date } : { dateOfDeparture: date },
-                                                    summary.dailySummaries[date.toLocaleDateString()]?.deliveries as Delivery[],
+                                                    summary.dailySummaries[formatDate(date)]?.deliveries as Delivery[],
                                                     'view',
                                                     summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound
                                                 )
                                             }
                                         >
-                                            <Typography variant="body2"> {summary.dailySummaries[date.toLocaleDateString()]?.deliveryTotal} </Typography>
+                                            <Typography variant="body2"> {summary.dailySummaries[formatDate(date)]?.deliveryTotal} </Typography>
                                         </Button>
                                     </Box>
                                     <Box flex={1} display="flex" justifyContent="center" alignItems="center">
-                                        {incrementDate(date, 1).toLocaleDateString() === new Date().toLocaleDateString() ? 
+                                        {formatDate(incrementDate(date, 1)) === formatDate(new Date()) ? 
                                             <Button 
                                                 variant="text"
                                                 sx={{ padding: 0 }}
@@ -133,7 +134,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                                     openDialog(
                                                         'stock',
                                                         {},
-                                                        summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stocks as Stock[],
+                                                        summary.dailySummaries[formatDate(incrementDate(date, 1))]?.stocks as Stock[],
                                                         'view',
                                                         summary.type === 'demand' ? DirectionType.Inbound : DirectionType.Outbound
                                                     )}
@@ -141,23 +142,23 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                             >
                                                 <Typography
                                                     variant="body2"
-                                                    color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                                    color={ summary.dailySummaries[formatDate(incrementDate(date, 1))]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
                                                 >
-                                                    {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
+                                                    {summary.dailySummaries[formatDate(incrementDate(date, 1))]?.stockTotal}
                                                 </Typography>
                                             </Button> :
                                             <Typography
                                                 variant="body2"
-                                                color={ summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
+                                                color={ summary.dailySummaries[formatDate(incrementDate(date, 1))]?.stockTotal < 0 ? '#f44336bb' : 'inherit' }
                                             >
-                                                {summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()]?.stockTotal}
+                                                {summary.dailySummaries[formatDate(incrementDate(date, 1))]?.stockTotal}
                                             </Typography>
                                         }
                                     </Box>
                                     {includeDaysOfSupply && <Box flex={1} display="flex" justifyContent="center" alignItems="center">
                                         {supplies.length > 0 ? 
                                             <Typography variant="body2">
-                                                {supplies.find(sup => new Date(sup.date).toLocaleDateString() === date.toLocaleDateString())?.daysOfSupply?.toFixed(2)}
+                                                {supplies.find(sup => formatDate(sup.date) === formatDate(date))?.daysOfSupply?.toFixed(2)}
                                             </Typography> :
                                             <Stack direction="row" gap=".25rem">
                                                 <Typography variant="body2"> n.a. </Typography> <InfoButton text="Reported days of supply for this partner are not available at the moment. Please refresh partner data." />
@@ -181,19 +182,19 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                 <Stack alignItems="center" spacing={0.25}>
                                     <Typography variant="body2">Summary</Typography>
                                     {!isExpanded && (
-                                        <Typography variant="body3" color="#777">{`${cw.startDate.toLocaleDateString()} - ${incrementDate(cw.startDate, 6).toLocaleDateString()}`}</Typography>
+                                        <Typography variant="body3" color="#777">{`${formatDate(cw.startDate)} - ${formatDate(incrementDate(cw.startDate, 6))}`}</Typography>
                                     )}
                                 </Stack>
                             </Box>
                         )}
                         <Box flex={1} display="flex" justifyContent="center" alignItems="center">
                             <Typography variant="body2">
-                                {weekDates.reduce((total, date) => total + (summary.dailySummaries[date.toLocaleDateString()]?.primaryValueTotal ?? 0), 0)}
+                                {weekDates.reduce((total, date) => total + (summary.dailySummaries[formatDate(date)]?.primaryValueTotal ?? 0), 0)}
                             </Typography>
                         </Box>
                         <Box flex={1} display="flex" justifyContent="center" alignItems="center">
                             <Typography variant="body2">
-                                {weekDates.reduce((total, date) => total + (summary.dailySummaries[date.toLocaleDateString()]?.deliveryTotal ?? 0), 0)}
+                                {weekDates.reduce((total, date) => total + (summary.dailySummaries[formatDate(date)]?.deliveryTotal ?? 0), 0)}
                             </Typography>
                         </Box>
                         <Box flex={1} display="flex" justifyContent="center" alignItems="center">
@@ -202,7 +203,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                 color={
                                     ([...weekDates]
                                         .reverse()
-                                        .map((date) => summary.dailySummaries[date.toLocaleDateString()]?.stockTotal)
+                                        .map((date) => summary.dailySummaries[formatDate(date)]?.stockTotal)
                                         .find((sum) => sum) ?? 0) < 0
                                         ? '#f44336bb'
                                         : 'inherit'
@@ -211,7 +212,7 @@ export function CalendarWeekSummary<TType extends SummaryType>({ supplies, cw, s
                                 {
                                     [...weekDates]
                                         .reverse()
-                                        .map((date) => summary.dailySummaries[incrementDate(date, 1).toLocaleDateString()])
+                                        .map((date) => summary.dailySummaries[formatDate(incrementDate(date, 1))])
                                         .find((sum) => sum)?.stockTotal
                                 }
                             </Typography>

@@ -21,6 +21,7 @@ import { DateType, Datepicker } from '@catena-x/portal-shared-components';
 import { FormLabel, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useEffect, useRef, useState } from 'react';
+import { DATE_INPUT_FORMAT } from '@util/date-format';
 
 const isValidTime = (time?: string) => {
     if (!time) {
@@ -31,13 +32,15 @@ const isValidTime = (time?: string) => {
         return false;
     }
     const [hours, minutes] = splits;
+    if (!/^\d{1,2}$/.test(hours) || !/^\d{2}$/.test(minutes)) {
+        return false;
+    }
     return parseInt(hours) >= 0 && parseInt(hours) <= 23 && parseInt(minutes) >= 0 && parseInt(minutes) <= 59;
 };
 
 type DateTimeProps = {
     label: string;
     placeholder: string;
-    locale: 'en' | 'de';
     error: boolean;
     value: Date | null;
     disabled?: boolean;
@@ -50,8 +53,8 @@ export const DateTime = ({ error, value, onValueChange, disabled, ...props }: Da
     const timeRef = useRef<HTMLInputElement>(null);
     const handleTimeChange = () => {
         const time = timeRef.current?.value;
-        if (time && date) {
-            const [hours, minutes] = time.split(':');
+        if (isValidTime(time) && date) {
+            const [hours, minutes] = time!.split(':');
             const newDate = new Date(date);
             newDate.setHours(parseInt(hours));
             newDate.setMinutes(parseInt(minutes));
@@ -62,8 +65,9 @@ export const DateTime = ({ error, value, onValueChange, disabled, ...props }: Da
     };
     const handleDateChange = (newDate: DateType) => {
         setDate(newDate);
-        if (newDate && timeRef.current?.value) {
-            const [hours, minutes] = timeRef.current.value.split(':');
+        const time = timeRef.current?.value;
+        if (newDate && isValidTime(time)) {
+            const [hours, minutes] = time!.split(':');
             const combinedDate = new Date(newDate);
             combinedDate.setHours(parseInt(hours));
             combinedDate.setMinutes(parseInt(minutes));
@@ -102,6 +106,8 @@ export const DateTime = ({ error, value, onValueChange, disabled, ...props }: Da
                         <Datepicker
                             key={key}
                             {...props}
+                            locale="en"
+                            inputFormat={DATE_INPUT_FORMAT}
                             error={error}
                             defaultValue={date}
                             readOnly={false}
@@ -112,7 +118,11 @@ export const DateTime = ({ error, value, onValueChange, disabled, ...props }: Da
                     <input
                         ref={timeRef}
                         className={`${error && !isValidTime(timeRef.current?.value) ? 'error' : ''}`}
-                        type="time"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="hh:mm"
+                        maxLength={5}
+                        size={5}
                         id={'time' + props.label.toLowerCase()}
                         name={'etoc' + props.label.toLowerCase()}
                         onChange={handleTimeChange}

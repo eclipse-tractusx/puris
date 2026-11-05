@@ -31,6 +31,7 @@ import { useDataModal } from '@contexts/dataModalContext';
 import { getUnitOfMeasurement } from '@util/helpers';
 import { DirectionType } from '@models/types/erp/directionType';
 import { useSites } from '@hooks/useSites';
+import { formatDate, formatTime } from '@util/date-format';
 
 export type StockModalProps = {
     open: boolean;
@@ -86,8 +87,8 @@ const createStockColumns = (
             flex: 1.5,
             renderCell: (data: { row: Stock }) => (
                 <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    <Box>{new Date(data.row.lastUpdatedOn).toLocaleDateString('en-GB')}</Box>
-                    <Box>{new Date(data.row.lastUpdatedOn).toLocaleTimeString('en-GB')}</Box>
+                    <Box>{formatDate(data.row.lastUpdatedOn)}</Box>
+                    <Box>{formatTime(data.row.lastUpdatedOn)}</Box>
                 </Stack>
             ),
         },

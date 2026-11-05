@@ -33,8 +33,9 @@ import { Box, Button, Dialog, DialogTitle, Grid, Stack, Typography } from '@mui/
 import { useEffect, useMemo, useState } from 'react';
 import { getDemandAndCapacityNotification } from '@services/demand-capacity-notification';
 import { postIrsJob } from '@services/irs-service';
+import { formatDateTime } from '@util/date-format';
 
-const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString() : '-');
+const formatInstant = (value: string | null | undefined) => (value ? formatDateTime(value) : '-');
 
 type Option = {
     id: string;

@@ -39,6 +39,7 @@ import { MaterialRelation } from '@models/types/data/material-relation';
 import { getAllMaterialRelations, postMaterialRelation } from '@services/material-relation-service';
 import { MaterialRelationModal } from './MaterialRelationsModal';
 import { getUnitOfMeasurement } from '@util/helpers';
+import { formatDate, formatTime } from '@util/date-format';
 
 const getDirectionLabel = (row: Material): string => {
     if (row.materialFlag && row.productFlag) return 'Bidirectional';
@@ -334,8 +335,8 @@ export const MasterDataView = () => {
                                     {
                                         data.row.validFrom ? (
                                             <Stack display="flex" width="100%" height="100%">
-                                                <Box>{new Date(data.row.validFrom).toLocaleDateString('en-GB')}</Box>
-                                                <Box>{new Date(data.row.validFrom).toLocaleTimeString('en-GB')}</Box>
+                                                <Box>{formatDate(data.row.validFrom)}</Box>
+                                                <Box>{formatTime(data.row.validFrom)}</Box>
                                             </Stack>
                                         ) : <Typography variant="body2"> - </Typography>
                                     }
@@ -350,8 +351,8 @@ export const MasterDataView = () => {
                                     {
                                         data.row.validTo ? (
                                             <Stack display="flex" width="100%" height="100%">
-                                                <Box>{new Date(data.row.validTo).toLocaleDateString('en-GB')}</Box>
-                                                <Box>{new Date(data.row.validTo).toLocaleTimeString('en-GB')}</Box>
+                                                <Box>{formatDate(data.row.validTo)}</Box>
+                                                <Box>{formatTime(data.row.validTo)}</Box>
                                             </Stack>
                                         ) : <Typography variant="body2"> - </Typography>
                                     }
