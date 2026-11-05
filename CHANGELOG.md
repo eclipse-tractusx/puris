@@ -43,6 +43,7 @@ The **need for configuration updates** is **marked bold**
 - Allow creating Root Data Exchange Request for notification with forwarded requests ([#1249](https://github.com/eclipse-tractusx/puris/pull/1249))
 - Fix grant sync failing when second approval with the same notification reference arrives ([#1271](https://github.com/eclipse-tractusx/puris/pull/1271))
 - Fix multiple customers now use the same partner material number instead of registering duplicates ([#1272](https://github.com/eclipse-tractusx/puris/pull/1272))
+-Fix differend locale and date time format accros the application and make it en-GB everywhere ([]())
 
 ### Version Bumps
 
