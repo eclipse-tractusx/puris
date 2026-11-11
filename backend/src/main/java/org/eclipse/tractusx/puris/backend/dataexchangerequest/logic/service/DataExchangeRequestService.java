@@ -72,4 +72,8 @@ public abstract class  DataExchangeRequestService<TEntity extends DataExchangeRe
     }
     
     public abstract boolean validate(TEntity request);
+
+    public final boolean isExpired(DataExchangeRequest request) {
+        return request.getDesiredEndDateTime().before(new java.util.Date());
+    }
 }
