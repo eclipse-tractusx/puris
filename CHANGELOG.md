@@ -46,7 +46,9 @@ The **need for configuration updates** is **marked bold**
 
 ### Version Bumps
 
-- /
+  - bump org.bouncycastle:bcprov-jdk18on from 1.84 to 1.85
+  - bump org.bouncycastle:bcpkix-jdk18on from 1.74 to 1.85
+  - bump org.bouncycastle:bcutil-jdk18on from 1.74 to 1.85
 
 ### Known Knowns
 

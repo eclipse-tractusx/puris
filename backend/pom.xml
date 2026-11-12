@@ -52,7 +52,7 @@
         <keycloak-core.version>26.3.2</keycloak-core.version>
         <keycloak-server-spi-private.version>26.3.2</keycloak-server-spi-private.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
-        <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
+        <bouncycastle.version>1.85</bouncycastle.version>
         <titanium-jsonLd.version>1.7.0</titanium-jsonLd.version>
         <jakarta-json.version>2.0.1</jakarta-json.version>
     </properties>
@@ -65,17 +65,25 @@
                 <artifactId>keycloak-core</artifactId>
                 <version>${keycloak-core.version}</version>
             </dependency>
-            <!-- comes from keycloak-spring-boot-starter -->
             <dependency>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-server-spi-private</artifactId>
                 <version>${keycloak-server-spi-private.version}</version>
             </dependency>
-            <!-- comes from keycloak-spring-boot-starter -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>${bcprov-jdk18on.version}</version>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk18on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
             <!-- comes from liquibase-core -->
             <dependency>
