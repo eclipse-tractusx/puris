@@ -49,13 +49,13 @@ ingress:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
   hosts:
-    - host: "tracex-atlas-submodel-server.int.catena-x.net"
+    - host: "tracex-atlas-submodel-server.test.tractus-x.com"
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
     - hosts:
-        - "tracex-atlas-submodel-server.int.catena-x.net"
+        - "tracex-atlas-submodel-server.test.tractus-x.com"
       # Default secret for certificate creation already provided to your namespace
       secretName: tls-secret-atlas
 

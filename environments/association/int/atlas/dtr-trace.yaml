@@ -15,7 +15,7 @@ registry:
   replicaCount: 1
   imagePullPolicy: IfNotPresent
   containerPort: 4243
-  host: trace-x-registry-atlas.int.catena-x.net #<path:puris/data/companies/atlas/dtr#hostname>
+  host: trace-x-registry-atlas.test.tractus-x.com #<path:puris/data/companies/atlas/dtr#hostname>
   ## If 'authentication' is set to false, no OAuth authentication is enforced
   authentication: false
   # Issuer url for the dtr (resource server),

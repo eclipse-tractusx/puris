@@ -89,7 +89,7 @@ backend:
     baseurl: *domain
     allowedOrigins: 
       - *frontendDomain
-#    baseurl: puris-backend-atlas.int.catena-x.net/
+#    baseurl: puris-backend-atlas.test.tractus-x.com/
     api:
       # -- The API key of the PURIS application
       key: "<path:puris/data/companies/atlas/puris#backend-api-key>"

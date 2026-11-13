@@ -15,7 +15,7 @@ registry:
   replicaCount: 1
   imagePullPolicy: IfNotPresent
   containerPort: 4243
-  host: trace-x-registry-belfast.int.catena-x.net #<path:puris/data/companies/belfast/dtr#hostname>
+  host: trace-x-registry-belfast.test.tractus-x.com #<path:puris/data/companies/belfast/dtr#hostname>
   ## If 'authentication' is set to false, no OAuth authentication is enforced
   authentication: false
   # Issuer url for the dtr (resource server),

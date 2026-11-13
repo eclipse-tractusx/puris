@@ -96,7 +96,7 @@ backend:
     baseurl: *domain
     allowedOrigins: 
       - *frontendDomain
-#    baseurl: puris-backend-belfast.int.catena-x.net/
+#    baseurl: puris-backend-belfast.test.tractus-x.com/
     api:
       # -- The API key of the PURIS application
       key: "<path:puris/data/companies/belfast/puris#backend-api-key>"

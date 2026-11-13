@@ -6,7 +6,7 @@
 >
 
 ```shell
-argocd login argocd.int.catena-x.net --sso
+argocd login argocd.test.tractus-x.com --sso
 ```
 
 Overall Flow:

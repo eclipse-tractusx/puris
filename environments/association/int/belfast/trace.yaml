@@ -23,16 +23,16 @@ configuration:
 
   frontend:
     name: &fe_name 'tx-frontend-belfast'
-    hostName: &fe_host_name 'traceability-portal-belfast.int.catena-x.net'
-    backendApiUrl: &be_api_url 'https://traceability-belfast.int.catena-x.net/api' #<path:traceability-foss/data/companies/belfast/frontend#catenax_portal_api_url> #TODO
+    hostName: &fe_host_name 'traceability-portal-belfast.test.tractus-x.com'
+    backendApiUrl: &be_api_url 'https://traceability-belfast.test.tractus-x.com/api' #<path:traceability-foss/data/companies/belfast/frontend#catenax_portal_api_url> #TODO
 
   backend:
     name: &backend_name 'tx-backend-belfast'
-    hostName: &be_host_name 'traceability-belfast.int.catena-x.net'
+    hostName: &be_host_name 'traceability-belfast.test.tractus-x.com'
     # -- backend host with https://
-    url: &be_url 'https://traceability-belfast.int.catena-x.net'
+    url: &be_url 'https://traceability-belfast.test.tractus-x.com'
     internalUrl: &be_url_internal 'http://tx-backend-belfast:8181'
-    submodelUrl: &submodel_url 'https://tracex-atlas-submodel-server.int.catena-x.net/'
+    submodelUrl: &submodel_url 'https://tracex-atlas-submodel-server.test.tractus-x.com/'
     edcClient:
       callbackUrl: &backend_edc_client_callback_url 'http://tx-backend-belfast:8181/api/internal/endpoint-data-reference'
     backendDatabase:
@@ -42,17 +42,17 @@ configuration:
       rootPassword: &backend_database_root_password <path:puris/data/companies/belfast/trace#postgres-root-password> #<path:traceability-foss/data/companies/belfast/database#postgresPassword> #todo
     security:
       # -- required to allow FE connection
-      allowedCorsOrigins: &backend_security_allowed_fe 'https://traceability-portal-belfast.int.catena-x.net/'
+      allowedCorsOrigins: &backend_security_allowed_fe 'https://traceability-portal-belfast.test.tractus-x.com/'
 
   pgadmin4:
     name: &pgadmin_name 'tx-pgadmin-belfast'
-    hostName: &pgadmin_host_name 'tx-pgadmin-belfast.int.catena-x.net'
+    hostName: &pgadmin_host_name 'tx-pgadmin-belfast.test.tractus-x.com'
     password: &pgadmin_password <path:puris/data/companies/belfast/trace#pg-admin-password> # <path:traceability-foss/data/companies/belfast/database#pgadminPassword>
 
   irs:
     name: &irs_name 'tx-irs-belfast'
-    hostName: &irs_host_name "tx-irs-belfast.int.catena-x.net"
-    url: &irs_url 'https://tx-irs-belfast.int.catena-x.net'
+    hostName: &irs_host_name "tx-irs-belfast.test.tractus-x.com"
+    url: &irs_url 'https://tx-irs-belfast.test.tractus-x.com'
     callbackUrl: &irs_callback_url 'http://tx-irs-belfast:8181/internal/endpoint-data-reference'
     irsDatabase:
       name: &irs_database_name 'tx-irs-minio-belfast'
@@ -62,16 +62,16 @@ configuration:
 
   edc:
     provider:
-      controlPlaneHost: &edc_provider_controlplane_url 'https://tx-edc-consumer-belfast-controlplane.int.catena-x.net'
-      dataPlaneHost: &edc_provider_dataplane_url 'https://trace-x-edc-belfast-dataplane.int.catena-x.net'
+      controlPlaneHost: &edc_provider_controlplane_url 'https://tx-edc-consumer-belfast-controlplane.test.tractus-x.com'
+      dataPlaneHost: &edc_provider_dataplane_url 'https://trace-x-edc-belfast-dataplane.test.tractus-x.com'
     consumer:
       name: &edc_name 'tx-edc-consumer-belfast'
       apiKey: &edc_api_key <path:puris/data/companies/belfast/trace/edc#api-key> #<path:traceability-foss/data/companies/belfast/edc/controlplane#edc.api.control.auth.apikey.value> #todo
       controlplane:
-        hostName: &edc_controlplane_hostname 'tx-edc-consumer-belfast-controlplane.int.catena-x.net' #todo: where does this come from
-        managementUrl: &edc_controlplane_management_url 'https://tx-edc-consumer-belfast-controlplane.int.catena-x.net/management'
+        hostName: &edc_controlplane_hostname 'tx-edc-consumer-belfast-controlplane.test.tractus-x.com' #todo: where does this come from
+        managementUrl: &edc_controlplane_management_url 'https://tx-edc-consumer-belfast-controlplane.test.tractus-x.com/management'
       dataplane:
-        hostName: &edc_dataplane_hostname 'tx-edc-consumer-belfast-dataplane.int.catena-x.net'
+        hostName: &edc_dataplane_hostname 'tx-edc-consumer-belfast-dataplane.test.tractus-x.com'
       edcDatabase:
         name: &edc_database_name 'tx-edc-consumer-postgresql-belfast'
         username: &edc_database_username <path:puris/data/companies/belfast/trace/edc#postgres-user> #todo
@@ -88,28 +88,28 @@ configuration:
 
   portal:
     domain: &portal_domain catena-x.net #<path:traceability-foss/data/companies/belfast/frontend#catenax_portal_backend_domain> #todo
-    url: &portal_url https://portal.int.catena-x.net/ # <path:traceability-foss/data/companies/belfast/frontend#catenax_portal_url>
+    url: &portal_url https://portal.test.tractus-x.com/ # <path:traceability-foss/data/companies/belfast/frontend#catenax_portal_url>
     backend:
-      url: &portal_backend_url 'https://portal-backend.int.catena-x.net/api'
-    discoveryFinderUrl: &discovery_finder_url 'https://semantics.int.catena-x.net/discoveryfinder/api/v1.0/administration/connectors/discovery/search'
+      url: &portal_backend_url 'https://portal-backend.test.tractus-x.com/api'
+    discoveryFinderUrl: &discovery_finder_url 'https://semantics.test.tractus-x.com/discoveryfinder/api/v1.0/administration/connectors/discovery/search'
     serviceAccount: # todo service accounts
       clientId: &service_account_id <path:puris/data/companies/belfast/trace/keycloak#client-id> # sa267 #todo
       clientPassword: &service_account_password <path:puris/data/companies/belfast/trace/keycloak#client-password>
     auth:
       keycloakUrl: &portal_auth_keycloak_url <path:puris/data/environment/central-idp#base-url>
-      tokenUri: &central_idp_token_uri 'https://centralidp.int.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/token'
-      jwkUri: &central_idp_jwk_uri 'https://centralidp.int.catena-x.net/auth/realms/CX-Central/protocol/openid-connect/certs'
+      tokenUri: &central_idp_token_uri 'https://centralidp.test.tractus-x.com/auth/realms/CX-Central/protocol/openid-connect/token'
+      jwkUri: &central_idp_jwk_uri 'https://centralidp.test.tractus-x.com/auth/realms/CX-Central/protocol/openid-connect/certs'
       resourceClient: &central_idp_resource_client <path:puris/data/companies/belfast/trace/keycloak#app-client-id>
 
-  semanticHub: &semantichub_models_url 'https://semantics.int.catena-x.net/hub/api/v1/models'
+  semanticHub: &semantichub_models_url 'https://semantics.test.tractus-x.com/hub/api/v1/models'
 
-  partnersPool: &partners_pool_url 'https://partners-pool.int.catena-x.net'
+  partnersPool: &partners_pool_url 'https://partners-pool.test.tractus-x.com'
 
   digitalTwinRegistry: #use my belfast's bnl and the ones already needed
     allowedBpns: &allowed_bpns 'BPNL000000000YHU,BPNL000000000ZH5,BPNL000000000DWF,BPNL000000000EVQ'
-    url: &dtr_url 'https://trace-x-registry-belfast.int.catena-x.net/semantics/registry/api/v3'
-    descriptorEndpoint: &dtr_shell_descriptor_url 'https://trace-x-registry-belfast.int.catena-x.net/semantics/registry/api/v3/shell-descriptors/{aasIdentifier}'
-    shellLookupEndpoint: &dtr_shell_lookup_url 'https://trace-x-registry-belfast.int.catena-x.net/semantics/registry/api/v3/lookup/shells?assetIds={assetIds}'
+    url: &dtr_url 'https://trace-x-registry-belfast.test.tractus-x.com/semantics/registry/api/v3'
+    descriptorEndpoint: &dtr_shell_descriptor_url 'https://trace-x-registry-belfast.test.tractus-x.com/semantics/registry/api/v3/shell-descriptors/{aasIdentifier}'
+    shellLookupEndpoint: &dtr_shell_lookup_url 'https://trace-x-registry-belfast.test.tractus-x.com/semantics/registry/api/v3/lookup/shells?assetIds={assetIds}'
 
 #########################
 # Frontend Chart Values configuration     #
