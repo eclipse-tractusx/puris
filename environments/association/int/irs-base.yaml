@@ -81,12 +81,12 @@ minio:
 
 discovery:
   oAuthClientId: discovery  # ID of the OAuth2 client registration to use, see config spring.security.oauth2.client
-  discoveryFinderUrl: https://<path:item-relationship-service/data/environment/discovery/discovery-finder#base-url>/administration/connectors/discovery/search
+  discoveryFinderUrl: https://<path:puris/data/environment/discovery/discovery-finder#base-url>/administration/connectors/discovery/search
   type: "bpn"
 semanticshub:
   # outcomment till persistence
   # TODO semantics hub
-  # url: https://<path:item-relationship-service/data/environment/semantichub#base-url>/models
+  # url: https://<path:puris/data/environment/semantichub#base-url>/models
   oAuthClientId: semantics
   localModels:
     # urn:bamm:io.catenax.part_as_planned:1.0.1#PartAsPlanned (ESS)

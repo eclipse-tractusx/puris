@@ -260,9 +260,9 @@ postgresql:
       memory: "128Mi"
 
 idp:
-  url: <path:puris/data/environment#central-idp-url>
+  url: https://<path:puris/data/environment/central-idp#base-url>
   # -- Name of the Realm of the keycloak instance.
-  realm: <path:puris/data/environment#central-idp-realm>
+  realm: <path:puris/data/environment/central-idp#realm>
   # -- Name of the client which is used for the application.
   clientId: <path:puris/data/companies/bristol/puris/idp#client-id>
   # -- URL to use as keycloak redirect url.

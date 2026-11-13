@@ -60,14 +60,14 @@ iatp:
   id: <path:puris/data/companies/bristol#did-url>
   # -- Configures the trusted issuers for this runtime
   trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
-    - <path:puris/data/environment#trusted-issuer-1>
+    - <path:puris/data/environment/wallet#trusted-issuer-1>
   sts:
     # TODO edc 0.13.0
     # div:
-    #   url: <path:puris/data/environment#dim-url>
+    #   url: <path:puris/data/environment/wallet#dim-base-url>
     # TODO current 0.12.x
     dim:
-      url: <path:puris/data/environment#dim-url>
+      url: <path:puris/data/environment/wallet#dim-base-url>
     oauth:
       token_url: <path:puris/data/companies/bristol#dim-idp-token-url>
       client:
@@ -95,7 +95,7 @@ dataplane:
 
   token:
     signer:
-      privatekey_alias: companies/supplier/edc/dataplane-proxy/private-key
+      privatekey_alias: companies/belfast/edc/dataplane-proxy/private-key
     verifier:
       publickey_alias: companies/bristol/edc/dataplane-proxy/public-key
 
@@ -155,5 +155,5 @@ postgresql:
 
 vault:
   hashicorp:
-    token: <path:puris/data/environment#vault-token>
+    token: <path:puris/data/environment/vault#token>
 

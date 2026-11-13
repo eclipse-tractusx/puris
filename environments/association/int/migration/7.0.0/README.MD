@@ -17,7 +17,7 @@ Overall Flow:
 4. Restore backup
 5. Scale up
 
-## Migrate PURIS (Supplier)
+## Migrate PURIS (Belfast)
 
 ### Prepare per Service
 
@@ -37,39 +37,39 @@ Now refine these variables to derive your custom templates for the migration. We
 ```bash
 export ARGO_PROJECT=project-puris
 export NS=product-puris
-export APPLICATION=supplier-puris
+export APPLICATION=belfast-puris
 export PG_VERSION_FROM=15
 export PG_VERSION_TO=18
 export PG_ADMIN_USER=postgres
-export PG_SERVICE_NAME=supplier-backend-postgresql
+export PG_SERVICE_NAME=belfast-backend-postgresql
 export PG_DAB=postgres
-export PG_POSTGRES_PW_SECRET=supplier-secret-postgres-init
+export PG_POSTGRES_PW_SECRET=belfast-secret-postgres-init
 export PG_POSTGRES_PW_SECRET_KEY=postgres-password
 ```
 
 ```bash
 export ARGO_PROJECT=project-puris
 export NS=product-puris
-export APPLICATION=supplier-edc
+export APPLICATION=belfast-edc
 export PG_VERSION_FROM=16
 export PG_VERSION_TO=18
 export PG_ADMIN_USER=postgres
-export PG_SERVICE_NAME=supplier-edc-postgresql
+export PG_SERVICE_NAME=belfast-edc-postgresql
 export PG_DB=edc
-export PG_POSTGRES_PW_SECRET=supplier-edc-postgresql
+export PG_POSTGRES_PW_SECRET=belfast-edc-postgresql
 export PG_POSTGRES_PW_SECRET_KEY=postgres-password
 ```
 
 ```bash
 export ARGO_PROJECT=project-puris
 export NS=product-puris
-export APPLICATION=supplier-edc2
+export APPLICATION=belfast-edc2
 export PG_VERSION_FROM=16
 export PG_VERSION_TO=18
 export PG_ADMIN_USER=postgres
-export PG_SERVICE_NAME=supplier-edc-postgresql
+export PG_SERVICE_NAME=belfast-edc-postgresql
 export PG_DB=edc
-export PG_POSTGRES_PW_SECRET=supplier-edc-postgresql
+export PG_POSTGRES_PW_SECRET=belfast-edc-postgresql
 export PG_POSTGRES_PW_SECRET_KEY=postgres-password
 ```
 
@@ -77,17 +77,17 @@ export PG_POSTGRES_PW_SECRET_KEY=postgres-password
 ```bash
 export ARGO_PROJECT=project-puris
 export NS=product-puris
-export APPLICATION=customer-edc
+export APPLICATION=atlas-edc
 export PG_VERSION_FROM=16
 export PG_VERSION_TO=18
 export PG_ADMIN_USER=postgres
-export PG_SERVICE_NAME=customer-edc-postgresql
+export PG_SERVICE_NAME=atlas-edc-postgresql
 export PG_DB=edc
-export PG_POSTGRES_PW_SECRET=customer-edc-postgresql
+export PG_POSTGRES_PW_SECRET=atlas-edc-postgresql
 export PG_POSTGRES_PW_SECRET_KEY=postgres-password
 ```
 
-- [ ] TODO DTR supplier
+- [ ] TODO DTR belfast
 
 Now do environment substitution:
 
@@ -154,12 +154,12 @@ Commit, push, sync
 
 ```shell
 
-argocd app get supplier-edc --hard-refresh
-argocd app get supplier-dtr --hard-refresh
-argocd app get supplier-puris --hard-refresh
-argocd app sync supplier-edc
-argocd app sync supplier-dtr
-argocd app sync supplier-puris
+argocd app get belfast-edc --hard-refresh
+argocd app get belfast-dtr --hard-refresh
+argocd app get belfast-puris --hard-refresh
+argocd app sync belfast-edc
+argocd app sync belfast-dtr
+argocd app sync belfast-puris
 ```
 
 ### 2. Create migration-pvc and backup data
@@ -224,7 +224,7 @@ argocd app create $APPLICATION \
   --dest-namespace $NS \
   --config-management-plugin argocd-vault-plugin-helm-args \
   --plugin-env AVP_SECRET=vault-secret \
-  --plugin-env helm_args="-f https://raw.githubusercontent.com/eclipse-tractusx/puris/feat/consortia-int-values/environments/association/int/supplier/edc.yaml" \
+  --plugin-env helm_args="-f https://raw.githubusercontent.com/eclipse-tractusx/puris/feat/consortia-int-values/environments/association/int/belfast/edc.yaml" \
   --upsert
 ```
 
@@ -264,7 +264,7 @@ argocd app sync $APPLICATION
 Update the manifest temporarily (UI):
 
 - fork url with feature branch of postgres update
-- overwrite current image versions in [./supplier/puris.yaml](./supplier/puris.yaml)
+- overwrite current image versions in [./belfast/puris.yaml](./belfast/puris.yaml)
 
 ```yaml
 frontend:
@@ -291,30 +291,30 @@ To retain the old statefulSet and persistentVolumeClaim names, do the following:
 # to check if this step can be done via orphanage of the statefulSet, depends on retain policy
 argocd app delete-resource $APPLICATION \
   --kind PersistentVolumeClaim \
-  --resource-name data-supplier-backend-postgresql-0 \
+  --resource-name data-belfast-backend-postgresql-0 \
   --namespace $NS
 
 argocd app delete-resource $APPLICATION \
   --kind StatefulSet \
-  --resource-name supplier-backend-postgresql \
+  --resource-name belfast-backend-postgresql \
   --namespace $NS
 
 argocd app delete-resource $APPLICATION \
   --kind Service \
-  --resource-name supplier-backend-postgresql \
+  --resource-name belfast-backend-postgresql \
   --namespace $NS
 
 argocd app delete-resource $APPLICATION \
   --kind Service \
-  --resource-name supplier-backend-postgresql-hl \
+  --resource-name belfast-backend-postgresql-hl \
   --namespace $NS
 ```
 
 Then sync
 
 ```shell
-argocd app get supplier-puris --hard-refresh
-argocd app sync supplier-puris
+argocd app get belfast-puris --hard-refresh
+argocd app sync belfast-puris
 ```
 
 ### 4. Restore Backup
@@ -376,10 +376,10 @@ Commit, push, sync
 
 ```shell
 
-argocd app get supplier-edc --hard-refresh
-argocd app get supplier-dtr --hard-refresh
-argocd app get supplier-puris --hard-refresh
-argocd app sync supplier-edc
-argocd app sync supplier-dtr
-argocd app sync supplier-puris
+argocd app get belfast-edc --hard-refresh
+argocd app get belfast-dtr --hard-refresh
+argocd app get belfast-puris --hard-refresh
+argocd app sync belfast-edc
+argocd app sync belfast-dtr
+argocd app sync belfast-puris
 ```

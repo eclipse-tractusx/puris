@@ -22,13 +22,13 @@
 # IRS Configuration #
 #####################
 # TODO: check all vault values
-irsUrl: "https://<path:item-relationship-service/data/companies/ceres/irs#base-url>"  # https://irs-ceres.cxn.isst.fraunhofer.de
+irsUrl: "https://<path:puris/data/companies/ceres/irs#base-url>"  # https://irs-ceres.cxn.isst.fraunhofer.de
 
-bpn: "<path:item-relationship-service/data/companies/ceres/identity#bpnl>"
+bpn: "<path:puris/data/companies/ceres#bpnl>"
 recursive:
-  localBpnl: "<path:item-relationship-service/data/companies/ceres/identity#bpnl>"
-apiKeyAdmin: "<path:item-relationship-service/data/companies/ceres/irs/api#api-key-admin>"  # <api-key-admin> Admin auth key, Should be changed!
-apiKeyRegular: "<path:item-relationship-service/data/companies/ceres/irs/api#api-key-regular>"  # <api-key-regular> View auth key, Should be changed!
+  localBpnl: "<path:puris/data/companies/ceres#bpnl>"
+apiKeyAdmin: "<path:puris/data/companies/ceres/irs/api#api-key-admin>"  # <api-key-admin> Admin auth key, Should be changed!
+apiKeyRegular: "<path:puris/data/companies/ceres/irs/api#api-key-regular>"  # <api-key-regular> View auth key, Should be changed!
 ingress:
   # -- Enable the Ingress
   enabled: true
@@ -40,7 +40,7 @@ ingress:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   # -- Hosts for the Ingress controller
   hosts:
-    - host: "<path:item-relationship-service/data/companies/ceres/irs#base-url>"
+    - host: "<path:puris/data/companies/ceres/irs#base-url>"
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -48,11 +48,11 @@ ingress:
   tls:
     - secretName: tls-secret-irs-ceres
       hosts:
-        - "<path:item-relationship-service/data/companies/ceres/irs#base-url>"
+        - "<path:puris/data/companies/ceres/irs#base-url>"
 
 digitalTwinRegistry:
   type: decentral  # The type of DTR. This can be either "central" or "decentral". If "decentral", descriptorEndpoint, shellLookupEndpoint and oAuthClientId is not required.
-  url: "https://<path:item-relationship-service/data/companies/ceres/irs/dtr#base-url>" #no api/v3 suffix
+  url: "https://<path:puris/data/companies/ceres/dtr#hostname>" #no api/v3 suffix
   # descriptorEndpoint: >-
   #   {{ tpl (.Values.digitalTwinRegistry.url | default "") . }}/shell-descriptors/{aasIdentifier}
   # shellLookupEndpoint: >-
@@ -64,43 +64,43 @@ digitalTwinRegistry:
 blobstore:
   persistence:
     minio:
-      accessKey: "<path:item-relationship-service/data/companies/ceres/irs/minio/root#user>"
-      secretKey: "<path:item-relationship-service/data/companies/ceres/irs/minio/root#password>"
+      accessKey: "<path:puris/data/companies/ceres/irs/minio/root#user>"
+      secretKey: "<path:puris/data/companies/ceres/irs/minio/root#password>"
   chainOpeningGrants:
     containerName: irs-chain-opening-grants
     daysToLive: -1
 
 oauth2:
-  clientTokenUri: "https://<path:item-relationship-service/data/environment/central-idp#base-url>/auth/realms/<path:item-relationship-service/data/environment/central-idp#realm>/protocol/openid-connect/token"  # https://centralidp.cxn.isst.fraunhofer.de/auth/realms/CX-Central/protocol/openid-connect/token
+  clientTokenUri: "https://<path:puris/data/environment/central-idp#base-url>/auth/realms/<path:puris/data/environment/central-idp#realm>/protocol/openid-connect/token"  # https://centralidp.cxn.isst.fraunhofer.de/auth/realms/CX-Central/protocol/openid-connect/token
   # TODO: add to vault
   semantics:
-    clientId: "<path:item-relationship-service/data/companies/ceres/irs/client-secret/semantics#id>"
-    clientSecret: "<path:item-relationship-service/data/companies/ceres/irs/client-secret/semantics#secret>"
+    clientId: "<path:puris/data/companies/ceres/irs/client-secret/semantics#id>"
+    clientSecret: "<path:puris/data/companies/ceres/irs/client-secret/semantics#secret>"
   discovery:
-    clientId: "<path:item-relationship-service/data/companies/ceres/irs/client-secret/discovery#id>"
-    clientSecret: "<path:item-relationship-service/data/companies/ceres/irs/client-secret/discovery#secret>"
+    clientId: "<path:puris/data/companies/ceres/irs/client-secret/discovery#id>"
+    clientSecret: "<path:puris/data/companies/ceres/irs/client-secret/discovery#secret>"
 edc:
   controlplane:
     endpoint:
-      data: "https://<path:item-relationship-service/data/companies/ceres/irs/edc#base-url>/management"  # <edc-controlplane-endpoint-data>
+      data: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/management"  # <edc-controlplane-endpoint-data>
     apikey:
-      secret: "<path:item-relationship-service/data/companies/ceres/irs/edc/api#api-key>"
-  # callbackurl: https://<path:item-relationship-service/data/companies/ceres/irs#base-url>/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
-  # negotiationCallbackurl: https://<path:item-relationship-service/data/companies/ceres/irs#base-url>/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
+      secret: "<path:puris/data/companies/ceres/edc/api#api-key>"
+  # callbackurl: https://<path:puris/data/companies/ceres/irs#base-url>/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
+  # negotiationCallbackurl: https://<path:puris/data/companies/ceres/irs#base-url>/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
 
 
 # enable auto-configuration
 ess:
   edc:
-    host: https://<path:item-relationship-service/data/companies/ceres/irs/edc#base-url>
+    host: https://<path:puris/data/companies/ceres/edc#hostname-internet>
 
 redisConfig:
   # TODO: update if application name changes
-  password: "<path:item-relationship-service/data/companies/ceres/irs/redis#password>"
+  password: "<path:puris/data/companies/ceres/irs/redis#password>"
 
 minio:
-  rootUser: "<path:item-relationship-service/data/companies/ceres/irs/minio/root#user>"  # <minio-username>
-  rootPassword: "<path:item-relationship-service/data/companies/ceres/irs/minio/root#password>"  # <minio-password>
+  rootUser: "<path:puris/data/companies/ceres/irs/minio/root#user>"  # <minio-username>
+  rootPassword: "<path:puris/data/companies/ceres/irs/minio/root#password>"  # <minio-password>
 
 #######################
 # Redis configuration #
@@ -109,4 +109,4 @@ redis:
   architecture: standalone
   auth:
     enabled: true
-    password: "<path:item-relationship-service/data/companies/ceres/irs/redis#password>"
+    password: "<path:puris/data/companies/ceres/irs/redis#password>"
