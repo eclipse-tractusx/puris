@@ -10,6 +10,13 @@ participant:
   contextId: <path:puris/data/companies/bristol#context-id>
 
 controlplane:
+  env:
+    # Renew token
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+    # 1h limit
+    EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
+    # 10min buffer
+    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
 
   # -- endpoints of the control plane
   endpoints:
@@ -89,6 +96,13 @@ iatp:
       id: <path:puris/data/companies/bristol#did-url>
 
 dataplane:
+  env:
+    # Renew token
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+    # 1h limit
+    EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
+    # 10min buffer
+    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
   endpoints:
     proxy:
       authKey: <path:puris/data/companies/bristol/edc#api-key>
