@@ -1,0 +1,109 @@
+edc:
+  install:
+    postgresql: true
+    vault: false
+
+  controlplane:
+    # -- Scale to 0 for scaledown
+    # autoscaling:
+    #     enabled: false
+    # replicaCount: 1
+    bdrs:
+      # time that a cached BPN/DID resolution map is valid in seconds, default is 10 min
+      cache_validity_seconds: 0
+      server:
+        # URL of the BPN/DID Resolution Service - required:
+        url: <path:atlas-1/data/environment/bdrs#base-url>
+    # 0.9.0: disable policy validation first
+    policy:
+      validation:
+        enabled: false
+    resources:
+      requests:
+        cpu: "20m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+    # -- declare where to mount [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) into the container
+    # -- configuration of the [Java Util Logging Facade](https://docs.oracle.com/javase/7/docs/technotes/guides/logging/overview.html)
+    logging: |-
+      .level=DEBUG
+      org.eclipse.edc.level=ALL
+      handlers=java.util.logging.ConsoleHandler
+      java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+      java.util.logging.ConsoleHandler.level=ALL
+      java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
+    env:
+      EDC_CATALOG_CACHE_EXECUTION_ENABLED: false
+      EDC_DCP_V08_FORCED: true
+      # configure vault token auto-renewal
+      EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+      EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
+      EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
+
+  dataplane:
+    # -- Scale to 0 for scaledown
+    # autoscaling:
+    #  enabled: false
+    # replicaCount: 0
+    resources:
+      requests:
+        cpu: "20m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    logging: |-
+      .level=DEBUG
+      org.eclipse.edc.level=ALL
+      handlers=java.util.logging.ConsoleHandler
+      java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+      java.util.logging.ConsoleHandler.level=ALL
+      java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
+
+    env:
+      # configure token autorenewal
+      EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+      EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
+      EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
+
+  postgresql:
+    # not needed anymore since 0.10.2
+    # image:
+    #   repository: bitnamilegacy/postgresql
+    #   tag: 16.2.0-debian-12-r10
+    primary:
+      persistence:
+        enabled: true
+        size: 2Gi
+      storageClass: "default"
+      # resources:
+      #   requests:
+      #     cpu: "5m"
+      #     memory: "128Mi"
+      #   limits:
+      #     cpu: "200m"
+    resources:
+      requests:
+        cpu: "20m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "128Mi"
+
+  vault:
+    hashicorp:
+      enabled: true
+      url: <path:atlas-1/data/environment/vault#base-url>
+      token: <path:atlas-1/data/environment/vault#token>
+      timeout: 30
+      healthCheck:
+        enabled: true
+        standbyOk: true
+      paths:
+        secret: /v1/puris
+        health: /v1/sys/health
