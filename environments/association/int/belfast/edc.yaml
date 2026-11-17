@@ -1,24 +1,24 @@
 edc:
   participant:
     # TODO edc 0.13.x
-    # id: <path:puris/data/companies/belfast#did-url>
+    # id: <path:atlas-1/data/companies/belfast#did-url>
     # # -- BPN Number
-    # bpnl: <path:puris/data/companies/belfast#bpnl>
-    id: <path:puris/data/companies/belfast#bpnl>
+    # bpnl: <path:atlas-1/data/companies/belfast#bpnl>
+    id: <path:atlas-1/data/companies/belfast#bpnl>
     # # migration 0.11.x -> 0.12.x: add context id for multitenancy
-    contextId: <path:puris/data/companies/belfast#context-id>
+    contextId: <path:atlas-1/data/companies/belfast#context-id>
 
   controlplane:
     endpoints:
       management:
-        authKey: <path:puris/data/companies/belfast/edc#api-key>
+        authKey: <path:atlas-1/data/companies/belfast/edc#api-key>
 
     ## Ingress declaration to expose the network service.
     ingresses:
       ## Public / Internet facing Ingress
       - enabled: true
         # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-        hostname: <path:puris/data/companies/belfast/edc#hostname-internet>
+        hostname: <path:atlas-1/data/companies/belfast/edc#hostname-internet>
         # -- Additional ingress annotations to add
         annotations:
           # cert manager for ingress on CX int
@@ -38,7 +38,7 @@ edc:
       ## Public / Internet facing Ingress
       - enabled: true
         # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-        hostname: <path:puris/data/companies/belfast/edc#hostname-intranet>
+        hostname: <path:atlas-1/data/companies/belfast/edc#hostname-intranet>
         # -- EDC endpoints exposed by this ingress resource
         endpoints:
           - control
@@ -55,20 +55,20 @@ edc:
   # edc 0.12.x
   iatp:
     # Decentralized IDentifier
-    id: <path:puris/data/companies/belfast#did-url>
+    id: <path:atlas-1/data/companies/belfast#did-url>
     # -- Configures the trusted issuers for this runtime
     trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
-      - <path:puris/data/environment/wallet#trusted-issuer-1>
+      - <path:atlas-1/data/environment/wallet#trusted-issuer-1>
     sts:
       # TODO edc 0.13.0
       # div: #TDO urls
       # TODO current 0.12.x
       dim:
-        url: <path:puris/data/environment/wallet#dim-base-url>
+        url: <path:atlas-1/data/environment/wallet#dim-base-url>
       oauth:
-        token_url: <path:puris/data/companies/belfast#dim-idp-token-url>
+        token_url: <path:atlas-1/data/companies/belfast#dim-idp-token-url>
         client:
-          id: <path:puris/data/companies/belfast#dim-idp-client-id>
+          id: <path:atlas-1/data/companies/belfast#dim-idp-client-id>
           # not supported, see https://github.com/eclipse-edc/Connector/discussions/4135
           # secret_alias: "puris/data/companies/belfast#dim-idp-client-secret"
           secret_alias: "companies/belfast/edc/dim-client-secret"
@@ -83,12 +83,12 @@ edc:
       selfRegistration:
         enabled: false
         # -- The URL of the BDRS to register the runtime's DID at
-        id: <path:puris/data/companies/belfast#did-url>
+        id: <path:atlas-1/data/companies/belfast#did-url>
 
   dataplane:
     endpoints:
       proxy:
-        authKey: <path:puris/data/companies/belfast/edc#api-key>
+        authKey: <path:atlas-1/data/companies/belfast/edc#api-key>
 
     token:
       signer:
@@ -104,7 +104,7 @@ edc:
       ## Public / Internet facing Ingress
       - enabled: true
         # -- The hostname to be used to precisely map incoming traffic onto the underlying network service
-        hostname: <path:puris/data/companies/belfast/edc#hostname-internet>
+        hostname: <path:atlas-1/data/companies/belfast/edc#hostname-internet>
         # -- Additional ingress annotations to add
         annotations:
           # cert manager for ingress on CX int
@@ -127,29 +127,29 @@ edc:
     # image:
     #   repository: bitnamilegacy/postgresql
     #   tag: 16.2.0-debian-12-r10
-    jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:puris/data/companies/belfast/edc/postgres#database>"
+    jdbcUrl: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/<path:atlas-1/data/companies/belfast/edc/postgres#database>"
 
     # auth:
     #   database: "postgres"
     #   username: "postgres"
-    #   password: <path:puris/data/companies/belfast/edc/postgres#postgresPassword>
+    #   password: <path:atlas-1/data/companies/belfast/edc/postgres#postgresPassword>
     # customUser:
     #   # --  Name of the custom user to be created. If an existing secret is used, this value is overwritten into the existing secret.
     #   # @default -- edc
-    #   name: <path:puris/data/companies/belfast/edc/postgres#user>
+    #   name: <path:atlas-1/data/companies/belfast/edc/postgres#user>
     #   # -- Name for the custom database to be created and assigned to the custom user. If an existing secret is used, this value is overwritten into the existing secret.
     #   # @default -- edc
-    #   database: <path:puris/data/companies/belfast/edc/postgres#database>
+    #   database: <path:atlas-1/data/companies/belfast/edc/postgres#database>
     #   # -- Password to be used for the custom user. If an existing secret is used, this value is overwritten into the existing secret.
     #   # @default -- Autogenerated random alpha=numeric string with 16 characters (if empty).
-    #   password: <path:puris/data/companies/belfast/edc/postgres#password>
+    #   password: <path:atlas-1/data/companies/belfast/edc/postgres#password>
     # edc 0.12.x without cloudpirates and custom user
     auth:
-      database: <path:puris/data/companies/belfast/edc/postgres#database>
-      username: <path:puris/data/companies/belfast/edc/postgres#user>
-      password: <path:puris/data/companies/belfast/edc/postgres#password>
-      postgresPassword: <path:puris/data/companies/belfast/edc/postgres#postgresPassword>
+      database: <path:atlas-1/data/companies/belfast/edc/postgres#database>
+      username: <path:atlas-1/data/companies/belfast/edc/postgres#user>
+      password: <path:atlas-1/data/companies/belfast/edc/postgres#password>
+      postgresPassword: <path:atlas-1/data/companies/belfast/edc/postgres#postgresPassword>
 
   vault:
     hashicorp:
-      token: <path:puris/data/environment/vault#token>
+      token: <path:atlas-1/data/environment/vault#token>
