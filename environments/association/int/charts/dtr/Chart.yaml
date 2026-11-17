@@ -1,0 +1,11 @@
+apiVersion: v2
+name: dtr
+description: Chart for deploying Tractus-X DTR
+type: application
+version: 0.1.0
+appVersion: "0.12.0"
+dependencies:
+  - name: digital-twin-registry
+    version: 0.12.0
+    repository: https://eclipse-tractusx.github.io/charts/dev
+    alias: dtr
