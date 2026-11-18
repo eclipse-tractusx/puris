@@ -142,6 +142,7 @@ keycloak:
   ingress:
     enabled: true
     hostname: <path:atlas-1/data/companies/atlas/dtr/keycloak#hostname>
+    className: nginx
     path: /
     tls: 
       enabled: true
