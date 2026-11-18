@@ -1,9 +1,9 @@
 global:
   domain:
     backend:
-      ingress: &domain <path:puris/data/companies/ceres/puris#backend-hostname>
+      ingress: &domain <path:atlas-1/data/companies/ceres/puris#backend-hostname>
     frontend:
-      ingress: &frontendDomain <path:puris/data/companies/ceres/puris#frontend-hostname>
+      ingress: &frontendDomain <path:atlas-1/data/companies/ceres/puris#frontend-hostname>
 # FRONTEND -----------
 frontend:
   # fullnameOverride: "ceres-frontend"
@@ -92,31 +92,31 @@ backend:
 #    baseurl: puris-backend-ceres.test.tractus-x.com/
     api:
       # -- The API key of the PURIS application
-      key: "<path:puris/data/companies/ceres/puris#backend-api-key>"
+      key: "<path:atlas-1/data/companies/ceres/puris#backend-api-key>"
     edc:
       controlplane:
-        host: "https://<path:puris/data/companies/ceres/edc#hostname-internet>"
+        host: "https://<path:atlas-1/data/companies/ceres/edc#hostname-internet>"
         management:
           # -- Url to the EDC controlplane management of the edc
-          url: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/management"
+          url: "https://<path:atlas-1/data/companies/ceres/edc#hostname-internet>/management"
         protocol:
           # -- Url to the EDC controlplane protocol API of the edc
-          url: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/api/v1/dsp"
+          url: "https://<path:atlas-1/data/companies/ceres/edc#hostname-internet>/api/v1/dsp"
         # -- Key for the EDC control plane
-        key: <path:puris/data/companies/ceres/edc#api-key>
+        key: <path:atlas-1/data/companies/ceres/edc#api-key>
       dataplane:
         public:
-          url: "https://<path:puris/data/companies/ceres/edc#hostname-internet>/api/public"
+          url: "https://<path:atlas-1/data/companies/ceres/edc#hostname-internet>/api/public"
     own:
       # -- Own BPNL of the EDC
-      bpnl: <path:puris/data/companies/ceres#bpnl>
+      bpnl: <path:atlas-1/data/companies/ceres#bpnl>
       # -- Own BPNS of the EDC
-      bpns: <path:puris/data/companies/ceres#bpns>
+      bpns: <path:atlas-1/data/companies/ceres#bpns>
       site:
         # -- Own site name
         name: "Control Unit Creator Production Site"
       # -- Own BPNA of the EDC
-      bpna: <path:puris/data/companies/ceres#bpna>
+      bpna: <path:atlas-1/data/companies/ceres#bpna>
       # -- Own country
       country: "USA"
       # -- Own street and number
@@ -133,7 +133,7 @@ backend:
         # -- Initialises SQL database with Hibernate property "create" to allow Hibernate to first drop all tables and then create new ones
         ddl-auto: validate
     dtr:
-      url: https://<path:puris/data/companies/ceres/dtr#hostname>/api/v3
+      url: https://<path:atlas-1/data/companies/ceres/dtr#hostname>/api/v3
       edc:
         asset:
           # simulate DTR by other company
@@ -142,13 +142,13 @@ backend:
         enabled: true
         # -- token url of the idp for your specific realm. May be different to other idp token url in this config.
         # Mandatory if backend.puris.dtr.idp.enabled = true.
-        tokenurl:  https://<path:puris/data/companies/ceres/dtr/keycloak#hostname>/realms/<path:puris/data/companies/ceres/dtr/keycloak#realm>/protocol/openid-connect/token
+        tokenurl:  https://<path:atlas-1/data/companies/ceres/dtr/keycloak#hostname>/realms/<path:atlas-1/data/companies/ceres/dtr/keycloak#realm>/protocol/openid-connect/token
         clients:
           edc:
             # -- id of the client that has a service account with roles to view the DTR. Used by the application to create
             # DTR asset in the edc with read only access. See Admin Guide. Mandatory if
             # backend.puris.dtr.idp.enabled = true.
-            id: <path:puris/data/companies/ceres/dtr/keycloak#client-id>
+            id: <path:atlas-1/data/companies/ceres/dtr/keycloak#client-id>
             secret:
               # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
               # backend.puris.dtr.idp.enabled = true.
@@ -157,10 +157,10 @@ backend:
           puris:
             # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
             # create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true.
-            id: <path:puris/data/companies/ceres/dtr/keycloak#client-id>
+            id: <path:atlas-1/data/companies/ceres/dtr/keycloak#client-id>
             # -- secret of the client with write access (no vault alias). No default value will be created if empty.
             # Mandatory if backend.puris.dtr.idp.enabled = true.
-            secret: <path:puris/data/companies/ceres/dtr/keycloak#client-secret>
+            secret: <path:atlas-1/data/companies/ceres/dtr/keycloak#client-secret>
     batch:
       partnerdataupdate:
         # -- if true, the partner data update is triggered for all materials and partners onboarded; else not.
@@ -182,10 +182,10 @@ backend:
       version: "1"
     irsadapter:
       enabled: true
-      url: "https://<path:puris/data/companies/ceres/irs#base-url>"
+      url: "https://<path:atlas-1/data/companies/ceres/irs#base-url>"
       authkey: x-api-key
-      adminauthsecret: <path:puris/data/companies/ceres/irs/api#api-key-admin>
-      authsecret: <path:puris/data/companies/ceres/irs/api#api-key-regular>
+      adminauthsecret: <path:atlas-1/data/companies/ceres/irs/api#api-key-admin>
+      authsecret: <path:atlas-1/data/companies/ceres/irs/api#api-key-regular>
   resources:
     requests:
       cpu: "50m"
@@ -241,16 +241,16 @@ postgresql:
   # admin user
   auth:
     existingSecret: ""
-    # database: <path:puris/data/companies/ceres/puris/postgres#database>
+    # database: <path:atlas-1/data/companies/ceres/puris/postgres#database>
     username: postgres
-    password: <path:puris/data/companies/ceres/puris/postgres#postgres-password>
-    # passwordPostgres: <path:puris/data/companies/ceres/puris/postgres#postgres-password>
+    password: <path:atlas-1/data/companies/ceres/puris/postgres#postgres-password>
+    # passwordPostgres: <path:atlas-1/data/companies/ceres/puris/postgres#postgres-password>
   # custom user (non root)
   customUser:
     existingSecret: ""
-    name: <path:puris/data/companies/ceres/puris/postgres#username>
-    database: <path:puris/data/companies/ceres/puris/postgres#database>
-    password: <path:puris/data/companies/ceres/puris/postgres#password>
+    name: <path:atlas-1/data/companies/ceres/puris/postgres#username>
+    database: <path:atlas-1/data/companies/ceres/puris/postgres#database>
+    password: <path:atlas-1/data/companies/ceres/puris/postgres#password>
   resources:
     requests:
       cpu: "20m"
@@ -260,10 +260,10 @@ postgresql:
       memory: "128Mi"
 
 idp:
-  url: https://<path:puris/data/environment/central-idp#base-url>
+  url: https://<path:atlas-1/data/environment/central-idp#base-url>
   # -- Name of the Realm of the keycloak instance.
-  realm: <path:puris/data/environment/central-idp#realm>
+  realm: <path:atlas-1/data/environment/central-idp#realm>
   # -- Name of the client which is used for the application.
-  clientId: <path:puris/data/companies/ceres/puris/idp#client-id>
+  clientId: <path:atlas-1/data/companies/ceres/puris/idp#client-id>
   # -- URL to use as keycloak redirect url.
   redirectUrlFrontend: ""

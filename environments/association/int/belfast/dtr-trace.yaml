@@ -15,7 +15,7 @@ registry:
   replicaCount: 1
   imagePullPolicy: IfNotPresent
   containerPort: 4243
-  host: trace-x-registry-belfast.test.tractus-x.com #<path:puris/data/companies/belfast/dtr#hostname>
+  host: trace-x-registry-belfast.test.tractus-x.com #<path:atlas-1/data/companies/belfast/dtr#hostname>
   ## If 'authentication' is set to false, no OAuth authentication is enforced
   authentication: false
   # Issuer url for the dtr (resource server),
@@ -23,9 +23,9 @@ registry:
   # If no value is committed, and the integrated Keycloak is enabled,
   # the K8s internal service name is used, which is a problem, when
   # validating the issuer claim in an access token
-  idpIssuerUri: "https://<path:puris/data/companies/belfast/dtr/keycloak#hostname>/realms/default-realm"
-  idpClientId: <path:puris/data/companies/belfast/dtr/keycloak#client-id>
-  tenantId: <path:puris/data/companies/belfast#bpnl>
+  idpIssuerUri: "https://<path:atlas-1/data/companies/belfast/dtr/keycloak#hostname>/realms/default-realm"
+  idpClientId: <path:atlas-1/data/companies/belfast/dtr/keycloak#client-id>
+  tenantId: <path:atlas-1/data/companies/belfast#bpnl>
   useGranularAccessControl: "false"
   granularAccessControlFetchSize: "500"
   service:
@@ -78,10 +78,10 @@ postgresql:
     ports:
       postgresql: 5432
   auth:
-    username: <path:puris/data/companies/belfast/dtr/postgres#user>
+    username: <path:atlas-1/data/companies/belfast/dtr/postgres#user>
     # if password is empty, the postgres password will be generated random via postgres-init
-    password: <path:puris/data/companies/belfast/dtr/postgres#password>
-    database: <path:puris/data/companies/belfast/dtr/postgres#database>
+    password: <path:atlas-1/data/companies/belfast/dtr/postgres#password>
+    database: <path:atlas-1/data/companies/belfast/dtr/postgres#database>
     # -- Secret contains passwords for username postgres.
     existingSecret: secret-dtr-postgres-init-belfast
   resources:
