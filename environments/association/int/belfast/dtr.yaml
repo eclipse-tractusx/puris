@@ -139,11 +139,13 @@ keycloak:
   ingress:
     enabled: true
     hostname: <path:atlas-1/data/companies/belfast/dtr/keycloak#hostname>
+    ingressClassName: nginx
     path: /
     tls: 
       enabled: true
       secretName: tls-secret-belfast-dtr-keycloak
     annotations:
+      kubernetes.io/ingress.class: nginx
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
       external-dns.alpha.kubernetes.io/hostname: <path:atlas-1/data/companies/belfast/dtr/keycloak#hostname>
       nginx.org/location-snippets: |

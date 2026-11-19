@@ -142,11 +142,13 @@ keycloak:
   ingress:
     enabled: true
     hostname: <path:atlas-1/data/companies/ceres/dtr/keycloak#hostname>
+    ingressClassName: nginx
     path: /
     tls: 
       enabled: true
       secretName: tls-secret-ceres-dtr-keycloak
     annotations:
+      kubernetes.io/ingress.class: nginx
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
       external-dns.alpha.kubernetes.io/hostname: <path:atlas-1/data/companies/ceres/dtr/keycloak#hostname>
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
