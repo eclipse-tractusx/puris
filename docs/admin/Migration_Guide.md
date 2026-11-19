@@ -4,6 +4,18 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
 
 <!-- TOC -->
 - [Migration Guide](#migration-guide)
+    - [Version 7.2.x to 7.3.x](#version-72x-to-73x)
+    - [Database changes for 6.3.0](#database-changes-for-630)
+    - [Digital Twin Event API and SingleLevelUsageAsPlanned](#digital-twin-event-api-and-singlelevelusageasplanned)
+    - [Aggregated supply chain data is reset](#aggregated-supply-chain-data-is-reset)
+    - [IRS Integration view and automatic IRS contract offering](#irs-integration-view-and-automatic-irs-contract-offering)
+  - [Version 7.1.x to 7.2.x](#version-71x-to-72x)
+    - [Database changes for 6.2.0](#database-changes-for-620)
+    - [Automatic update of Digital Twins and partner contract definitions](#automatic-update-of-digital-twins-and-partner-contract-definitions)
+    - [Data Exchange Requests and Approvals](#data-exchange-requests-and-approvals)
+    - [Validation of the Industry Core message header](#validation-of-the-industry-core-message-header)
+    - [Introduction of the IRS adapter](#introduction-of-the-irs-adapter)
+    - [Removal of the demonstrator role](#removal-of-the-demonstrator-role)
   - [Version 7.0.x to 7.1.x](#version-70x-to-71x)
     - [Anonymized submodels restricted to own EDC](#anonymized-submodels-restricted-to-own-edc)
   - [Version 6.1.x to 7.0.x](#version-61x-to-70x)
@@ -37,6 +49,46 @@ This migration guide is based on the `chartVersion` of the chart that also bumps
   - [Older Versions](#older-versions)
   - [NOTICE](#notice)
 <!-- TOC -->
+
+## Version 7.2.x to 7.3.x
+
+In chart version `7.3.x` the app version is bumped to `6.3.x`. The provided chart and container perform a database migration following the liquibase file [changelog-6.3.0.yaml](/backend/src/main/resources/db/changelog/changelog-6.x/changelog-6.3.0.yaml). In case you use a custom image or other migration tools, derive changes from that file.
+
+### Aggregated supply chain data is reset
+
+Aggregated supply chain data is now linked to the IRS job that produced it, and new results replace previous ones for the same source disruption and material ([#1280](https://github.com/eclipse-tractusx/puris/pull/1280)). To introduce this, the migration deletes all existing aggregated supply chain data.
+
+### Digital Twin Event API and SingleLevelUsageAsPlanned
+
+With version 6.3.0 PURIS exchanges `ConnectToChild` events of the Digital Twin Event API and provides the new `SingleLevelUsageAsPlanned` submodel. For this, new EDC assets are registered on startup and product Digital Twins get an additional submodel descriptor.
+
+The "MigrationTaskCommandLineRunner" updates the Digital Twins and creates the missing contract definitions for existing partners on application start.
+
+> [!note] Please make sure to verify that the affected Digital Twins were successfully updated.
+
+### Automatic IRS contract offering
+
+If the IRS adapter is enabled, PURIS now registers an EDC asset for your IRS's recursive notification API on startup, offered to all Catena-X members. If this asset is already provided by other means, set `backend.puris.irsadapter.registerasset` to `false`.
+
+## Version 7.1.x to 7.2.x
+
+In chart version `7.2.x` the app version is bumped to `6.2.x`. The provided chart and container perform a database migration following the liquibase file [changelog-6.2.0.yaml](/backend/src/main/resources/db/changelog/changelog-6.x/changelog-6.2.0.yaml). In case you use a custom image or other migration tools, derive changes from that file.
+
+### Automatic update of Digital Twins and partner contract definitions
+
+Version 6.2.0 adds the PartTypeInformation 2.0.0 submodel and the Data Exchange Request API. The "MigrationTaskCommandLineRunner" updates all Digital Twins and creates the missing contract definitions for existing partners on application start. Existing policies and contract definitions are not modified.
+
+> [!note] Please make sure to verify that the migration was successful. Errors are logged by the backend and stored in the `errors` column of the `migration_task` table.
+
+Further, related notification ids of received notifications are no longer stored and are deleted during the migration.
+
+### Introduction of the IRS adapter
+
+Version 6.2.0 introduces an optional adapter to an external Item Relationship Service (IRS), which must be provided by you. It is disabled by default and configured via `backend.puris.irsadapter`. Refer to the [Admin Guide](Admin_Guide.md#configure-irs-adapter) for details.
+
+### Removal of the demonstrator role
+
+The demonstrator data injection and the property `backend.puris.demonstrator.role` were removed ([#1132](https://github.com/eclipse-tractusx/puris/pull/1132)). You can remove it from your configuration.
 
 ## Version 7.0.x to 7.1.x
 
