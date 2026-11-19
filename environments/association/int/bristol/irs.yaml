@@ -84,7 +84,7 @@ edc:
     endpoint:
       data: "https://<path:atlas-1/data/companies/bristol/edc#hostname-internet>/management"  # <edc-controlplane-endpoint-data>
     apikey:
-      secret: "<path:atlas-1/data/companies/bristol/edc/api#api-key>"
+      secret: "<path:atlas-1/data/companies/bristol/edc#api-key>"
   # callbackurl: https://<path:atlas-1/data/companies/bristol/irs#base-url>/internal/endpoint-data-reference  # The URL where the EDR token callback will be sent to.
   # negotiationCallbackurl: https://<path:atlas-1/data/companies/bristol/irs#base-url>/internal/negotiation-callback  # The URL where the negotiation callback will be sent to.
 
