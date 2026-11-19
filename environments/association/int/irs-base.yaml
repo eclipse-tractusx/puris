@@ -57,9 +57,9 @@ minio:
     enabled: true
     size: 1Gi
   image:
-    repository: quay.io/minio/minio
+    repository: registry-1.docker.io/bitnamilegacy/minio
     # overwrite minio version RELEASE.2022-11-11T03-44-20Z as this is not found in bitnami legacy
-    tag: RELEASE.2022-11-11T03-44-20Z
+    tag: 2022.8.5
 
 #    clientImage:
 #      image:
