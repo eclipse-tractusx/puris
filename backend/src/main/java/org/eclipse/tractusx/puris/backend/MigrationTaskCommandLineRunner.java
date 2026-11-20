@@ -72,7 +72,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
 
         List<String> errors = updateDigitalTwins();
         errors.addAll(createMissingPartnerContractDefinitions());
-        sendConnectToChildForExistingMaterialRelations();
+        errors.addAll(sendConnectToChildForExistingMaterialRelations());
         if (errors.isEmpty()) {
             migrationTaskService.markTaskCompleted(latestTask);
             log.info("Migration task for target version {} completed successfully", latestTask.getTargetVersion());
@@ -176,20 +176,21 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
      * Informs the suppliers about all existing material relations with ConnectToChild events, so that they can provide
      * their SingleLevelUsageAsPlanned submodel also for relations created before the Digital Twin Event API was
      * available.
-     * <p>
-     * Failures are logged, but don't fail the migration task: they usually depend on the supplier, e.g. if the
-     * supplier doesn't offer the Digital Twin Event API yet.
-    */
-    private void sendConnectToChildForExistingMaterialRelations() {
+     *
+     * @return A list of error messages for all events that could not be sent.
+     */
+    private List<String> sendConnectToChildForExistingMaterialRelations() {
+        List<String> errors = new ArrayList<>();
         try {
-            List<String> failures = connectToChildService.sendConnectToChildForAllMaterialRelations();
-            if (failures.isEmpty()) {
-                log.info("Sent ConnectToChild events for all existing material relations");
-            } else {
-                log.warn("Could not send {} ConnectToChild events for existing material relations: {}", failures.size(), failures);
-            }
+            errors.addAll(connectToChildService.sendConnectToChildForAllMaterialRelations());
         } catch (Exception e) {
-            log.error("Error while sending ConnectToChild events for existing material relations: {}", e.getMessage());
+            String error = String.format("Error while sending ConnectToChild events for existing material relations: %s", e.getMessage());
+            log.error(error);
+            errors.add(error);
         }
+        if (errors.isEmpty()) {
+            log.info("Sent ConnectToChild events for all existing material relations");
+        }
+        return errors;
     }
 }
