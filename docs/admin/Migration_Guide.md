@@ -60,11 +60,11 @@ Aggregated supply chain data is now linked to the IRS job that produced it, and 
 
 ### Digital Twin Event API and SingleLevelUsageAsPlanned
 
-With version 6.3.0 PURIS exchanges `ConnectToChild` events of the Digital Twin Event API and provides the new `SingleLevelUsageAsPlanned` submodel. For this, new EDC assets are registered on startup and product Digital Twins get an additional submodel descriptor.
+With version 6.3.0 PURIS exchanges `ConnectToChild` events of the Digital Twin Event API and provides the new `SingleLevelUsageAsPlanned` submodel. For this, new EDC assets are registered on startup and product Digital Twins get an additional submodel descriptor. Events are sent when a material relation is created or updated.
 
-The "MigrationTaskCommandLineRunner" updates the Digital Twins and creates the missing contract definitions for existing partners on application start.
+The "MigrationTaskCommandLineRunner" updates the Digital Twins, creates the missing contract definitions for existing partners and sends `ConnectToChild` events for all existing material relations to the respective suppliers on application start, so that they can provide their `SingleLevelUsageAsPlanned` data.
 
-> [!note] Please make sure to verify that the affected Digital Twins were successfully updated.
+> [!note] Please make sure to verify that the affected Digital Twins were successfully updated. Events that could not be sent, e.g. because a supplier doesn't support the Digital Twin Event API yet, are logged but don't fail the migration. Suppliers that upgrade later only receive events for relations created or updated afterwards.
 
 ### Automatic IRS contract offering
 

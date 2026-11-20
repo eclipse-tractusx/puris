@@ -160,7 +160,15 @@ public class MaterialRelationController {
     public ResponseEntity<?> updateMaterialRelation(@RequestBody MaterialRelationDto materialRelationDto) {
         try {
             MaterialRelation entity = modelMapper.map(materialRelationDto, MaterialRelation.class);
-            MaterialRelationDto responseDto = modelMapper.map(materialRelationService.update(entity), MaterialRelationDto.class);
+            MaterialRelation updatedRelation = materialRelationService.update(entity);
+            Material parentMaterial = materialService.findByOwnMaterialNumber(updatedRelation.getParentOwnMaterialNumber());
+            if (parentMaterial != null) {
+                executorService.submit(() -> connectToChildService.sendConnectToChild(updatedRelation, parentMaterial));
+            } else {
+                log.warn("Not sending ConnectToChild for updated MaterialRelation {}, parent material {} not found.",
+                    updatedRelation.getUuid(), updatedRelation.getParentOwnMaterialNumber());
+            }
+            MaterialRelationDto responseDto = modelMapper.map(updatedRelation, MaterialRelationDto.class);
             return ResponseEntity.status(HttpStatus.OK).body(responseDto);
         } catch (NoSuchElementException e) {
             log.error("Could not find matching Material Relation");

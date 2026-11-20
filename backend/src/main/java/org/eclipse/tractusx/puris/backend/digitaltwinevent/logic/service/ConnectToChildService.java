@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.tractusx.puris.backend.common.domain.model.measurement.ItemQuantityEntity;
@@ -115,16 +116,7 @@ public class ConnectToChildService {
      * @param parent           the parent product of the material relation
      */
     public void sendConnectToChild(MaterialRelation materialRelation, Material parent) {
-        Set<Partner> suppliersWithoutCatenaXId = new HashSet<>();
-        for (MaterialPartnerRelation supplierRelation : mprService.findAllSupplierRelations(materialRelation.getChildOwnMaterialNumber())) {
-            if (supplierRelation.getPartnerCXNumber() == null) {
-                log.info("Catena-X ID of {} for material {} is unknown, ConnectToChild is sent once it has been retrieved", supplierRelation.getPartner().getBpnl(), materialRelation.getChildOwnMaterialNumber());
-                suppliersWithoutCatenaXId.add(supplierRelation.getPartner());
-                continue;
-            }
-            send(materialRelation, parent, supplierRelation);
-        }
-        suppliersWithoutCatenaXId.forEach(mprService::triggerPartTypeRetrievalTask);
+        sendToSuppliers(materialRelation, parent);
     }
 
     /**
@@ -147,17 +139,51 @@ public class ConnectToChildService {
         }
     }
 
-    private void send(MaterialRelation materialRelation, Material parent, MaterialPartnerRelation supplierRelation) {
+    public List<String> sendConnectToChildForAllMaterialRelations() {
+        List<String> failures = new ArrayList<>();
+        for (MaterialRelation materialRelation : materialRelationService.findAll()) {
+            Material parent = materialService.findByOwnMaterialNumber(materialRelation.getParentOwnMaterialNumber());
+            if (parent == null) {
+                String failure = String.format("Not sending ConnectToChild for material %s, parent %s is unknown",
+                    materialRelation.getChildOwnMaterialNumber(), materialRelation.getParentOwnMaterialNumber());
+                log.warn(failure);
+                failures.add(failure);
+                continue;
+            }
+            failures.addAll(sendToSuppliers(materialRelation, parent));
+        }
+        return failures;
+    }
+
+    private List<String> sendToSuppliers(MaterialRelation materialRelation, Material parent) {
+        List<String> failures = new ArrayList<>();
+        Set<Partner> suppliersWithoutCatenaXId = new HashSet<>();
+        for (MaterialPartnerRelation supplierRelation : mprService.findAllSupplierRelations(materialRelation.getChildOwnMaterialNumber())) {
+            if (supplierRelation.getPartnerCXNumber() == null) {
+                log.info("Catena-X ID of {} for material {} is unknown, ConnectToChild is sent once it has been retrieved", supplierRelation.getPartner().getBpnl(), materialRelation.getChildOwnMaterialNumber());
+                suppliersWithoutCatenaXId.add(supplierRelation.getPartner());
+                continue;
+            }
+            send(materialRelation, parent, supplierRelation).ifPresent(failures::add);
+        }
+        suppliersWithoutCatenaXId.forEach(mprService::triggerPartTypeRetrievalTask);
+        return failures;
+    }
+
+    private Optional<String> send(MaterialRelation materialRelation, Material parent, MaterialPartnerRelation supplierRelation) {
         Partner supplier = supplierRelation.getPartner();
         try {
             JsonNode message = messageService.createMessage(supplier, IndustryCoreMessageContext.DIGITAL_TWIN_EVENT_CONNECT_TO_CHILD_CONTEXT, createPayload(materialRelation, parent, supplierRelation.getPartnerCXNumber()));
             if (edcAdapterService.doDigitalTwinEventPostRequest(supplier, message) == null) {
                 log.error("Failed to send ConnectToChild for material {} to {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl());
+                return Optional.of(String.format("Failed to send ConnectToChild for material %s to %s", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl()));
             } else {
                 log.info("Sent ConnectToChild for material {} to {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl());
+                return Optional.empty();
             }
         } catch (Exception e) {
                 log.error("Error sending ConnectToChild for material {} to {}: {}", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl(), e);
+                return Optional.of(String.format("Error sending ConnectToChild for material %s to %s: %s", materialRelation.getChildOwnMaterialNumber(), supplier.getBpnl(), e.getMessage()));
             }
     }
 

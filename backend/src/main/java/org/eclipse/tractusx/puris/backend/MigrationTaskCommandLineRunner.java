@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.migration.MigrationTaskService;
+import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service.ConnectToChildService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -55,6 +56,8 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
     private PartnerService partnerService;
     @Autowired
     private EdcAdapterService edcAdapterService;
+    @Autowired
+    private ConnectToChildService connectToChildService;
  
     @Override
     public void run(String... args) throws Exception {
@@ -69,6 +72,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
 
         List<String> errors = updateDigitalTwins();
         errors.addAll(createMissingPartnerContractDefinitions());
+        sendConnectToChildForExistingMaterialRelations();
         if (errors.isEmpty()) {
             migrationTaskService.markTaskCompleted(latestTask);
             log.info("Migration task for target version {} completed successfully", latestTask.getTargetVersion());
@@ -165,5 +169,27 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
             }
         }
         return errors;
+    }
+
+    
+    /**
+     * Informs the suppliers about all existing material relations with ConnectToChild events, so that they can provide
+     * their SingleLevelUsageAsPlanned submodel also for relations created before the Digital Twin Event API was
+     * available.
+     * <p>
+     * Failures are logged, but don't fail the migration task: they usually depend on the supplier, e.g. if the
+     * supplier doesn't offer the Digital Twin Event API yet.
+    */
+    private void sendConnectToChildForExistingMaterialRelations() {
+        try {
+            List<String> failures = connectToChildService.sendConnectToChildForAllMaterialRelations();
+            if (failures.isEmpty()) {
+                log.info("Sent ConnectToChild events for all existing material relations");
+            } else {
+                log.warn("Could not send {} ConnectToChild events for existing material relations: {}", failures.size(), failures);
+            }
+        } catch (Exception e) {
+            log.error("Error while sending ConnectToChild events for existing material relations: {}", e.getMessage());
+        }
     }
 }
