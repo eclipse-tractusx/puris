@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.tractusx.puris.backend.common.ddtr.logic.DtrAdapterService;
 import org.eclipse.tractusx.puris.backend.common.edc.logic.service.EdcAdapterService;
 import org.eclipse.tractusx.puris.backend.common.migration.MigrationTaskService;
+import org.eclipse.tractusx.puris.backend.digitaltwinevent.logic.service.ConnectToChildService;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.MaterialPartnerRelation;
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Partner;
@@ -55,6 +56,8 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
     private PartnerService partnerService;
     @Autowired
     private EdcAdapterService edcAdapterService;
+    @Autowired
+    private ConnectToChildService connectToChildService;
  
     @Override
     public void run(String... args) throws Exception {
@@ -69,6 +72,7 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
 
         List<String> errors = updateDigitalTwins();
         errors.addAll(createMissingPartnerContractDefinitions());
+        errors.addAll(sendConnectToChildForExistingMaterialRelations());
         if (errors.isEmpty()) {
             migrationTaskService.markTaskCompleted(latestTask);
             log.info("Migration task for target version {} completed successfully", latestTask.getTargetVersion());
@@ -163,6 +167,29 @@ public class MigrationTaskCommandLineRunner implements CommandLineRunner {
                 log.warn(error);
                 errors.add(error);
             }
+        }
+        return errors;
+    }
+
+    
+    /**
+     * Informs the suppliers about all existing material relations with ConnectToChild events, so that they can provide
+     * their SingleLevelUsageAsPlanned submodel also for relations created before the Digital Twin Event API was
+     * available.
+     *
+     * @return A list of error messages for all events that could not be sent.
+     */
+    private List<String> sendConnectToChildForExistingMaterialRelations() {
+        List<String> errors = new ArrayList<>();
+        try {
+            errors.addAll(connectToChildService.sendConnectToChildForAllMaterialRelations());
+        } catch (Exception e) {
+            String error = String.format("Error while sending ConnectToChild events for existing material relations: %s", e.getMessage());
+            log.error(error);
+            errors.add(error);
+        }
+        if (errors.isEmpty()) {
+            log.info("Sent ConnectToChild events for all existing material relations");
         }
         return errors;
     }
