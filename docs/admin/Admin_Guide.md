@@ -273,6 +273,7 @@ Configure the following information below `backend.puris.irsadapter`:
 | Helm                                                       | Docker                                             | Default     | Description                                                                                                       |
 | ---------------------------------------------------------- | -------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
 | backend.puris.irsadapter.enabled                           | PURIS_IRSADAPTER_ENABLED                           | `false`     | Toggles usage of the IRS adapter.                                                                                 |
+| backend.puris.irsadapter.registerasset                     | PURIS_IRSADAPTER_REGISTERASSET                     | `true`      | Registers the EDC asset for the IRS recursive notification API on startup (see below).                            |
 | backend.puris.irsadapter.url                               | PURIS_IRSADAPTER_URL                               |             | Base URL of the IRS, including protocol (http/https).                                                             |
 | backend.puris.irsadapter.authkey                           | PURIS_IRSADAPTER_AUTHKEY                           | `x-api-key` | Header key used to authenticate at the IRS API.                                                                   |
 | backend.puris.irsadapter.adminauthsecret                   | PURIS_IRSADAPTER_ADMINAUTHSECRET                   |             | API key with IRS admin permissions. Used to register policies and to manage chain opening grants.                 |
@@ -319,6 +320,19 @@ needed:
 > When deploying with Docker, make sure `IRS_ADAPTER_ENABLED` (frontend) and `PURIS_IRSADAPTER_ENABLED` (backend)
 > have the same value. If only the frontend flag is set, the IRS view is shown but all its tables fail to load because
 > the backend rejects the requests with `403 Forbidden`.
+
+### What PURIS registers at the EDC
+
+If `registerasset` is `true` (default), PURIS registers the following at your EDC on startup, so that the IRS instances
+of other Catena-X members can send recursive requests to your IRS:
+
+- an asset for the IRS recursive notification API, with the asset ID configured in
+  `backend.puris.irsrecursivenotification.apiassetid` (default `irsrecursivenotification-api-asset`)
+- an access policy that only requires an active Catena-X membership, and a contract definition offering the asset to all
+  Catena-X members
+
+If this asset is already provided by other means, e.g. by another application on a shared EDC, set `registerasset` to
+`false`.
 
 ### What PURIS registers at the IRS
 

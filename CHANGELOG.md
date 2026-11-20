@@ -11,7 +11,7 @@ The following Changelog lists the changes. Please refer to the [documentation](d
 
 The **need for configuration updates** is **marked bold**
 
-## Added
+### Added
 
 - Added IRS Adapter View
   - Added Irs jobs controller for getting all jobs and unit tests for the same ([#1250](https://github.com/eclipse-tractusx/puris/pull/1250))
@@ -38,7 +38,6 @@ The **need for configuration updates** is **marked bold**
 
 ### Fixes
 
-- Fixed master data material relations showing always the same, most recent entry in the table ([#1235](https://github.com/eclipse-tractusx/puris/pull/1235))
 - Fix and allow multiple valid contracts to exist for an asset negotiation ([#1247](https://github.com/eclipse-tractusx/puris/pull/1247))
 - Allow creating Root Data Exchange Request for notification with forwarded requests ([#1249](https://github.com/eclipse-tractusx/puris/pull/1249))
 - Fix grant sync failing when second approval with the same notification reference arrives ([#1271](https://github.com/eclipse-tractusx/puris/pull/1271))

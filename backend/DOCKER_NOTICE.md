@@ -9,7 +9,7 @@ Eclipse Tractus-X product(s) installed within the image:
 - GitHub: https://github.com/eclipse-tractusx/puris
 - Project home: https://projects.eclipse.org/projects/automotive.tractusx
 - Dockerfile Backend: https://github.com/eclipse-tractusx/puris/blob/main/backend/Dockerfile
-- Project license: [Apache License, Version 2.0](https://github.com/eclipse-tractusx/puris/blob/main/backend/LICENSE)
+- Project license: [Apache License, Version 2.0](https://github.com/eclipse-tractusx/puris/blob/main/LICENSE)
 
 **Used Base Image [Backend]**
 `eclipse-temurin:21-jre-alpine`

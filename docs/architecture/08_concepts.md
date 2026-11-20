@@ -48,8 +48,8 @@ Following the standard, the following measures have been taken:
 
 ### Access Policies and Access Restrictions
 
-Each Contract Offer has the same access policies. When creating a partner, for all potential assets a contract offer
-is created using the following constraints:
+that are only offered to the own BPNL or to all Catena-X members. When creating a partner, for all potential assets a
+contract offer is created using the following constraints:
 
 - Business Partner Number Legal Entity (BPNL)
 - Membership Credential
@@ -110,10 +110,14 @@ One can steer the application to surpass the asset and contract definition for t
 
 ### Contract Policies
 
-Two different policies are used depending on the Asset Type:
+Three different policies are used depending on the Asset Type:
 
 - Digital Twin Registry: Use Access Policy also as Contract Policy
 - Submodels & Notification Endpoint: Use Contract Policy as defined below
+- Submodels & APIs (Notification, Data Exchange Request): Use Contract Policy as defined below
+- IRS Recursive Notification API: Framework Agreement and Usage Purpose `cx.core.industrycore:1`, offered with an access policy that only requires an active membership, so that the IRS of all Catena-X members can send recursive requests. This asset is only registered if the IRS adapter is enabled and `backend.puris.irsadapter.registerasset` is `true`.
+
+The following submodels are (additionally) offered to your own BPNL (self-contract), so that your own applications, e.g. the IRS, can consume them via your EDC: `SingleLevelBomAsPlanned`, the anonymized submodels and PartTypeInformation.
 
 _Note: The submodel `PartTypeInformation` is also registered with the same Contract Policy as the other Submodels._
 
@@ -262,7 +266,7 @@ create one manually in the frontend. A material is only eligible if it is a prod
 materials is affected by an active notification. Only one queued job per material and source disruption is allowed.
 
 After the job has been created, PURIS polls its status every `job.polldelayseconds`. Once the job is `COMPLETED`, the
-response is mapped to aggregated material data and stored. For the states `CANCELED` and `ERROR` nothing is stored.
+response is mapped to aggregated material data and stored. A new result replaces the previously stored result for the same source disruption and material. For the states `CANCELED` and `ERROR` nothing is stored.
 
 ### Request Queue
 
@@ -283,6 +287,14 @@ regular secret.
 
 The "IRS Integration" view (`PURIS_ADMIN` only) lists root grants, partner grants, jobs and queued requests. It allows
 creating jobs for existing root grants and retrying failed requests. See the [User Guide](../user/User_Guide.md#irs-integration).
+
+### Recursive Notification Asset
+
+To allow the IRS instances of other Catena-X members to send recursive requests to your IRS, PURIS registers an asset
+for the IRS recursive notification API at your EDC on startup (`backend.puris.irsadapter.registerasset`, default
+`true`). The asset points to your IRS and is offered to all Catena-X members (see [Contract Policies](#contract-policies)).
+The corresponding contract policy is also registered in the IRS policy store. Disable the registration if the asset is
+already provided by other means, e.g. by another application on a shared EDC.
 
 ## Security
 
