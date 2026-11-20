@@ -22,6 +22,7 @@ import { Table } from '@catena-x/portal-shared-components';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { MaterialDescriptor } from '@models/types/data/material-descriptor';
 import { capitalize } from '@mui/material';
+import { formatDateTime } from '@util/date-format';
 
 type MaterialListProps = {
     materials: MaterialDescriptor[];
@@ -37,7 +38,7 @@ export function MaterialList({ materials, onRowClick }: MaterialListProps) {
                 { headerName: 'Material Number', field: 'ownMaterialNumber', flex: 1.5, renderCell: (params) => <TextToClipboard text={params.row.ownMaterialNumber} /> },
                 { headerName: 'Name', field: 'description', flex: 2 },
                 { headerName: 'Days of Supply', field: 'daysOfSupply', flex: 1, valueGetter: (params) => params.row.daysOfSupply.toFixed(2),},
-                { headerName: 'Updated', field: 'lastUpdatedOn', flex: 1, valueGetter: (params) => new Date(params.row.lastUpdatedOn).toLocaleString() },
+                { headerName: 'Updated', field: 'lastUpdatedOn', flex: 1, valueGetter: (params) => formatDateTime(params.row.lastUpdatedOn) },
                 { headerName: 'Direction', flex: 1, field: 'direction', valueGetter: (params) => capitalize(params.row.direction) },
             ]}
             rows={materials ?? []}

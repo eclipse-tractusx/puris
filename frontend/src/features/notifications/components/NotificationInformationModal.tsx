@@ -33,6 +33,7 @@ import { useSites } from '@hooks/useSites';
 import { usePartnerMaterials } from '@hooks/usePartnerMaterials';
 import { Partner } from '@models/types/edc/partner';
 import { useNotifications } from '@contexts/notificationContext';
+import { formatDateTime } from '@util/date-format';
 
 const isValidDemandCapacityNotification = (notification: Partial<DemandCapacityNotification>) =>
     notification.partnerBpnl &&
@@ -85,15 +86,15 @@ const DemandCapacityNotificationView = ({ demandCapacityNotification, partners }
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Start Date of Effect</FormLabel>
-                <Typography variant="body2">{new Date(demandCapacityNotification.startDateOfEffect).toLocaleString()}</Typography>
+                <Typography variant="body2">{formatDateTime(demandCapacityNotification.startDateOfEffect)}</Typography>
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Expected End Date of Effect</FormLabel>
-                <Typography variant="body2">{demandCapacityNotification.expectedEndDateOfEffect ? new Date(demandCapacityNotification.expectedEndDateOfEffect).toLocaleString() : ''}</Typography>
+                <Typography variant="body2">{demandCapacityNotification.expectedEndDateOfEffect ? formatDateTime(demandCapacityNotification.expectedEndDateOfEffect) : ''}</Typography>
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Last Updated</FormLabel>
-                <Typography variant="body2">{demandCapacityNotification.contentChangedAt ? new Date(demandCapacityNotification.contentChangedAt).toLocaleString() : ''}</Typography>
+                <Typography variant="body2">{demandCapacityNotification.contentChangedAt ? formatDateTime(demandCapacityNotification.contentChangedAt) : ''}</Typography>
             </Grid>
             <Grid display="grid" item xs={12}>
                 <FormLabel>Affected Sites Sender</FormLabel>
@@ -308,7 +309,6 @@ export const DemandCapacityNotificationInformationModal = ({
                                     <DateTime
                                         label="Start Date of Effect*"
                                         placeholder="Pick Effect start date"
-                                        locale="de"
                                         error={
                                             formError &&
                                             (!temporaryDemandCapacityNotification.startDateOfEffect ||
@@ -329,7 +329,6 @@ export const DemandCapacityNotificationInformationModal = ({
                                     <DateTime
                                         label="Expected End Date Of Effect"
                                         placeholder="Pick Expected End Date Of Effect"
-                                        locale="de"
                                         error={
                                             formError &&
                                             !!temporaryDemandCapacityNotification?.expectedEndDateOfEffect && (

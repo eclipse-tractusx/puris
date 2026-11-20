@@ -39,8 +39,9 @@ import { IrsChainOpeningGrant } from '@models/types/irs/irs-grant';
 import { IrsJobCreationModal } from '@features/irs/components/IrsJobCreationModal';
 import { IrsQueuedRequest } from '@models/types/irs/irs-queued-request';
 import { retryIrsRequest } from '@services/irs-service';
+import { formatDateTime } from '@util/date-format';
 
-const formatInstant = (value: string | null | undefined) => (value ? new Date(value).toLocaleString('en-GB') : '-');
+const formatInstant = (value: string | null | undefined) => (value ? formatDateTime(value) : '-');
 const formatValue = (params: { value: unknown }) => (params.value == null || params.value === '' ? '-' : String(params.value));
 
 const grantColumns = [

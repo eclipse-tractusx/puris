@@ -24,6 +24,7 @@ import { GridPaginationModel, GridRenderCellParams, GridRowParams, GridSortModel
 import { Table } from '@catena-x/portal-shared-components';
 import usePartnerDataUpdateBatch from '../hooks/usePartnerDataUpdateBatch';
 import PartnerDataBatchDetailModal from './PartnerDataBatchDetailModal';
+import { formatDateTime } from '@util/date-format';
 
 const statusColor = (status: string) => {
   switch (status) {
@@ -61,8 +62,8 @@ export const BatchView = () => {
   }, [sortParam]);
 
   const columns = [
-    { field: 'startTime', headerName: 'Start Time', flex: 1, renderCell: (params: GridRenderCellParams) => new Date(params.row.startTime).toLocaleString() },
-    { field: 'endTime', headerName: 'End Time', flex: 1, renderCell: (params: GridRenderCellParams) => params.row.endTime ? new Date(params.row.endTime).toLocaleString() : '-' },
+    { field: 'startTime', headerName: 'Start Time', flex: 1, renderCell: (params: GridRenderCellParams) => formatDateTime(params.row.startTime) },
+    { field: 'endTime', headerName: 'End Time', flex: 1, renderCell: (params: GridRenderCellParams) => params.row.endTime ? formatDateTime(params.row.endTime) : '-' },
     { field: 'durationInSeconds', headerName: 'Duration (s)', flex: 0.5 },
     { field: 'status', headerName: 'Status', flex: 0.5, renderCell: (params: GridRenderCellParams) => (
         <Chip label={params.value} color={statusColor(params.value)} size="small" />

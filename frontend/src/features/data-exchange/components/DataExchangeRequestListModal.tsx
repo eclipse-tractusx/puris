@@ -27,6 +27,7 @@ import { Table } from "@catena-x/portal-shared-components";
 import { getDataExchangeStatus } from "./DataExchangeRequestModal";
 import { Visibility, FactCheck, Close, Send } from "@mui/icons-material";
 import { canCreateRequest } from "@features/notifications/components/CollapsibleNotification";
+import { formatDate, formatTime } from '@util/date-format';
 
 type DataExchangeRequestListModalProps = {
     open: boolean;
@@ -110,16 +111,16 @@ export const DataExchangeRequestListModal = ({
                             { headerName: 'Start date', field: 'desiredStartDateTime',
                                 renderCell: (params: { row: DataExchangeRequest }) => (
                                     <Stack display="flex" textAlign="left" alignItems="start" justifyContent="center" width="100%" height="100%">
-                                        <Box>{new Date(params.row.desiredStartDateTime).toLocaleDateString('en-GB')}</Box>
-                                        <Box>{new Date(params.row.desiredStartDateTime).toLocaleTimeString('en-GB')}</Box>
+                                        <Box>{formatDate(params.row.desiredStartDateTime)}</Box>
+                                        <Box>{formatTime(params.row.desiredStartDateTime)}</Box>
                                     </Stack>
                                 ),
                             },
                             { headerName: 'End date', field: 'desiredEndDateTime',
                                 renderCell: (params: { row: DataExchangeRequest }) => (
                                     <Stack display="flex" textAlign="left" alignItems="start" justifyContent="center" width="100%" height="100%">
-                                        <Box>{new Date(params.row.desiredEndDateTime).toLocaleDateString('en-GB')}</Box>
-                                        <Box>{new Date(params.row.desiredEndDateTime).toLocaleTimeString('en-GB')}</Box>
+                                        <Box>{formatDate(params.row.desiredEndDateTime)}</Box>
+                                        <Box>{formatTime(params.row.desiredEndDateTime)}</Box>
                                     </Stack>
                                 ),
                             },

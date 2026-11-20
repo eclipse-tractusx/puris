@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import { AnonymizedDelivery, AnonymizedProduction, AnonymizedStock } from '@models/types/data/aggregated-material-data';
 import { groupBy } from '@util/helpers';
+import { formatDate } from '@util/date-format';
 
 export type AnonymizedDailySummary = {
     productionTotal: number;
@@ -48,14 +49,14 @@ export function createAnonymizedSummary(
     stocks: AnonymizedStock[],
     timespan: number = 28
 ): AnonymizedSummary {
-    const groupedProductions = groupBy(productions, (production) => getProductionDate(production).toLocaleDateString());
-    const groupedDeliveries = groupBy(deliveries, (delivery) => getDeliveryDate(delivery).toLocaleDateString());
+    const groupedProductions = groupBy(productions, (production) => formatDate(getProductionDate(production)));
+    const groupedDeliveries = groupBy(deliveries, (delivery) => formatDate(getDeliveryDate(delivery)));
     const stockTotalToday = stocks.reduce((sum, stock) => sum + stock.quantity, 0);
 
     const dates = [...new Array(timespan + 1).keys()].map((index) => {
         const today = new Date();
         today.setDate(today.getDate() + index);
-        return today.toLocaleDateString();
+        return formatDate(today);
     });
 
     const dailySummaries: Record<string, AnonymizedDailySummary> = {};

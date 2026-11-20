@@ -28,6 +28,7 @@ import { EFFECTS } from '@models/constants/effects';
 import { STATUS } from '@models/constants/status';
 import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
 import { InfoButton } from '@components/ui/InfoButton';
+import { formatDate, formatTime } from '@util/date-format';
 
 type CollapsibleDemandNotificationProps = {
     disruptionId: string;
@@ -364,23 +365,23 @@ const DemandCapacityNotificationTable: React.FC<NotificationTableProps> = ({ not
                     ] : []),
                     { headerName: 'Start date', field: 'startDateOfEffect', renderCell: (data: { row: DemandCapacityNotification }) => (
                         <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Box>{new Date(data.row.startDateOfEffect).toLocaleDateString('en-GB')}</Box>
-                            <Box>{new Date(data.row.startDateOfEffect).toLocaleTimeString('en-GB')}</Box>
+                            <Box>{formatDate(data.row.startDateOfEffect)}</Box>
+                            <Box>{formatTime(data.row.startDateOfEffect)}</Box>
                         </Stack>
                         ),
                     },
                     { headerName: 'End date', field: 'expectedEndDateOfEffect', renderCell: (data: { row: DemandCapacityNotification }) =>
                         data.row.expectedEndDateOfEffect ? (
                         <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Box>{new Date(data.row.expectedEndDateOfEffect).toLocaleDateString('en-GB')}</Box>
-                            <Box>{new Date(data.row.expectedEndDateOfEffect).toLocaleTimeString('en-GB')}</Box>
+                            <Box>{formatDate(data.row.expectedEndDateOfEffect)}</Box>
+                            <Box>{formatTime(data.row.expectedEndDateOfEffect)}</Box>
                         </Stack>
                         ) : null
                     },
                     { headerName: 'Last Updated', field: 'contentChangedAt', renderCell: (data: { row: DemandCapacityNotification }) => (
                         <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                            <Box>{new Date(data.row.contentChangedAt).toLocaleDateString('en-GB')}</Box>
-                            <Box>{new Date(data.row.contentChangedAt).toLocaleTimeString('en-GB')}</Box>
+                            <Box>{formatDate(data.row.contentChangedAt)}</Box>
+                            <Box>{formatTime(data.row.contentChangedAt)}</Box>
                         </Stack>
                         ),
                     },

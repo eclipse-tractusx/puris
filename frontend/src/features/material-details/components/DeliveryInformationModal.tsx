@@ -31,6 +31,7 @@ import { useNotifications } from '@contexts/notificationContext';
 import { DirectionType } from '@models/types/erp/directionType';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { useDataModal } from '@contexts/dataModalContext';
+import { formatDate, formatDateTime, formatTime } from '@util/date-format';
 
 const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit: (row: Delivery) => void) => {
     return [
@@ -50,7 +51,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
                         height="100%"
                         flexDirection="column"
                     >
-                        {new Date(data.row.dateOfDeparture!).toLocaleString('de-DE', {
+                        {formatDateTime(data.row.dateOfDeparture!, {
                             day: '2-digit',
                             month: '2-digit',
                             year: '2-digit',
@@ -78,7 +79,7 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
                         height="100%"
                         flexDirection="column"
                     >
-                        {new Date(data.row.dateOfArrival!).toLocaleString('de-DE', {
+                        {formatDateTime(data.row.dateOfArrival!, {
                             day: '2-digit',
                             month: '2-digit',
                             year: '2-digit',
@@ -236,8 +237,8 @@ const createDeliveryColumns = (handleDelete: (row: Delivery) => void, handleEdit
             width: 100,
             renderCell: (data: { row: Delivery }) => (
                 <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleDateString('en-GB')}</Box>
-                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleTimeString('en-GB')}</Box>
+                    <Box>{formatDate(data.row.lastUpdatedOnDateTime)}</Box>
+                    <Box>{formatTime(data.row.lastUpdatedOnDateTime)}</Box>
                 </Stack>
             ),
         },
@@ -317,10 +318,10 @@ export const DeliveryInformationModal = ({
                 (d) =>
                     (direction === DirectionType.Inbound &&
                         (!site || d.destinationBpns === site?.bpns) &&
-                        new Date(d.dateOfArrival).toLocaleDateString() === new Date(delivery!.dateOfArrival).toLocaleDateString()) ||
+                        formatDate(d.dateOfArrival) === formatDate(delivery!.dateOfArrival)) ||
                     (direction === DirectionType.Outbound &&
                         (!site || d.originBpns === site?.bpns) &&
-                        new Date(d.dateOfDeparture).toLocaleDateString() === new Date(delivery!.dateOfDeparture).toLocaleDateString())
+                        formatDate(d.dateOfDeparture) === formatDate(delivery!.dateOfDeparture))
             ) ?? [],
         [deliveries, delivery, direction, site]
     );
@@ -364,13 +365,13 @@ export const DeliveryInformationModal = ({
                         <Table
                             title={`${direction === DirectionType.Outbound ? 'Outgoing Shipments' : 'Incoming Deliveries'} on ${
                                 direction === DirectionType.Outbound
-                                    ? new Date(temporaryDelivery.dateOfDeparture!).toLocaleDateString('en-UK', {
+                                    ? formatDate(temporaryDelivery.dateOfDeparture!, {
                                             weekday: 'long',
                                             day: '2-digit',
                                             month: '2-digit',
                                             year: 'numeric',
                                         })
-                                    : new Date(temporaryDelivery.dateOfArrival!).toLocaleDateString('en-UK', {
+                                    : formatDate(temporaryDelivery.dateOfArrival!, {
                                         weekday: 'long',
                                         day: '2-digit',
                                         month: '2-digit',

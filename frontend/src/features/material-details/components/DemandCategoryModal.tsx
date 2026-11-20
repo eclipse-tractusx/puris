@@ -31,6 +31,7 @@ import { Table } from '@catena-x/portal-shared-components';
 import { useSites } from '@hooks/useSites';
 import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
+import { formatDate, formatTime } from '@util/date-format';
 
 type DemandCategoryModalProps = {
     open: boolean;
@@ -119,8 +120,8 @@ const createDemandColumns = (handleDelete?: (row: Demand) => void, handleEdit?: 
             flex: 1.5,
             renderCell: (data: { row: Demand }) => (
                 <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleDateString('en-GB')}</Box>
-                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleTimeString('en-GB')}</Box>
+                    <Box>{formatDate(data.row.lastUpdatedOnDateTime)}</Box>
+                    <Box>{formatTime(data.row.lastUpdatedOnDateTime)}</Box>
                 </Stack>
             ),
         },
@@ -172,7 +173,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
     const dailyDemands = useMemo(
         () =>
             demands?.filter(
-                (d) => d.day && new Date(d.day).toLocaleDateString() === new Date(demand?.day ?? Date.now()).toLocaleDateString()
+                (d) => d.day && formatDate(d.day) === formatDate(demand?.day ?? Date.now())
             ),
         [demands, demand?.day]
     );
@@ -214,7 +215,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
                     <Table
                         title={`Material Demand ${demand?.day
                             ? ' on ' +
-                            new Date(demand?.day).toLocaleDateString('en-GB', {
+                            formatDate(demand?.day, {
                                 weekday: 'long',
                                 day: '2-digit',
                                 month: '2-digit',

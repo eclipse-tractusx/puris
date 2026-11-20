@@ -180,7 +180,6 @@ export const PlannedProductionCreationModal = ({ open, production, onClose, onSa
                         <DateTime
                             label="Estimated Completion Time*"
                             placeholder="Pick Production Date"
-                            locale="de"
                             error={formError}
                             value={temporaryProduction.estimatedTimeOfCompletion ?? null}
                             onValueChange={(date) =>

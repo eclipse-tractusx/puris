@@ -24,6 +24,7 @@ import { Production } from '@models/types/data/production';
 import { Stock } from '@models/types/data/stock';
 import { BPNL, BPNS } from '@models/types/edc/bpn';
 import { groupBy } from '@util/helpers';
+import { formatDate } from '@util/date-format';
 
 type SummaryTypeMap = {
     production: Production;
@@ -80,9 +81,9 @@ export function createSummary<TType extends SummaryType>(
     stocks: Stock[],
     timespan: number = 28
 ) {
-    const groupedProductions = groupBy(primaryValues, (item) => getDateValue(type, item).toLocaleDateString());
+    const groupedProductions = groupBy(primaryValues, (item) => formatDate(getDateValue(type, item)));
     const groupedDeliveries = groupBy(deliveries, (item) =>
-        new Date(type === 'production' ? item.dateOfDeparture : item.dateOfArrival).toLocaleDateString()
+        formatDate(type === 'production' ? item.dateOfDeparture : item.dateOfArrival)
     );
     const summary: Summary<TType> = {
         type: type,
@@ -91,7 +92,7 @@ export function createSummary<TType extends SummaryType>(
     const dates = [...new Array(timespan).keys()].map((index) => {
         const today = new Date();
         today.setDate(today.getDate() + index);
-        return today.toLocaleDateString();
+        return formatDate(today);
     });
     for (let i = 0; i <= timespan; i++) {
         const dateString = dates[i];

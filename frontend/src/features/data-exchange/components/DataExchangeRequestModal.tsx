@@ -34,20 +34,21 @@ import { DataExchangeApproval } from '@models/types/data/data-exchange-approval'
 import { EFFECTS } from '@models/constants/effects';
 import { InfoButton } from '@components/ui/InfoButton';
 import { maxDate, minDate } from '@util/date-helpers';
+import { formatDate, formatDateTime } from '@util/date-format';
 
 type ReferencedNotificationCardProps = {
     notification: DemandCapacityNotification;
     partners: Partner[] | null;
 };
 
-const formatDate = (date?: string | Date | null) => date ? new Date(date).toLocaleDateString('en-GB') : null;
+const formatOptionalDate = (date?: string | Date | null) => date ? formatDate(date) : null;
 
 export const ReferencedNotificationCard = ({ notification, partners }: ReferencedNotificationCardProps) => {
     const rootCause = LEADING_ROOT_CAUSE.find((c) => c.key === notification.leadingRootCause)?.value ?? notification.leadingRootCause;
     const effect = EFFECTS.find((e) => e.key === notification.effect)?.value ?? notification.effect;
     const partnerName = partners?.find((p) => p.bpnl === notification.partnerBpnl)?.name ?? notification.partnerBpnl;
-    const startDate = formatDate(notification.startDateOfEffect);
-    const endDate = formatDate(notification.expectedEndDateOfEffect);
+    const startDate = formatOptionalDate(notification.startDateOfEffect);
+    const endDate = formatOptionalDate(notification.expectedEndDateOfEffect);
 
     return (
         <Stack gap={0.5}>
@@ -109,7 +110,7 @@ export const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, 
         return { label: 'Terminated', explanation: 'The notification has been resolved' };
     }
     if (dataExchangeRequest.desiredEndDateTime && new Date(dataExchangeRequest.desiredEndDateTime) < new Date()) {
-        return { label: 'Expired', explanation: `The request has ended on ${new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString()}`};
+        return { label: 'Expired', explanation: `The request has ended on ${formatDateTime(dataExchangeRequest.desiredEndDateTime)}`};
     }
     if (dataExchangeApproval) {
         if (dataExchangeApproval.isFinalized === true) {
@@ -246,7 +247,7 @@ const DataExchangeRequestView = ({
             <Grid display="grid" item xs={12}><Divider flexItem /></Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Desired Start and End Time and Date</FormLabel>
-                <Typography variant="body2">{dataExchangeRequest.desiredStartDateTime ? new Date(dataExchangeRequest.desiredStartDateTime).toLocaleString() : ''} - {dataExchangeRequest.desiredEndDateTime ? new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString() : ''}</Typography>
+                <Typography variant="body2">{dataExchangeRequest.desiredStartDateTime ? formatDateTime(dataExchangeRequest.desiredStartDateTime) : ''} - {dataExchangeRequest.desiredEndDateTime ? formatDateTime(dataExchangeRequest.desiredEndDateTime) : ''}</Typography>
             </Grid>
             <Grid display="grid" item xs={6}>
                 <FormLabel>Data Exchange Status</FormLabel>
@@ -453,7 +454,6 @@ export const DataExchangeRequestInformationModal = ({
                                 <DateTime
                                     label="Desired Start Time and Date*"
                                     placeholder="Pick Desired Start Time and Date"
-                                    locale="de"
                                     error={formError && !isDesiredStartDateTimeValid(temporaryDataExchangeRequest, demandCapacityNotification)}
                                     value={temporaryDataExchangeRequest?.desiredStartDateTime ?? null}
                                     onValueChange={(date) =>
@@ -468,7 +468,6 @@ export const DataExchangeRequestInformationModal = ({
                                 <DateTime
                                     label="Desired End Time and Date*"
                                     placeholder="Pick Desired End Time and Date"
-                                    locale="de"
                                     error={formError && !isDesiredEndDateTimeValid(temporaryDataExchangeRequest, demandCapacityNotification)}
                                     value={temporaryDataExchangeRequest?.desiredEndDateTime ?? null}
                                     onValueChange={(date) =>

@@ -31,6 +31,7 @@ import { useSites } from '@hooks/useSites';
 import { useDataModal } from '@contexts/dataModalContext';
 import { useNotifications } from '@contexts/notificationContext';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
+import { formatDate, formatTime } from '@util/date-format';
 
 const createProductionColumns = (handleDelete?: (row: Production) => void, handleEdit?: (row: Production) => void) => {
     return [
@@ -41,7 +42,7 @@ const createProductionColumns = (handleDelete?: (row: Production) => void, handl
             flex: 1.5,
             renderCell: (data: { row: Production }) => (
                 <Box display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    {new Date(data.row.estimatedTimeOfCompletion).toLocaleTimeString('de-DE')}
+                    {formatTime(data.row.estimatedTimeOfCompletion)}
                 </Box>
             ),
         },
@@ -152,8 +153,8 @@ const createProductionColumns = (handleDelete?: (row: Production) => void, handl
             flex: 1.5,
             renderCell: (data: { row: Production }) => (
                 <Stack display="flex" textAlign="center" alignItems="center" justifyContent="center" width="100%" height="100%">
-                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleDateString('en-GB')}</Box>
-                    <Box>{new Date(data.row.lastUpdatedOnDateTime).toLocaleTimeString('en-GB')}</Box>
+                    <Box>{formatDate(data.row.lastUpdatedOnDateTime)}</Box>
+                    <Box>{formatTime(data.row.lastUpdatedOnDateTime)}</Box>
                 </Stack>
             ),
         },
@@ -214,8 +215,8 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
         () =>
             productions.filter(
                 (p) =>
-                    new Date(p.estimatedTimeOfCompletion).toLocaleDateString() ===
-                    new Date(production?.estimatedTimeOfCompletion ?? Date.now()).toLocaleDateString()
+                    formatDate(p.estimatedTimeOfCompletion) ===
+                    formatDate(production?.estimatedTimeOfCompletion ?? Date.now())
             ),
         [productions, production?.estimatedTimeOfCompletion]
     );
@@ -256,7 +257,7 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
                     <Table
                         title={`Planned Production ${production?.estimatedTimeOfCompletion
                             ? ' on ' +
-                            new Date(production?.estimatedTimeOfCompletion).toLocaleDateString('en-GB', {
+                            formatDate(production?.estimatedTimeOfCompletion, {
                                 weekday: 'long',
                                 day: '2-digit',
                                 month: '2-digit',
