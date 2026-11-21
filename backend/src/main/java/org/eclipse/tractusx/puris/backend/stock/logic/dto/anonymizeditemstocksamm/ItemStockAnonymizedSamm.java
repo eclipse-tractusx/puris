@@ -43,6 +43,7 @@ import lombok.ToString;
 public class ItemStockAnonymizedSamm {
     @NotNull
     @Valid
+    @JsonProperty("allocatedStocks")
     private Set<AllocatedStockAnonymized> allocatedStocksAnonymized;
 
     @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING)
@@ -52,7 +53,7 @@ public class ItemStockAnonymizedSamm {
     private DirectionCharacteristic direction;
 
     @JsonCreator
-    public ItemStockAnonymizedSamm(@JsonProperty(value = "allocatedStocksAnonymized") Set<AllocatedStockAnonymized> allocatedStocksAnonymized,
+    public ItemStockAnonymizedSamm(@JsonProperty(value = "allocatedStocks") Set<AllocatedStockAnonymized> allocatedStocksAnonymized,
                          @JsonProperty(value = "materialGlobalAssetIdAnonymized") String materialGlobalAssetIdAnonymized,
                          @JsonProperty(value = "direction") DirectionCharacteristic direction) {
         this.allocatedStocksAnonymized = allocatedStocksAnonymized;

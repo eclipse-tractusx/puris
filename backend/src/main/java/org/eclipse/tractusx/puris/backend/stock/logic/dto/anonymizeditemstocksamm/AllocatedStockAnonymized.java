@@ -47,7 +47,7 @@ public class AllocatedStockAnonymized {
         @Pattern(regexp = PatternStore.NON_EMPTY_NON_VERTICAL_WHITESPACE_STRING),
         @Pattern(regexp = PatternStore.NOT_BPNS_STRING)
     })
-	private String stockLocationBPNSAnonymized;
+	private String stockLocationBpnsAnonymized;
 
 	@NotNull
 	private Boolean isBlocked;
@@ -57,11 +57,11 @@ public class AllocatedStockAnonymized {
 
 	@JsonCreator
 	public AllocatedStockAnonymized(@JsonProperty(value = "quantityOnAllocatedStock") ItemQuantityEntity quantityOnAllocatedStock,
-			@JsonProperty(value = "stockLocationBPNSAnonymized") String stockLocationBPNSAnonymized,
+			@JsonProperty(value = "stockLocationBpnsAnonymized") String stockLocationBpnsAnonymized,
 			@JsonProperty(value = "isBlocked") Boolean isBlocked,
             @JsonProperty(value = "lastUpdatedOnDateTime") Date lastUpdatedOnDateTime) {
 		this.quantityOnAllocatedStock = quantityOnAllocatedStock;
-		this.stockLocationBPNSAnonymized = stockLocationBPNSAnonymized;
+		this.stockLocationBpnsAnonymized = stockLocationBpnsAnonymized;
 		this.isBlocked = isBlocked;
         this.lastUpdatedOnDateTime = lastUpdatedOnDateTime;
 	}
@@ -77,14 +77,14 @@ public class AllocatedStockAnonymized {
 
 		final AllocatedStockAnonymized that = (AllocatedStockAnonymized) o;
 		return Objects.equals(quantityOnAllocatedStock, that.quantityOnAllocatedStock)
-				&& Objects.equals(stockLocationBPNSAnonymized, that.stockLocationBPNSAnonymized)
+				&& Objects.equals(stockLocationBpnsAnonymized, that.stockLocationBpnsAnonymized)
 				&& Objects.equals(isBlocked, that.isBlocked)
                 && Objects.equals(lastUpdatedOnDateTime, that.lastUpdatedOnDateTime);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(quantityOnAllocatedStock, stockLocationBPNSAnonymized, isBlocked,
+		return Objects.hash(quantityOnAllocatedStock, stockLocationBpnsAnonymized, isBlocked,
             lastUpdatedOnDateTime);
 	}
 }
