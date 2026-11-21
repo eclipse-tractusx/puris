@@ -27,14 +27,17 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.Reque
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.junit.Test;
+import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import org.mockito.MockitoAnnotations;
 import lombok.extern.slf4j.Slf4j;
 
@@ -73,6 +76,52 @@ public class DataExchangeRequestControllerTest {
         verify(repository).save(request);
     }
 
+    @Test
+    void testCreateRequest_whenPreviousExpired(){
+        OwnDataExchangeRequest request = createValidRequest(); 
+        OwnDataExchangeRequest expiredRequest = createValidRequest();
+        expiredRequest.setNotification(request.getNotification());
+        expiredRequest.setDesiredEndDateTime(new Date(System.currentTimeMillis() - 1000));
+        when(repository.findAllByNotification_Uuid(request.getNotification().getUuid())).thenReturn(List.of(expiredRequest));
+        when(repository.save(request)).thenReturn(request);
+        OwnDataExchangeRequest result = ownDataExchangeRequestService.create(request);
+        assertEquals(request, result);
+        verify(repository).save(request);
+    }
+
+    @Test 
+    void testPreviousRequestNotExpired_throwsKeyAlreadyExistsException() {
+        OwnDataExchangeRequest request = createValidRequest(); 
+        OwnDataExchangeRequest activeRequest = createValidRequest();
+        activeRequest.setNotification(request.getNotification());
+        when(repository.findAllByNotification_Uuid(request.getNotification().getUuid())).thenReturn(List.of(activeRequest));
+        assertThrows(javax.management.openmbean.KeyAlreadyExistsException.class, () -> ownDataExchangeRequestService.create(request));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void testPreviousRequestDoesNotExist_createsRequest() {
+        OwnDataExchangeRequest request = createValidRequest(); 
+        when(repository.findAllByNotification_Uuid(request.getNotification().getUuid())).thenReturn(Collections.emptyList());
+        when(repository.save(request)).thenReturn(request);
+        OwnDataExchangeRequest result = ownDataExchangeRequestService.create(request);
+        assertEquals(request, result);
+        verify(repository).save(request);
+    }
+
+    @Test 
+    void forwardedRequest_isSavedEvenIfActiveRootExists() {
+        OwnDataExchangeRequest request = createValidRequest(); 
+        OwnDataExchangeRequest activeForwarded = createValidRequest();
+        activeForwarded.setNotification(request.getNotification());
+        activeForwarded.setRelatedDataExchangeRequest(new ReportedDataExchangeRequest());
+        when(repository.findAllByNotification_Uuid(request.getNotification().getUuid())).thenReturn(List.of(activeForwarded));
+        when(repository.save(request)).thenReturn(request);
+        OwnDataExchangeRequest result = ownDataExchangeRequestService.create(request);
+        assertEquals(request, result);
+        verify(repository).save(request);
+    }
+    
     private OwnDataExchangeRequest createValidRequest() {
         Date now = new Date();
         Date startOfEffect = new Date(now.getTime() + 24 * 60 * 60 * 1000L);

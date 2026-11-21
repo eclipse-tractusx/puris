@@ -44,6 +44,13 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         if (repository.findByRequestId(reportedDataExchangeRequest.getRequestId()).isPresent()) {
             throw new KeyAlreadyExistsException(String.format("A reported data exchange request for request id %s' already exists", reportedDataExchangeRequest.getRequestId()));
         }
+        boolean activeRequestExists = repository
+            .findAllByNotification_Uuid(reportedDataExchangeRequest.getNotification().getUuid())
+            .stream()
+            .anyMatch(existing -> !isExpired(existing));
+        if (activeRequestExists) {
+            throw new KeyAlreadyExistsException("An active data exchange request already exists for this notification.");
+        }
         if (reportedDataExchangeRequest.getRequestId() == null) {
             reportedDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
         }
@@ -71,8 +78,9 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         if (dataExchangeRequest.getNotification() == null) {
             errors.add("Missing notification.");
         }
-        errors.addAll(validateDesiredDates(dataExchangeRequest));
-
+        if (errors.isEmpty()){
+            errors.addAll(validateDesiredDates(dataExchangeRequest));
+        }
         return errors;
     }
 

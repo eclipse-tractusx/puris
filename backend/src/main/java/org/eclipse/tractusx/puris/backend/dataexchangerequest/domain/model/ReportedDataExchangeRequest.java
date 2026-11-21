@@ -38,7 +38,7 @@ import lombok.experimental.SuperBuilder;
 @ToString(callSuper = true)
 public class ReportedDataExchangeRequest extends DataExchangeRequest {
     @ManyToOne(optional = false)
-    @JoinColumn(name = "notification_uuid", nullable = false, unique = true)
+    @JoinColumn(name = "notification_uuid", nullable = false)
     @ToString.Exclude
     @NotNull
     protected OwnDemandAndCapacityNotification notification;

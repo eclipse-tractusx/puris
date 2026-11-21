@@ -49,6 +49,16 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
         if (repository.findByRequestId(ownDataExchangeRequest.getRequestId()).isPresent()) {
             throw new KeyAlreadyExistsException("Data exchange request already exists");
         }
+        if (ownDataExchangeRequest.getRelatedDataExchangeRequest() == null) {
+            boolean activeRootExists = 
+            repository
+                .findAllByNotification_Uuid(ownDataExchangeRequest.getNotification().getUuid()).stream()
+                .filter(existing -> existing.getRelatedDataExchangeRequest() == null)
+                .anyMatch(existing -> !isExpired(existing));
+            if (activeRootExists) {
+                throw new KeyAlreadyExistsException("An active data exchange request already exists for this notification.");
+            }
+        }
         if (ownDataExchangeRequest.getRequestId() == null) {
             ownDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
         }
@@ -66,8 +76,9 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
         if (dataExchangeRequest.getNotification() == null) {
             errors.add("Missing notification.");
         }
-        errors.addAll(validateDesiredDates(dataExchangeRequest));
-
+        if (errors.isEmpty()){
+            errors.addAll(validateDesiredDates(dataExchangeRequest));
+        }
         return errors;
     }
 
