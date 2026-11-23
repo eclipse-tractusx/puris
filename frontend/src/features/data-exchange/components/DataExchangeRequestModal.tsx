@@ -34,6 +34,7 @@ import { DataExchangeApproval } from '@models/types/data/data-exchange-approval'
 import { EFFECTS } from '@models/constants/effects';
 import { InfoButton } from '@components/ui/InfoButton';
 import { maxDate, minDate } from '@util/date-helpers';
+import { getDataExchangeStatus } from '../util/data-exchange-status';
 
 type ReferencedNotificationCardProps = {
     notification: DemandCapacityNotification;
@@ -102,24 +103,6 @@ const isDesiredEndDateTimeValid = (
     if (demandCapacityNotification.expectedEndDateOfEffect && end > new Date(demandCapacityNotification.expectedEndDateOfEffect)) return false;
     if (request.desiredStartDateTime && end <= new Date(request.desiredStartDateTime)) return false;
     return true;
-};
-
-export const getDataExchangeStatus = (dataExchangeRequest: DataExchangeRequest, demandCapacityNotification: DemandCapacityNotification, dataExchangeApproval: DataExchangeApproval | null): { label: string; explanation: string } => {
-    if (demandCapacityNotification.status === 'resolved') {
-        return { label: 'Terminated', explanation: 'The notification has been resolved' };
-    }
-    if (dataExchangeRequest.desiredEndDateTime && new Date(dataExchangeRequest.desiredEndDateTime) < new Date()) {
-        return { label: 'Expired', explanation: `The request has ended on ${new Date(dataExchangeRequest.desiredEndDateTime).toLocaleString()}`};
-    }
-    if (dataExchangeApproval) {
-        if (dataExchangeApproval.isFinalized === true) {
-            return { label: 'Approved, finalized', explanation: 'The request has been approved and finalized' };
-        } else if (dataExchangeApproval.isFinalized === false) {
-           return { label: 'Approved, not finalized', explanation: 'The request has been approved, but one or more forwarded requests are pending approval.' };
-        }
-        return { label: 'Approved', explanation: 'The request has been approved' };
-    }
-    return { label: 'Pending', explanation: 'Data exchange request created, waiting for approval' };
 };
 
 const isValidDataExchangeRequest = (request: Partial<DataExchangeRequest>, demandCapacityNotification: DemandCapacityNotification) =>

@@ -33,7 +33,7 @@ import { CollapsibleDisruptionPanel } from '@features/notifications/components/C
 import { DataExchangeRequest } from '@models/types/data/data-exchange-request';
 import { DataExchangeApproval } from '@models/types/data/data-exchange-approval';
 import { DataExchangeRequestInformationModal } from '@features/data-exchange/components/DataExchangeRequestModal';
-import { getDataExchangeApproval, getDataExchangeRequest } from '@services/data-exchange-service';
+import { getDataExchangeRequestsWithApprovals } from '@services/data-exchange-service';
 import { DataExchangeRequestListModal } from '@features/data-exchange/components/DataExchangeRequestListModal';
 import { useLiveUpdate } from '@hooks/useLiveUpdate';
 import { LIVE_UPDATE_TOPICS } from '@models/constants/live-update-topics';
@@ -117,30 +117,8 @@ export const DemandCapacityNotificationView = () => {
     // requests and approvals are shown merged, so a change of either refetches both
     const fetchRequestsAndApprovals = useCallback(async () => {
         try {
-            const [incomingRequest, outgoingRequest, incomingApproval, outgoingApproval] = await Promise.all([
-                getDataExchangeRequest(false),
-                getDataExchangeRequest(true),
-                getDataExchangeApproval(false),
-                getDataExchangeApproval(true),
-            ]);
-
-            // match outgoing requests to incoming approvals
-            const outgoingRequestWithApproval = outgoingRequest.map((request: DataExchangeRequest) => ({
-                ...request,
-                dataExchangeApproval: incomingApproval.find(
-                    (approval: DataExchangeApproval) => approval.dataExchangeRequestId === request.requestId
-                ) ?? null,
-            }));
-
-            // match incoming requests to outgoing approvals
-            const incomingRequestWithApproval = incomingRequest.map((request: DataExchangeRequest) => ({
-                ...request,
-                dataExchangeApproval: outgoingApproval.find(
-                    (approval: DataExchangeApproval) => approval.dataExchangeRequestId === request.requestId
-                ) ?? null,
-            }));
-
-            setDataExchangeRequests([...incomingRequestWithApproval, ...outgoingRequestWithApproval]);
+            const { own, reported } = await getDataExchangeRequestsWithApprovals();
+            setDataExchangeRequests([...own, ...reported]);
         } catch (error) {
             console.error(error);
         }
