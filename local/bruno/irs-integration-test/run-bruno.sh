@@ -20,7 +20,8 @@
 
 # Seed PURIS & IRS via IRS bruno collection, from end of chain to Atlas.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-BRUNO_DIR="$(cd "${SCRIPT_DIR}/bruno" && pwd)"
+BRUNO_DIR="$(cd "${SCRIPT_DIR}" && pwd)"
+# BRUNO_DIR="/home/tommeyer/coding/cx/eclipse-tractusx-puris/local/bruno/irs-integration-test"
 echo "Running in $SCRIPT_DIR, switching to bruno dir $BRUNO_DIR"
 cd $BRUNO_DIR || exit 1
 
