@@ -60,6 +60,8 @@ minio:
     repository: quay.io/minio/minio
     # overwrite minio version RELEASE.2022-11-11T03-44-20Z as this is not found in bitnami legacy
     tag: RELEASE.2022-11-11T03-44-20Z
+  imagePullSecrets:
+  - name: minio-pull-secret
 
 #    clientImage:
 #      image:
