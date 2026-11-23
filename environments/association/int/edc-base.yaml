@@ -65,7 +65,7 @@ dataplane:
     # configure token autorenewal
     EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
     EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
-    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
+    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "1200"
     JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
 
 postgresql:
