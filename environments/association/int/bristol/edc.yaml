@@ -66,9 +66,8 @@ iatp:
   # Decentralized IDentifier
   id: <path:atlas-1/data/companies/bristol#did-url>
   # -- Configures the trusted issuers for this runtime
-  # removed for compatibility with wallet stub
-  # trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
-  #   - <path:atlas-1/data/environment/wallet#trusted-issuer-1>
+  trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
+    - <path:atlas-1/data/companies/bristol#did-url>
   sts:
     # TODO edc 0.13.0
     # div:
