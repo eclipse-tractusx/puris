@@ -60,10 +60,13 @@ minio:
     repository: harbor-hub-shared.arena.3ascloud.de/catena-x-testbed/minio
     # overwrite minio version RELEASE.2022-11-11T03-44-20Z as this is not found in bitnami legacy
     tag: RELEASE.2022-11-11T03-44-20Z
+  mcImage:
+    repository: harbor-hub-shared.arena.3ascloud.de/catena-x-testbed/minio-mc
+    tag: RELEASE.2022-11-07T23-47-39Z
   imagePullSecrets:
     - name: minio-pull-secret
 
-#    clientImage:
+#    clientImage:s
 #      image:
 #        repository: bitnamilegacy/minio-client
 #    volumePermissions:
