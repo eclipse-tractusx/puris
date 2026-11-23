@@ -35,6 +35,9 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.r
 import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateType;
 
 public abstract class DemandAndCapacityNotificationService<TEntity extends DemandAndCapacityNotification, TRepository extends DemandAndCapacityNotificationRepository<TEntity>> {
     protected final TRepository repository;
@@ -42,12 +45,24 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
     protected final MaterialPartnerRelationService mprService;
 
     protected final Function<TEntity, Boolean> validator;
+    protected final LiveUpdatePublisher liveUpdatePublisher;
 
-    public DemandAndCapacityNotificationService(TRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService) {
+    public DemandAndCapacityNotificationService(TRepository repository, PartnerService partnerService, MaterialPartnerRelationService mprService,
+            LiveUpdatePublisher liveUpdatePublisher) {
         this.repository = repository;
         this.partnerService = partnerService;
         this.mprService = mprService;
+        this.liveUpdatePublisher = liveUpdatePublisher;
         this.validator = this::validate;
+    }
+
+    /**
+     * Saves the entity and announces the change to websocket clients (forwarded after commit).
+     */
+    protected final TEntity saveAndPublish(TEntity entity, LiveUpdateAction action) {
+        TEntity saved = repository.save(entity);
+        liveUpdatePublisher.publish(LiveUpdateType.NOTIFICATION, action);
+        return saved;
     }
 
     public final TEntity findById(UUID uuid) {
@@ -86,7 +101,7 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
             notification.setSourceDisruptionId(UUID.randomUUID());
         }
         notification.setContentChangedAt(new Date());
-        return repository.save(notification);
+        return saveAndPublish(notification, LiveUpdateAction.CREATED);
     }
 
     public final TEntity update(TEntity notification) {
@@ -98,13 +113,14 @@ public abstract class DemandAndCapacityNotificationService<TEntity extends Deman
             return null;
         }
         notification.setContentChangedAt(new Date());
-        TEntity saved = repository.save(notification);
+        TEntity saved = saveAndPublish(notification, LiveUpdateAction.UPDATED);
         afterUpdate(existing, saved);
         return saved;
     }
 
     public final void delete(UUID uuid) {
         repository.deleteById(uuid);
+        liveUpdatePublisher.publish(LiveUpdateType.NOTIFICATION, LiveUpdateAction.DELETED);
     }
 
     /**

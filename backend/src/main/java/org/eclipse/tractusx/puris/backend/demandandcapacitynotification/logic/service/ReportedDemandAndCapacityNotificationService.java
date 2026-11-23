@@ -37,6 +37,7 @@ import org.eclipse.tractusx.puris.backend.masterdata.domain.model.Material;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -51,8 +52,9 @@ public class ReportedDemandAndCapacityNotificationService extends DemandAndCapac
 
     public ReportedDemandAndCapacityNotificationService(ReportedDemandAndCapacityNotificationRepository reportedNotificationRepository,
             PartnerService partnerService, MaterialPartnerRelationService mpr, IrsChainOpeningRootGrantService irsChainOpeningRootGrantService,
-            IrsChainOpeningPartnerGrantService irsChainOpeningGrantService, MaterialRelationService materialRelationService) {
-        super(reportedNotificationRepository, partnerService, mpr);
+            IrsChainOpeningPartnerGrantService irsChainOpeningGrantService, MaterialRelationService materialRelationService,
+            LiveUpdatePublisher liveUpdatePublisher) {
+        super(reportedNotificationRepository, partnerService, mpr, liveUpdatePublisher);
         this.irsChainOpeningRootGrantService = irsChainOpeningRootGrantService;
         this.irsChainOpeningGrantService = irsChainOpeningGrantService;
         this.materialRelationService = materialRelationService;

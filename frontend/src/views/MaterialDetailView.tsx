@@ -27,8 +27,6 @@ import { useMaterial } from '@hooks/useMaterial';
 import { Box, capitalize } from '@mui/material';
 import { useTitle } from '@contexts/titleProvider';
 import { useEffect } from 'react';
-import { StompSessionProvider } from 'react-stomp-hooks';
-import { config } from '@models/constants/config';
 
 export function MaterialDetailView() {
     const { materialNumber, direction } = useParams();
@@ -48,9 +46,7 @@ export function MaterialDetailView() {
     if (!['OUTBOUND', 'INBOUND'].includes(direction?.toUpperCase() ?? '') || !materialNumber || !material) return <NotFoundView />;
     return (
         <DataModalProvider material={material}>
-            <StompSessionProvider url={`${config.app.BACKEND_BASE_URL}ws`}>
-                <MaterialDetails material={material} direction={directionType} />
-            </StompSessionProvider>
+            <MaterialDetails material={material} direction={directionType} />
         </DataModalProvider>
     );
 }

@@ -31,6 +31,7 @@ import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.r
 import org.eclipse.tractusx.puris.backend.irs.logic.service.IrsChainOpeningPartnerGrantService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.MaterialPartnerRelationService;
 import org.eclipse.tractusx.puris.backend.masterdata.logic.service.PartnerService;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,8 +48,9 @@ public class OwnDemandAndCapacityNotificationService extends DemandAndCapacityNo
     private final IrsChainOpeningPartnerGrantService irsChainOpeningGrantService;
 
     public OwnDemandAndCapacityNotificationService(OwnDemandAndCapacityNotificationRepository ownNotificationRepository, PartnerService partnerService,
-            MaterialPartnerRelationService mpr, IrsChainOpeningPartnerGrantService irsChainOpeningGrantService) {
-        super(ownNotificationRepository, partnerService, mpr);
+            MaterialPartnerRelationService mpr, IrsChainOpeningPartnerGrantService irsChainOpeningGrantService,
+            LiveUpdatePublisher liveUpdatePublisher) {
+        super(ownNotificationRepository, partnerService, mpr, liveUpdatePublisher);
         this.irsChainOpeningGrantService = irsChainOpeningGrantService;
     }
 

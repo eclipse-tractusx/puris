@@ -24,26 +24,31 @@ import { Footer } from './Footer';
 import { Box, Stack } from '@mui/material';
 import theme from '../../theme';
 import SideBar from './SideBar';
+import { StompSessionProvider } from 'react-stomp-hooks';
+import { config } from '@models/constants/config';
 
 export const Layout = () => {
     return (
         <ThemeProvider theme={theme}>
-            <Box display="flex" height="100vh" width="100%" sx={{ backgroundColor: '#f5f5f7' }}>
-                <SideBar />
-                <Stack
-                    padding="1.25rem 1rem"
-                    overflow="auto"
-                    flexGrow={1}
-                    spacing={5}
-                    fontFamily={theme.typography.fontFamily}
-                    fontSize={theme.typography.body1.fontSize}
-                >
-                    <Box flexGrow={1}>
-                        <Outlet />
-                    </Box>
-                    <Footer />
-                </Stack>
-            </Box>
+            {/* one websocket connection shared by the sidebar and all views */}
+            <StompSessionProvider url={`${config.app.BACKEND_BASE_URL}ws`}>
+                <Box display="flex" height="100vh" width="100%" sx={{ backgroundColor: '#f5f5f7' }}>
+                    <SideBar />
+                    <Stack
+                        padding="1.25rem 1rem"
+                        overflow="auto"
+                        flexGrow={1}
+                        spacing={5}
+                        fontFamily={theme.typography.fontFamily}
+                        fontSize={theme.typography.body1.fontSize}
+                    >
+                        <Box flexGrow={1}>
+                            <Outlet />
+                        </Box>
+                        <Footer />
+                    </Stack>
+                </Box>
+            </StompSessionProvider>
         </ThemeProvider>
     );
 };

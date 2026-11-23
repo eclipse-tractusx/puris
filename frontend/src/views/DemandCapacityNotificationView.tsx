@@ -35,6 +35,8 @@ import { DataExchangeApproval } from '@models/types/data/data-exchange-approval'
 import { DataExchangeRequestInformationModal } from '@features/data-exchange/components/DataExchangeRequestModal';
 import { getDataExchangeApproval, getDataExchangeRequest } from '@services/data-exchange-service';
 import { DataExchangeRequestListModal } from '@features/data-exchange/components/DataExchangeRequestListModal';
+import { useLiveUpdate } from '@hooks/useLiveUpdate';
+import { LIVE_UPDATE_TOPICS } from '@models/constants/live-update-topics';
 
 
 export const DemandCapacityNotificationView = () => {
@@ -100,14 +102,21 @@ export const DemandCapacityNotificationView = () => {
         setTitle('Notifications');
     }, [setTitle]);
 
-    const fetchNotificationsAndRequests = useCallback(async () => {
+    const fetchNotifications = useCallback(async () => {
         try {
             const [incoming, outgoing] = await Promise.all([
                 getDemandAndCapacityNotification(true),
                 getDemandAndCapacityNotification(false),
             ]);
             setDemandCapacityNotification([...incoming, ...outgoing]);
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
 
+    // requests and approvals are shown merged, so a change of either refetches both
+    const fetchRequestsAndApprovals = useCallback(async () => {
+        try {
             const [incomingRequest, outgoingRequest, incomingApproval, outgoingApproval] = await Promise.all([
                 getDataExchangeRequest(false),
                 getDataExchangeRequest(true),
@@ -136,6 +145,14 @@ export const DemandCapacityNotificationView = () => {
             console.error(error);
         }
     }, []);
+
+    const fetchNotificationsAndRequests = useCallback(async () => {
+        await fetchNotifications();
+        await fetchRequestsAndApprovals();
+    }, [fetchNotifications, fetchRequestsAndApprovals]);
+
+    useLiveUpdate(LIVE_UPDATE_TOPICS.notifications, fetchNotifications);
+    useLiveUpdate([LIVE_UPDATE_TOPICS.dataExchangeRequests, LIVE_UPDATE_TOPICS.dataExchangeApprovals], fetchRequestsAndApprovals);
 
     useEffect(() => {
         fetchNotificationsAndRequests();

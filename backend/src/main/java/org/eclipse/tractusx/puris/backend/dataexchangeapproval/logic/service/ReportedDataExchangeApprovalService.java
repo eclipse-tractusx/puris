@@ -25,13 +25,15 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.ReportedDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository.ReportedDataExchangeApprovalRepository;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportedDataExchangeApprovalService extends DataExchangeApprovalService<ReportedDataExchangeApproval, ReportedDataExchangeApprovalRepository>{
     
-    public ReportedDataExchangeApprovalService (ReportedDataExchangeApprovalRepository repository) {
-        super(repository);
+    public ReportedDataExchangeApprovalService(ReportedDataExchangeApprovalRepository repository, LiveUpdatePublisher liveUpdatePublisher) {
+        super(repository, liveUpdatePublisher);
     }
 
     public final List<ReportedDataExchangeApproval> findAllByDataExchangeRequest_RelatedDataExchangeRequest_Uuid(UUID relatedDataExchangeRequestUuid) {
@@ -55,7 +57,7 @@ public class ReportedDataExchangeApprovalService extends DataExchangeApprovalSer
             throw new KeyAlreadyExistsException(String.format("A reported data exchange aproval for approval id %s' already exists", reportedDataExchangeApproval.getApprovalId()));
         }
 
-        return repository.save(reportedDataExchangeApproval);
+        return saveAndPublish(reportedDataExchangeApproval, LiveUpdateAction.CREATED);
     }
 
     public final ReportedDataExchangeApproval update(ReportedDataExchangeApproval reportedDataExchangeApproval) {
@@ -65,7 +67,7 @@ public class ReportedDataExchangeApprovalService extends DataExchangeApprovalSer
         if (reportedDataExchangeApproval.getUuid() == null || repository.findById(reportedDataExchangeApproval.getUuid()).isEmpty()) {
             return null;
         }
-        return repository.save(reportedDataExchangeApproval);
+        return saveAndPublish(reportedDataExchangeApproval, LiveUpdateAction.UPDATED);
     }
 
     @Override

@@ -24,13 +24,15 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnDataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository.OwnDataExchangeApprovalRepository;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<OwnDataExchangeApproval, OwnDataExchangeApprovalRepository> {
     
-    public OwnDataExchangeApprovalService(OwnDataExchangeApprovalRepository repository) {
-        super(repository);
+    public OwnDataExchangeApprovalService(OwnDataExchangeApprovalRepository repository, LiveUpdatePublisher liveUpdatePublisher) {
+        super(repository, liveUpdatePublisher);
     }
 
     public final OwnDataExchangeApproval create(OwnDataExchangeApproval ownDataExchangeApproval) {
@@ -47,7 +49,7 @@ public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<
         if (ownDataExchangeApproval.getApprovalId() == null) {
             ownDataExchangeApproval.setApprovalId(UUID.randomUUID().toString());
         }
-        return repository.save(ownDataExchangeApproval);
+        return saveAndPublish(ownDataExchangeApproval, LiveUpdateAction.CREATED);
     }
 
     public final OwnDataExchangeApproval update(OwnDataExchangeApproval ownDataExchangeApproval) {
@@ -58,7 +60,7 @@ public class OwnDataExchangeApprovalService extends DataExchangeApprovalService<
                 || repository.findById(ownDataExchangeApproval.getUuid()).isEmpty()) {
             return null;
         }
-        return repository.save(ownDataExchangeApproval);
+        return saveAndPublish(ownDataExchangeApproval, LiveUpdateAction.UPDATED);
     }
 
     @Override
