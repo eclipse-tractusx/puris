@@ -29,8 +29,8 @@ NC='\033[0m'
 # ----------------------------------------------------------------------
 
 declare COMPANY=(
-  "customer"
-  "supplier"
+  "atlas"
+  "belfast"
   "bristol"
   "ceres"
 )
@@ -136,8 +136,8 @@ generate_env_file() {
     comp_dtr_idp_json=$(get_vault_secret_json "companies/${comp}/dtr/keycloak" | jq -r '.data.data')
     comp_dtr_idp_url=$(ensure_https "$(echo "$comp_dtr_idp_json" | jq -r '."hostname"')")
     comp_dtr_idp_realm=$(echo "$comp_dtr_idp_json" | jq -r '."realm"')
-    comp_dtr_idp_client_id=$(echo "$comp_dtr_idp_json" | jq -r '."id"')
-    comp_dtr_idp_client_secret=$(echo "$comp_dtr_idp_json" | jq -r '."secret"')
+    comp_dtr_idp_client_id=$(echo "$comp_dtr_idp_json" | jq -r '."client-id"')
+    comp_dtr_idp_client_secret=$(echo "$comp_dtr_idp_json" | jq -r '."client-secret"')
 
     # ----- IRS ------------------------------------------------------
     local comp_irs_json comp_irs_url
@@ -153,7 +153,8 @@ generate_env_file() {
     # Note: we consider that discovery and so on are the same
     # reuse central idp 
     local comp_discovery_idp_url
-    comp_discovery_idp_url=$(ensure_https "$(echo "$central_idp_json" | jq -r '."hostname"')")
+    central_idp_json=$(get_vault_secret_json "environment/central-idp" | jq -r '.data.data')
+    comp_discovery_json=$(ensure_https "$(echo "$central_idp_json" | jq -r '."base-url"')")
     comp_discovery_idp_realm=$(echo "$central_idp_json" | jq -r '."realm"')
     local comp_discovery_idp_json comp_discovery_idp_id comp_discovery_idp_secret
     comp_discovery_idp_json=$(get_vault_secret_json "companies/${comp}/irs/client-secret/discovery" | jq -r '.data.data')

@@ -42,13 +42,13 @@ Definition of Setups
 Environments
 
 1. ceres-supplies-sensor-to-bristol.bru (Setup Supplier) x
-2. ceres-supplies-sensor-to-semi.bru (Setup Supplier) x
+2. ceres-supplies-sensor-to-belfast.bru (Setup Supplier) x
 3. bristol-buys-sensor-from-ceres.bru (Setup Customer) x
-4. bristol-supplies-ecu-to-ccu.bru (Setup Supplier) x
-5. semi-buys-sensor-from-ceres.bru (Setup Customer) x
-6. semi-supplies-gearbox-to-ccu.bru (Setup Supplier) x
-7. semi-supplies-tire-a-to-ccu.bru (Setup Supplier) x
-8. ccu-buys-ecu-from-bristol.bru (Setup Customer) x
-9. ccu-buys-gearbox-from-semi.bru (Setup Customer) x
-10. ccu-buys-tire-from-semi.bru (Setup Customer) x
-11. ccu-supplies-vehicle-to-end-customer.bru (Setup Supplier) x
+4. bristol-supplies-ecu-to-atlas.bru (Setup Supplier) x
+5. belfast-buys-sensor-from-ceres.bru (Setup Customer) x
+6. belfast-supplies-gearbox-to-atlas.bru (Setup Supplier) x
+7. belfast-supplies-tire-a-to-atlas.bru (Setup Supplier) x
+8. atlas-buys-ecu-from-bristol.bru (Setup Customer) x
+9. atlas-buys-gearbox-from-belfast.bru (Setup Customer) x
+10. atlas-buys-tire-from-belfast.bru (Setup Customer) x
+11. atlas-supplies-vehicle-to-end-customer.bru (Setup Supplier) x
