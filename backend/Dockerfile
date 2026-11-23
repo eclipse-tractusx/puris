@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+FROM maven:3.10.0-eclipse-temurin-21@sha256:3e18d95a0a49d18aa5b075e5ee3c30a98078c382850467dcd4caa49bb7dc4038 AS build
 RUN mkdir -p /app/legal
 WORKDIR /app
 COPY pom.xml .
@@ -30,7 +30,7 @@ RUN mvn clean package -DskipTests
 # Copy Legal information for distributions, the star ones are copied by workflow
 COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* LICENSE_non_code* /app/legal/
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21.0.13.1_2-jre-alpine@sha256:5d7689f47d670aca766b9503a70bccc2d73b4eb9221ae8f714ae958313c4ce70
 RUN mkdir /opt/app
 WORKDIR /opt/app
 COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar
