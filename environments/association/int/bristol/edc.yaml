@@ -67,7 +67,7 @@ iatp:
   id: <path:atlas-1/data/companies/bristol#did-url>
   # -- Configures the trusted issuers for this runtime
   trustedIssuers: # array [] that needs to be expand but likely like (sorry unconfirmed on how this is done, as I also would need to check)
-    - <path:atlas-1/data/companies/bristol#did-url>
+    - <path:atlas-1/data/environment/wallet#trusted-issuer-1>
   sts:
     # TODO edc 0.13.0
     # div:
