@@ -152,9 +152,9 @@ generate_env_file() {
     # ----- Discovery API ------------------------------------------------------
     # Note: we consider that discovery and so on are the same
     # reuse central idp 
-    local comp_discovery_idp_url
+    local central_idp_json comp_discovery_idp_url comp_discovery_idp_realm
     central_idp_json=$(get_vault_secret_json "environment/central-idp" | jq -r '.data.data')
-    comp_discovery_json=$(ensure_https "$(echo "$central_idp_json" | jq -r '."base-url"')")
+    comp_discovery_idp_url=$(ensure_https "$(echo "$central_idp_json" | jq -r '."base-url"')")
     comp_discovery_idp_realm=$(echo "$central_idp_json" | jq -r '."realm"')
     local comp_discovery_idp_json comp_discovery_idp_id comp_discovery_idp_secret
     comp_discovery_idp_json=$(get_vault_secret_json "companies/${comp}/irs/client-secret/discovery" | jq -r '.data.data')
