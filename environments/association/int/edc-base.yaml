@@ -35,10 +35,13 @@ controlplane:
     java.util.logging.ConsoleHandler.level=ALL
     java.util.logging.SimpleFormatter.format=[%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS] [%4$-7s] %5$s%6$s%n
   env:
-    # configure vault token auto-renewal
-    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
+    # configure token autorenewal
     EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
-    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "600"
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED-RENEW-ENABLED: "true"
+    EDC_VAULT_HASHICORP_TOKEN_RENEW-BUFFER: "1200"
+    # alternative format for potential newer upstream versions than 0.15.1
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULEDRENEW_ENABLED: "true"
+    EDC_VAULT_HASHICORP_TOKEN_RENEWBUFFER: "1200"
     JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
 
 dataplane:
@@ -63,9 +66,12 @@ dataplane:
 
   env:
     # configure token autorenewal
-    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED_RENEW_ENABLED: "true"
     EDC_VAULT_HASHICORP_TOKEN_TTL: "3600"
-    EDC_VAULT_HASHICORP_TOKEN_RENEW_BUFFER: "1200"
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULED-RENEW-ENABLED: "true"
+    EDC_VAULT_HASHICORP_TOKEN_RENEW-BUFFER: "1200"
+    # alternative format for potential newer upstream versions than 0.15.1
+    EDC_VAULT_HASHICORP_TOKEN_SCHEDULEDRENEW_ENABLED: "true"
+    EDC_VAULT_HASHICORP_TOKEN_RENEWBUFFER: "1200"
     JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50.0 -XX:+CrashOnOutOfMemoryError"
 
 postgresql:
