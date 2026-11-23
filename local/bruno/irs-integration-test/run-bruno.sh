@@ -42,7 +42,7 @@ CUS2="01-PURIS/A-CUSTOMER/02-Provide Operational Data to Supplier"
 
 # company | role | env
 PLAN=(
-  "CERES   supplier ceres-supplies-sensor-to-semi"
+  "CERES   supplier ceres-supplies-sensor-to-belfast"
   "CERES   supplier ceres-supplies-sensor-to-bristol"
   "CERES   irs      ceres-supplies-sensor-to-bristol"
 
@@ -50,16 +50,16 @@ PLAN=(
   "BRISTOL irs      bristol-supplies-ecu-to-atlas"
   "BRISTOL customer bristol-buys-sensor-from-ceres"
 
-  "SEMI supplier semi-supplies-tire-a-to-atlas"
-  "SEMI supplier semi-supplies-gearbox-to-atlas"
-  "SEMI irs      semi-supplies-tire-a-to-atlas"
-  "SEMI customer semi-buys-sensor-from-ceres"
+  "BELFAST supplier belfast-supplies-tire-a-to-atlas"
+  "BELFAST supplier belfast-supplies-gearbox-to-atlas"
+  "BELFAST irs      belfast-supplies-tire-a-to-atlas"
+  "BELFAST customer belfast-buys-sensor-from-ceres"
 
-  "CCU   supplier ccu-supplies-vehicle-to-end-customer"
-  "CCU   irs      ccu-supplies-vehicle-to-end-customer"
-  "CCU   customer ccu-buys-ecu-from-bristol"
-  "CCU   customer ccu-buys-gearbox-from-semi"
-  "CCU   customer ccu-buys-tire-from-semi"
+  "ATLAS   supplier atlas-supplies-vehicle-to-end-customer"
+  "ATLAS   irs      atlas-supplies-vehicle-to-end-customer"
+  "ATLAS   customer atlas-buys-ecu-from-bristol"
+  "ATLAS   customer atlas-buys-gearbox-from-belfast"
+  "ATLAS   customer atlas-buys-tire-from-belfast"
 )
 
 SUMMARY=()
