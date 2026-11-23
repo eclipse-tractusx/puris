@@ -335,7 +335,7 @@ export const DeliveryInformationModal = ({
             try {
                 await deleteDelivery(row.uuid);
                 onRemove?.(row.uuid);
-            } catch (error) {
+            } catch {
                 notify({
                     title: 'Error deleting delivery',
                     description: 'Failed to delete the delivery',

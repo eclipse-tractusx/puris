@@ -192,7 +192,7 @@ export const DemandCategoryModal = ({ open, onClose, onRemove, demand, demands }
                     description: 'The demand record was successfully deleted.',
                     severity: 'success',
                 });
-            } catch (error) {
+            } catch {
                 notify({
                     title: 'Error',
                     description: 'Failed to delete the demand',

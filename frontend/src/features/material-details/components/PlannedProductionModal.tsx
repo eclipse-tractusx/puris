@@ -235,7 +235,7 @@ export const PlannedProductionModal = ({ open, onClose, onRemove, production, pr
                     description: 'The production record was successfully deleted.',
                     severity: 'success',
                 });
-            } catch (error) {
+            } catch {
                 notify({
                     title: 'Error deleting production',
                     description: 'Failed to delete the production',

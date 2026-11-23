@@ -44,7 +44,7 @@ export const usePartnerDataUpdateBatch = (runId?: string, page?: number, size?: 
         },
       });
       return res.ok;
-    } catch (e) {
+    } catch {
       return false;
     }
   };
