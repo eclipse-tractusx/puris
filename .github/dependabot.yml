@@ -32,6 +32,16 @@ updates:
     schedule:
       interval: "daily"
 
+  - package-ecosystem: "docker"
+    directory: "/backend/"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend/"
+    schedule:
+      interval: "daily"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
