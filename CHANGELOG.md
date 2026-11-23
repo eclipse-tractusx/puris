@@ -27,7 +27,7 @@ The **need for configuration updates** is **marked bold**
   - Added bruno tests and unit test for Connect to Child feature ([#1270](https://github.com/eclipse-tractusx/puris/pull/1270))
   - Added bruno tests for SingleLevelUsageAsPlanned ([#1274](https://github.com/eclipse-tractusx/puris/pull/1274))
   - Added Automatic IRS Contract Offering ([#1279](https://github.com/eclipse-tractusx/puris/pull/1279))
-- Added live updates of notifications, data exchange requests and approvals in the notification view via websocket ([]())
+- Added live updates of notifications, data exchange requests and approvals in the notification view via websocket ([#1309](https://github.com/eclipse-tractusx/puris/pull/1309))
 
 ### Changed
 
