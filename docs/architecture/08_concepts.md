@@ -47,7 +47,7 @@ Following the standard, the following measures have been taken:
   overview negotiations and transfers.
 
 ### Access Policies and Access Restrictions
-
+Each Contract Offer has the same access policies, except for the assets mentioned in [Contract Policies](#contract-policies)
 that are only offered to the own BPNL or to all Catena-X members. When creating a partner, for all potential assets a
 contract offer is created using the following constraints:
 
@@ -113,11 +113,10 @@ One can steer the application to surpass the asset and contract definition for t
 Three different policies are used depending on the Asset Type:
 
 - Digital Twin Registry: Use Access Policy also as Contract Policy
-- Submodels & Notification Endpoint: Use Contract Policy as defined below
-- Submodels & APIs (Notification, Data Exchange Request): Use Contract Policy as defined below
+- Submodels & Message APIs (Notification, Data Exchange Request): Use Contract Policy as defined below
 - IRS Recursive Notification API: Framework Agreement and Usage Purpose `cx.core.industrycore:1`, offered with an access policy that only requires an active membership, so that the IRS of all Catena-X members can send recursive requests. This asset is only registered if the IRS adapter is enabled and `backend.puris.irsadapter.registerasset` is `true`.
 
-The following submodels are (additionally) offered to your own BPNL (self-contract), so that your own applications, e.g. the IRS, can consume them via your EDC: `SingleLevelBomAsPlanned`, the anonymized submodels and PartTypeInformation.
+The following submodels are (additionally) offered to your own BPNL (self-contract), so that your own applications, e.g. the IRS, can consume them via your EDC: `SingleLevelBomAsPlanned`, `SingleLevelUsageAsPlanned`, the anonymized submodels and PartTypeInformation.
 
 _Note: The submodel `PartTypeInformation` is also registered with the same Contract Policy as the other Submodels._
 
