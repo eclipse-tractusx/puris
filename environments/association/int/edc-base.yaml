@@ -102,5 +102,5 @@ vault:
       enabled: true
       standbyOk: true
     paths:
-      secret: /v1/puris
+      secret: /v1/atlas-1
       health: /v1/sys/health
