@@ -57,7 +57,7 @@ minio:
     enabled: true
     size: 1Gi
   image:
-    repository: harbor-hub-shared.arena.3ascloud.de/minio
+    repository: harbor-hub-shared.arena.3ascloud.de/catena-x-testbed/minio
     # overwrite minio version RELEASE.2022-11-11T03-44-20Z as this is not found in bitnami legacy
     tag: RELEASE.2022-11-11T03-44-20Z
   imagePullSecrets:
