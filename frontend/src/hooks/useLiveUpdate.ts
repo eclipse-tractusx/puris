@@ -22,16 +22,23 @@ SPDX-License-Identifier: Apache-2.0
 Assisted-by: Claude Code Opus 5.5
 */
 
-import { useEffect, useRef } from 'react';
-import { useSubscription } from 'react-stomp-hooks';
+import { useCallback, useEffect, useRef } from 'react';
+import { useStompClient, useSubscription } from 'react-stomp-hooks';
 
 /**
  * Calls onUpdate whenever a change is announced on one of the given websocket topics.
  * Events arriving in quick succession are debounced into a single call.
+ *
+ * Events sent while the connection is down are lost, so onUpdate is also called whenever the
+ * connection becomes available after the hook mounted (reconnect, or the initial connect when the
+ * component mounted before it). This brings the data back in sync without a manual reload.
  */
 export const useLiveUpdate = (topics: string | string[], onUpdate: () => void, delay: number = 500) => {
     const onUpdateRef = useRef(onUpdate);
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    // the client is only provided while the connection is established
+    const isConnected = useStompClient() !== undefined;
+    const wasConnectedRef = useRef(isConnected);
 
     useEffect(() => {
         onUpdateRef.current = onUpdate;
@@ -39,8 +46,17 @@ export const useLiveUpdate = (topics: string | string[], onUpdate: () => void, d
 
     useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
-    useSubscription(topics, () => {
+    const scheduleUpdate = useCallback(() => {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => onUpdateRef.current(), delay);
-    });
+    }, [delay]);
+
+    useEffect(() => {
+        if (isConnected && !wasConnectedRef.current) {
+            scheduleUpdate();
+        }
+        wasConnectedRef.current = isConnected;
+    }, [isConnected, scheduleUpdate]);
+
+    useSubscription(topics, scheduleUpdate);
 };
