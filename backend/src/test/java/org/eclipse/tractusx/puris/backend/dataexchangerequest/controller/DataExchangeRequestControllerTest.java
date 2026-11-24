@@ -27,7 +27,6 @@ import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.Reque
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.logic.service.OwnDataExchangeRequestService;
 import org.eclipse.tractusx.puris.backend.demandandcapacitynotification.domain.model.ReportedDemandAndCapacityNotification;
-import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,8 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DataExchangeRequestControllerTest {
     @Mock
     private OwnDataExchangeRequestRepository repository;
-    @Mock
-    private LiveUpdatePublisher liveUpdatePublisher;
     @InjectMocks
     private OwnDataExchangeRequestService ownDataExchangeRequestService;
 
