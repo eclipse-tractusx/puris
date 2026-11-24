@@ -72,8 +72,14 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         errors.addAll(basicValidation(dataExchangeRequest));
         if (dataExchangeRequest.getNotification() == null) {
             errors.add("Missing notification.");
+        } else if (dataExchangeRequest.getNotification().getStartDateOfEffect() == null) {
+            errors.add("Missing notification startDateOfEffect.");
         }
-        errors.addAll(validateDesiredDates(dataExchangeRequest));
+        // the date checks need both dates and the notification's start, which are reported as missing above
+        if (dataExchangeRequest.getDesiredStartDateTime() != null && dataExchangeRequest.getDesiredEndDateTime() != null
+                && dataExchangeRequest.getNotification() != null && dataExchangeRequest.getNotification().getStartDateOfEffect() != null) {
+            errors.addAll(validateDesiredDates(dataExchangeRequest));
+        }
 
         return errors;
     }
