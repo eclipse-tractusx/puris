@@ -155,7 +155,7 @@ backend:
             secret:
               # -- alias for the vault used by the EDC in which the secret is stored. Mandatory if
               # backend.puris.dtr.idp.enabled = true.
-              alias: "belfast/dtr/keycloak/client-secret-edc"
+              alias: "companies/belfast/dtr/keycloak/client-secret-edc"
           puris:
             # -- id of the client that has a service account with roles to manage the DTR. Used by the application to
             # create and update digital twins. See Admin Guide. Mandatory if backend.puris.dtr.idp.enabled = true.
