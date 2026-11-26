@@ -18,7 +18,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node:lts-alpine AS build
+FROM node:26.13.1-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS build
 
 ARG NPM_BUILD_MODE=dockerbuild
 
@@ -38,7 +38,7 @@ RUN chmod -R 777 /app/dist
 COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* LICENSE_non_code* /app/dist/
 
 # uses 101 restricted user
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginx/nginx-unprivileged:1.31.9-alpine@sha256:60214a103e6f38e953ff957f34b1f2e97a9db801ab2df3821da955d0fe6cadd6
 #FROM nginx:stable-alpine
 
 # commly it would be .../html/js/.*js, but due to the project structure the JS files are in .../html/assets

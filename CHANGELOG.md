@@ -35,6 +35,7 @@ The **need for configuration updates** is **marked bold**
 - Update misleading global asset id in materials table and add EDC URL do partners table and global asset ID to MPR table ([#1248](https://github.com/eclipse-tractusx/puris/pull/1248))
 - Updated aggregated data handling to replace previous results for the same source disruption ([#1280](https://github.com/eclipse-tractusx/puris/pull/1280)).
 - Removed unused local mock-util-service (iam-mock); local setup uses ssi-dim-wallet-stub only. ([#1283](https://github.com/eclipse-tractusx/puris/pull/1283))
+- Fix digest for frontend and backend dockerfile to latest available including fix for CVE-2026-114938 ([#1308](https://github.com/eclipse-tractusx/puris/pull/1308))
 
 ### Fixes
 
@@ -46,9 +47,10 @@ The **need for configuration updates** is **marked bold**
 
 ### Version Bumps
 
-  - bump org.bouncycastle:bcprov-jdk18on from 1.84 to 1.85
-  - bump org.bouncycastle:bcpkix-jdk18on from 1.74 to 1.85
-  - bump org.bouncycastle:bcutil-jdk18on from 1.74 to 1.85
+- bump org.bouncycastle:bcprov-jdk18on from 1.84 to 1.85
+- bump org.bouncycastle:bcpkix-jdk18on from 1.74 to 1.85
+- bump org.bouncycastle:bcutil-jdk18on from 1.74 to 1.85
+- bump frontend ngins from 1.31.7 to 1.31.9 due to migration of namespace addressing CVE-2026-123007 ([#1308](https://github.com/eclipse-tractusx/puris/pull/1308))
 
 ### Known Knowns
 
