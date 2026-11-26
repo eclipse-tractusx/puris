@@ -26,13 +26,17 @@ import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.OwnD
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository.OwnDataExchangeApprovalRepository;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.RequestedTypeEnumeration;
-import org.junit.Test;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateType;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
@@ -42,6 +46,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DataExchangeApprovalServiceTest {
     @Mock
     private OwnDataExchangeApprovalRepository repository;
+    @Mock
+    private LiveUpdatePublisher liveUpdatePublisher;
     @InjectMocks
     private OwnDataExchangeApprovalService ownDataExchangeApprovalService;
 
@@ -61,6 +67,7 @@ public class DataExchangeApprovalServiceTest {
     void emptyApproval_testCreate_throwsIllegalArgumentException() {
         OwnDataExchangeApproval approval = new OwnDataExchangeApproval();
         assertThrows(IllegalArgumentException.class,() -> ownDataExchangeApprovalService.create(approval));
+        verifyNoInteractions(liveUpdatePublisher);
     }
     
     @Test
@@ -71,6 +78,7 @@ public class DataExchangeApprovalServiceTest {
         OwnDataExchangeApproval result = ownDataExchangeApprovalService.create(approval);
         assertEquals(approval, result);
         verify(repository).save(approval);
+        verify(liveUpdatePublisher).publish(LiveUpdateType.DATA_EXCHANGE_APPROVAL, LiveUpdateAction.CREATED);
     }
 
     private OwnDataExchangeApproval createValidApproval() {
