@@ -30,7 +30,7 @@ RUN mvn clean package -DskipTests
 # Copy Legal information for distributions, the star ones are copied by workflow
 COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* LICENSE_non_code* /app/legal/
 
-FROM eclipse-temurin:21.0.13.1_2-jre-alpine@sha256:5d7689f47d670aca766b9503a70bccc2d73b4eb9221ae8f714ae958313c4ce70
+FROM eclipse-temurin:24.0.2_12-jre-alpine@sha256:4044b6c87cb088885bcd0220f7dc7a8a4aab76577605fa471945d2e98270741f
 RUN mkdir /opt/app
 WORKDIR /opt/app
 COPY --from=build /app/target/*.jar /opt/app/puris-backend.jar
