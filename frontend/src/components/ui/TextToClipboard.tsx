@@ -38,7 +38,7 @@ export function TextToClipboard({ text, variant = 'default' }: TextToClipboardPr
                 description: text,
                 severity: 'success'
             });
-        } catch (error) {
+        } catch {
             notify({
                 title: 'Error copying to Clipboard',
                 description: '',

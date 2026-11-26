@@ -247,7 +247,7 @@ export const StockModal = ({
                     description: 'The stock record was successfully deleted.',
                     severity: 'success',
                 });
-            } catch (e) {
+            } catch {
                 notify({
                     title: 'Error',
                     description: 'Failed to delete stock record.',
