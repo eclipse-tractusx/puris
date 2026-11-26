@@ -86,3 +86,24 @@ export const postDataExchangeApproval = async (id: string, approval: Partial<Dat
     }
     return res.json();
 }
+const withMatchingApproval = (requests: DataExchangeRequest[], approvals: DataExchangeApproval[]): DataExchangeRequest[] =>
+    requests.map((request) => ({
+        ...request,
+        dataExchangeApproval: approvals.find((approval) => approval.dataExchangeRequestId === request.requestId) ?? null,
+    }));
+
+// Loads own and reported (received) requests, each with the approval from the other side attached
+export const getDataExchangeRequestsWithApprovals = async () => {
+    const [ownRequests, reportedRequests, ownApprovals, reportedApprovals] = await Promise.all([
+        getDataExchangeRequest(false),
+        getDataExchangeRequest(true),
+        getDataExchangeApproval(false),
+        getDataExchangeApproval(true),
+    ]);
+    return {
+        // our requests are answered by approvals reported by partners
+        own: withMatchingApproval(ownRequests, reportedApprovals),
+        // requests reported by partners are answered by our own approvals
+        reported: withMatchingApproval(reportedRequests, ownApprovals),
+    };
+};

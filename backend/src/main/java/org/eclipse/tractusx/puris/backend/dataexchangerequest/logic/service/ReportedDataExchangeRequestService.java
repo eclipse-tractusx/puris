@@ -25,13 +25,15 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.ReportedDataExchangeRequestRepository;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ReportedDataExchangeRequestService extends DataExchangeRequestService<ReportedDataExchangeRequest, ReportedDataExchangeRequestRepository> {
 
-    public ReportedDataExchangeRequestService(ReportedDataExchangeRequestRepository repository) {
-        super(repository);
+    public ReportedDataExchangeRequestService(ReportedDataExchangeRequestRepository repository, LiveUpdatePublisher liveUpdatePublisher) {
+        super(repository, liveUpdatePublisher);
     }
 
     public final ReportedDataExchangeRequest create(ReportedDataExchangeRequest reportedDataExchangeRequest) {
@@ -47,7 +49,7 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         if (reportedDataExchangeRequest.getRequestId() == null) {
             reportedDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
         }
-        return repository.save(reportedDataExchangeRequest);
+        return saveAndPublish(reportedDataExchangeRequest, LiveUpdateAction.CREATED);
     }
 
     public final ReportedDataExchangeRequest update(ReportedDataExchangeRequest reportedDataExchangeRequest) {
@@ -57,7 +59,7 @@ public class ReportedDataExchangeRequestService extends DataExchangeRequestServi
         if (reportedDataExchangeRequest.getUuid() == null || repository.findById(reportedDataExchangeRequest.getUuid()).isEmpty()) {
             return null;
         }
-        return repository.save(reportedDataExchangeRequest);
+        return saveAndPublish(reportedDataExchangeRequest, LiveUpdateAction.UPDATED);
     }
     
     @Override

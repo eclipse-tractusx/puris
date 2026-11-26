@@ -24,13 +24,27 @@ import java.util.function.Function;
 
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.model.DataExchangeApproval;
 import org.eclipse.tractusx.puris.backend.dataexchangeapproval.domain.repository.DataExchangeApprovalRepository;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateType;
 
 public abstract class DataExchangeApprovalService<TEntity extends DataExchangeApproval, TRepository extends DataExchangeApprovalRepository<TEntity>> {
     protected final TRepository repository;
     protected final Function<TEntity, Boolean> validator;
-    public DataExchangeApprovalService(TRepository repository) {
+    protected final LiveUpdatePublisher liveUpdatePublisher;
+    public DataExchangeApprovalService(TRepository repository, LiveUpdatePublisher liveUpdatePublisher) {
         this.repository = repository;
+        this.liveUpdatePublisher = liveUpdatePublisher;
         this.validator = this::validate;
+    }
+
+    /**
+     * Saves the entity and announces the change to websocket clients (forwarded after commit).
+     */
+    protected final TEntity saveAndPublish(TEntity entity, LiveUpdateAction action) {
+        TEntity saved = repository.save(entity);
+        liveUpdatePublisher.publish(LiveUpdateType.DATA_EXCHANGE_APPROVAL, action);
+        return saved;
     }
 
     public final List<TEntity> findAll() {

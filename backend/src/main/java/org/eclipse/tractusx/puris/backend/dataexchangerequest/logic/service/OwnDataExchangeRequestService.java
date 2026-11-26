@@ -26,13 +26,15 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.OwnDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.model.ReportedDataExchangeRequest;
 import org.eclipse.tractusx.puris.backend.dataexchangerequest.domain.repository.OwnDataExchangeRequestRepository;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdateAction;
+import org.eclipse.tractusx.puris.backend.common.liveupdate.LiveUpdatePublisher;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OwnDataExchangeRequestService extends DataExchangeRequestService<OwnDataExchangeRequest, OwnDataExchangeRequestRepository> {
 
-    public OwnDataExchangeRequestService(OwnDataExchangeRequestRepository repository) {
-        super(repository);
+    public OwnDataExchangeRequestService(OwnDataExchangeRequestRepository repository, LiveUpdatePublisher liveUpdatePublisher) {
+        super(repository, liveUpdatePublisher);
     }
 
     public final List<OwnDataExchangeRequest> findByRelatedDataExchangeRequest(ReportedDataExchangeRequest origin) {
@@ -52,7 +54,7 @@ public class OwnDataExchangeRequestService extends DataExchangeRequestService<Ow
         if (ownDataExchangeRequest.getRequestId() == null) {
             ownDataExchangeRequest.setRequestId(UUID.randomUUID().toString());
         }
-        return repository.save(ownDataExchangeRequest);
+        return saveAndPublish(ownDataExchangeRequest, LiveUpdateAction.CREATED);
     }
 
     @Override

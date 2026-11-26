@@ -24,7 +24,7 @@ import { DemandCapacityNotification } from "@models/types/data/demand-capacity-n
 import { Partner } from "@models/types/edc/partner";
 import { Box, Button, Dialog, DialogTitle, Stack, Tooltip, Typography } from "@mui/material";
 import { Table } from "@catena-x/portal-shared-components";
-import { getDataExchangeStatus } from "./DataExchangeRequestModal";
+import { getDataExchangeStatus } from "../util/data-exchange-status";
 import { Visibility, FactCheck, Close, Send } from "@mui/icons-material";
 import { canCreateRequest } from "@features/notifications/components/CollapsibleNotification";
 

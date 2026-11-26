@@ -32,7 +32,7 @@ import ListItemText from '@mui/material/ListItemText';
 import AuthenticationService from '@services/authentication-service';
 import { useAuth } from '@hooks/useAuth';
 import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { Stack, SvgIconTypeMap, Typography } from '@mui/material';
+import { Badge, Stack, SvgIconTypeMap, Typography } from '@mui/material';
 import { Role } from '@models/types/auth/role';
 import {
     AccountTreeOutlined,
@@ -55,6 +55,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useOwnPartner } from '@hooks/useOwnPartner';
 import { TextToClipboard } from '@components/ui/TextToClipboard';
 import { config } from '@models/constants/config';
+import { useOpenReceivedItemCount } from '@features/notifications/hooks/useOpenReceivedItemCount';
 
 const openedMixin = (theme: Theme): CSSObject => ({
     width: theme.sidebarWidth,
@@ -119,11 +120,12 @@ type SideBarItemProps = (
     icon: React.ReactElement<OverridableComponent<SvgIconTypeMap<object, 'svg'>>>;
     requiredRoles?: Role[];
     enabled?: boolean;
+    showOpenCount?: boolean;
 };
 
 const sideBarItems: SideBarItemProps[] = [
     { name: 'Materials', icon: <HomeOutlined />, path: '/materials' },
-    { name: 'Notifications', icon: <NotificationsOutlined />, path: '/notifications' },
+    { name: 'Notifications', icon: <NotificationsOutlined />, path: '/notifications', showOpenCount: true },
     { name: 'Master data', icon: <ModeEditOutlineOutlined />, path: '/master-data', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Import', icon: <ExitToAppOutlined />, path: '/import', requiredRoles: ['PURIS_ADMIN'] },
     { name: 'Catalog', icon: <AutoStoriesOutlined />, path: '/catalog', requiredRoles: ['PURIS_ADMIN'] },
@@ -142,6 +144,7 @@ export default function MiniDrawer() {
     const theme = useTheme();
     const { hasRole } = useAuth();
     const { isInitialized, token } = useAuth();
+    const openReceivedItemCount = useOpenReceivedItemCount();
     const handleDrawerOpen = () => {
         setOpen(true);
     };
@@ -212,7 +215,19 @@ export default function MiniDrawer() {
                                         mx: open ? 0 : 'auto',
                                     }}
                                 >
-                                    {item.icon}
+                                    {item.showOpenCount ? (
+                                        <Badge
+                                            badgeContent={openReceivedItemCount}
+                                            invisible={openReceivedItemCount === 0}
+                                            color="error"
+                                            max={99}
+                                            data-testid="sidebar-open-count-badge"
+                                        >
+                                            {item.icon}
+                                        </Badge>
+                                    ) : (
+                                        item.icon
+                                    )}
                                 </ListItemIcon>
                                 <ListItemText primary={item.name} sx={{ opacity: open ? 1 : 0 }} />
                             </ListItemButton>
