@@ -36,17 +36,6 @@ frontend:
     # # -- The base URL for the backend base URL without further endpoints
     baseUrl: *domain
     # endpointPartner: partners
-    keycloak: # TODO, should be fine
-      # -- Disable the Keycloak integration. #TODO
-      disabled: false
-      # -- The URL to the IDP that should be used.
-      url: https://<path:atlas-1/data/environment/central-idp#base-url>
-      # -- Name of the Realm of the keycloak instance.
-      realm: <path:atlas-1/data/environment/central-idp#realm>
-      # -- Name of the client which is used for the application.
-      clientId: <path:atlas-1/data/companies/belfast/puris/idp#client-id>
-      # -- URL to use as keycloak redirect url.
-      redirectUrlFrontend: ""
   resources:
     requests:
       cpu: "5m"
@@ -262,7 +251,7 @@ postgresql:
       memory: "128Mi"
 
 idp:
-  url: https://<path:atlas-1/data/environment/central-idp#base-url>
+  url: https://<path:atlas-1/data/environment/central-idp#base-url>/auth
   # -- Name of the Realm of the keycloak instance.
   realm: <path:atlas-1/data/environment/central-idp#realm>
   # -- Name of the client which is used for the application.

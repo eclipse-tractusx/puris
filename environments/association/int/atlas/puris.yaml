@@ -260,7 +260,7 @@ postgresql:
       memory: "128Mi"
 
 idp:
-  url: https://<path:atlas-1/data/environment/central-idp#base-url>
+  url: https://<path:atlas-1/data/environment/central-idp#base-url>/auth
   # -- Name of the Realm of the keycloak instance.
   realm: <path:atlas-1/data/environment/central-idp#realm>
   # -- Name of the client which is used for the application.
