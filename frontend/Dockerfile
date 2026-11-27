@@ -47,6 +47,9 @@ ENV JSFOLDER=/usr/share/nginx/html/assets/*.js
 # use root user to install moreutils for sponge in start-nginx to substring env workaround
 USER root
 
+# upgrade OS packages to pick up security fixes not yet included in the pinned base image
+RUN apk upgrade --no-cache
+
 COPY ./nginx.conf /etc/nginx/nginx.conf
 RUN chmod 777 /etc/nginx/nginx.conf
 COPY ./start-nginx.sh /usr/bin/start-nginx.sh
