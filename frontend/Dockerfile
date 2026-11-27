@@ -38,7 +38,7 @@ RUN chmod -R 777 /app/dist
 COPY DOCKER_NOTICE.md README.md NOTICE.md* SECURITY.md* LICENSE* DEPENDENCIES* LICENSE_non_code* /app/dist/
 
 # uses 101 restricted user
-FROM nginx/nginx-unprivileged:1.31.9-alpine@sha256:60214a103e6f38e953ff957f34b1f2e97a9db801ab2df3821da955d0fe6cadd6
+FROM nginx/nginx-unprivileged:1.31.10-alpine@sha256:86628f2c9eaa5e84e3b98d25e26563c4a4f9b0ead9cf5656da4731d86e0621de
 #FROM nginx:stable-alpine
 
 # commly it would be .../html/js/.*js, but due to the project structure the JS files are in .../html/assets
